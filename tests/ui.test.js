@@ -14,8 +14,8 @@ const { act, createElement } = await import('react');
 const { createRoot } = await import('react-dom/client');
 const dir = path.resolve('.test-build');
 await mkdir(dir, { recursive: true });
-await build({ stdin: { contents: `export { default as App } from './src/App.jsx'; export { default as Game } from './src/components/Game.jsx'; export { validateSave, STORAGE_KEY } from './src/hooks/useClassroom.js'; export { getLevel } from './src/data/curriculum.js';`, resolveDir: process.cwd(), loader: 'jsx' }, outfile: path.join(dir, 'ui.mjs'), bundle: true, format: 'esm', platform: 'node', packages: 'external', jsx: 'automatic', logLevel: 'silent' });
-const { App, Game, validateSave, STORAGE_KEY, getLevel } = await import(pathToFileURL(path.join(dir, 'ui.mjs')));
+await build({ stdin: { contents: `export { default as App } from './src/App.jsx'; export { default as Game } from './src/components/Game.jsx'; export { StickerNotification } from './src/components/ClassroomExtras.jsx'; export { validateSave, STORAGE_KEY } from './src/hooks/useClassroom.js'; export { getLevel } from './src/data/curriculum.js';`, resolveDir: process.cwd(), loader: 'jsx' }, outfile: path.join(dir, 'ui.mjs'), bundle: true, format: 'esm', platform: 'node', packages: 'external', jsx: 'automatic', logLevel: 'silent' });
+const { App, Game, StickerNotification, validateSave, STORAGE_KEY, getLevel } = await import(pathToFileURL(path.join(dir, 'ui.mjs')));
 let root;
 async function mount(element) {
   if (root) await act(async () => root.unmount());
@@ -151,6 +151,7 @@ test('Teacher password gate, class filter, reward and logout persist correctly',
   for(const el of document.querySelectorAll('.teacher-login input')) await change(el,'professor-test-42');
   await act(async()=>{ document.querySelector('.teacher-login form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true})); await new Promise(resolve=>setTimeout(resolve,2500)); });
   assert.ok(document.querySelector('.teacher-stats'));
+  assert.equal(document.querySelector('.team-switcher'),null,'The teacher area must not show which student team was active.');
   assert.doesNotMatch(localStorage.getItem('bloco.teacher.lock.v1'),/professor-test-42/);
   await change(document.querySelector('[aria-label="Filtrar por turma"]'),'a');
   assert.match(document.querySelector('.team-progress-table').textContent,/Equipe Lua/);
@@ -162,7 +163,27 @@ test('Teacher password gate, class filter, reward and logout persist correctly',
   assert.equal(document.querySelector('.team-progress-table'),null);
   await click(button('Conquistas')); assert.match(document.querySelector('.sticker-album').textContent,/Não desistiu/);
   await click(button('Espaço do professor'));
+  for(const el of document.querySelectorAll('.teacher-login input')) await change(el,'professor-test-42');
+  await act(async()=>{ document.querySelector('.teacher-login form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true})); await new Promise(resolve=>setTimeout(resolve,2500)); });
+  await change(document.querySelector('[aria-label="Filtrar por turma"]'),'b');
+  await click(button('Ver progresso de Equipe Sol')); await click(button('Excluir equipe'));
+  assert.match(document.querySelector('.delete-team-confirm').textContent,/progresso.*sessões.*stickers/i);
+  await click(button('Excluir permanentemente'));
+  assert.deepEqual(readSave().teams.map(t=>t.name),['Equipe Lua']);
+  await click(button('Sair do painel'));
+  await click(button('Conquistas')); assert.match(document.querySelector('.sticker-album').textContent,/Não desistiu/);
+  await click(button('Espaço do professor'));
   assert.ok(document.querySelector('.teacher-login'));
+});
+
+test('A sticker notification tells the team what the teacher sent and can be dismissed', async () => {
+  let dismissed;
+  await mount(createElement(StickerNotification,{notice:{id:'award-1',type:'logic',note:'Pensaram juntos!',teamName:'Equipe Lua'},onDismiss:id=>{dismissed=id;}}));
+  assert.match(document.querySelector('.sticker-notification').textContent,/Equipe Lua, vocês ganharam/);
+  assert.match(document.querySelector('.sticker-notification').textContent,/Ideia brilhante/);
+  assert.match(document.querySelector('.sticker-notification').textContent,/Pensaram juntos/);
+  await click(button('Fechar notificação de sticker'));
+  assert.equal(dismissed,'award-1');
 });
 
 after(async () => { if (root) await act(async () => root.unmount()); dom.window.close(); await rm(dir, { recursive: true, force: true }); });

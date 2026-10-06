@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { nextLevel } from '../data/curriculum.js';
 import { STORAGE_KEY, emptySave, validateSave, mergeSave, mergeTeams, uid, newSession, STICKERS } from '../data/classroom.js';
-import { CLOUD_ENABLED, joinRoom, joinTeam, studentSnapshot, saveStudentTeams } from '../services/cloud.js';
+import { CLOUD_ENABLED, joinRoom, joinTeam, studentSnapshot, saveStudentTeams, subscribeToTeamStickers } from '../services/cloud.js';
 export { STORAGE_KEY, validateSave } from '../data/classroom.js';
 const now = () => new Date().toISOString();
 const unique = values => [...new Set(values)];
@@ -12,8 +12,11 @@ export function useClassroom() {
   });
   const [data, setData] = useState(initial.data), [error, setError] = useState(initial.error);
   const [sync, setSync] = useState({ state: CLOUD_ENABLED ? 'connecting' : 'local', message: '' });
+  const [stickerNotices, setStickerNotices] = useState([]);
   const latest = useRef(data), busy = useRef(false), lastSent = useRef('');
   latest.current = data;
+  const activeTeam = data.teams.find(t => t.id === data.activeId) || null;
+  const activeSessionId = activeTeam?.currentSession?.id || null;
   useEffect(() => {
     if (initial.error && data === initial.data) return;
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); setError(null); }
@@ -68,13 +71,30 @@ export function useClassroom() {
     window.addEventListener('online', syncNow);
     return () => { clearInterval(timer); window.removeEventListener('online', syncNow); };
   }, [syncNow]);
+  useEffect(() => {
+    if (!CLOUD_ENABLED || !data.activeId || !activeSessionId) return;
+    const teamId = data.activeId;
+    let cancelled = false, unsubscribe;
+    void subscribeToTeamStickers(teamId, sticker => {
+      const localTeam = latest.current.teams.find(t => t.id === teamId);
+      if (latest.current.activeId !== teamId || !localTeam?.currentSession || localTeam.stickers.some(s => s.id === sticker.id)) return;
+      const item = { ...sticker, teamName: localTeam.name };
+      setData(current => {
+        if (current.activeId !== teamId) return current;
+        return { ...current, teams: current.teams.map(t => t.id === teamId && !t.stickers.some(s => s.id === sticker.id) ? { ...t, stickers: [...t.stickers, sticker].slice(-100) } : t) };
+      });
+      setStickerNotices(current => current.some(n => n.id === sticker.id) ? current : [...current, item].slice(-5));
+    }).then(cleanup => { if (cancelled) cleanup(); else unsubscribe = cleanup; }).catch(() => {});
+    return () => { cancelled = true; unsubscribe?.(); };
+  }, [data.activeId, activeSessionId]);
   function updateActive(fn) { setData(d => ({ ...d, teams: d.teams.map(t => t.id === d.activeId ? { ...fn(t), updatedAt: now() } : t) })); }
   function saveTeam(values, id) {
+    setStickerNotices([]);
     const teamId = id || uid();
     setData(d => ({ ...d, activeId: teamId, teams: id ? d.teams.map(t => t.id === id ? { ...t, ...values, updatedAt: now(), currentSession: t.currentSession || newSession() } : t) : [...d.teams, { ...values, id: teamId, progress: {}, attempts: {}, sessions: [], stickers: [], currentSession: newSession(), lastLevel: '1-1', updatedAt: now() }] }));
     return teamId;
   }
-  function select(id) { setData(d => ({ ...d, activeId: id, teams: d.teams.map(t => t.id === id ? { ...t, currentSession: t.currentSession || newSession() } : t) })); }
+  function select(id) { setStickerNotices([]); setData(d => ({ ...d, activeId: id, teams: d.teams.map(t => t.id === id ? { ...t, currentSession: t.currentSession || newSession() } : t) })); }
   function attempt(level) { updateActive(t => {
     const s = t.currentSession || newSession();
     return { ...t, attempts: { ...t.attempts, [level.id]: { count: (t.attempts[level.id]?.count || 0) + 1, lastAt: now() } }, currentSession: { ...s, played: unique([...s.played, level.id]), attempts: s.attempts + 1 } };
@@ -84,20 +104,25 @@ export function useClassroom() {
     return { ...t, lastLevel: nextLevel(level)?.id || level.id, progress: { ...t.progress, [level.id]: { stars: Math.max(t.progress[level.id]?.stars || 0, stars), completedAt: now() } }, currentSession: { ...s, played: unique([...s.played, level.id]), completed: unique([...s.completed, level.id]) } };
   }); }
   function endSession(feedback = {}) {
+    setStickerNotices([]);
     setData(d => ({ ...d, activeId: null, teams: d.teams.map(t => t.id === d.activeId ? { ...t, currentSession: null, updatedAt: now(), sessions: [...t.sessions, { ...(t.currentSession || newSession()), endedAt: now(), feeling: feedback.feeling || null, difficulty: feedback.difficulty || null, note: (feedback.note || '').slice(0, 300) }].slice(-100) } : t) }));
   }
   function updateTeam(values, id) {
     setData(d => ({ ...d, teams: d.teams.map(t => t.id === id ? { ...t, ...values, updatedAt: now() } : t) }));
   }
+  function deleteTeam(id) {
+    setData(d => ({ ...d, activeId: d.activeId === id ? null : d.activeId, teams: d.teams.filter(t => t.id !== id) }));
+  }
   function award(teamId, type, note = '') {
     if (!STICKERS.some(s => s.id === type)) return;
     setData(d => ({ ...d, teams: d.teams.map(t => t.id === teamId ? { ...t, stickers: [...t.stickers, { id: uid(), type, note: note.slice(0, 160), awardedAt: now() }].slice(-100) } : t) }));
   }
-  return { data, active: data.teams.find(t => t.id === data.activeId) || null, error, saveTeam, select, complete, attempt, endSession, updateTeam, award,
+  return { data, active: activeTeam, error, saveTeam, select, complete, attempt, endSession, updateTeam, deleteTeam, award, stickerNotices,
+    dismissStickerNotice: id => setStickerNotices(current => current.filter(n => n.id !== id)),
     remember: level => updateActive(t => ({ ...t, lastLevel: level.id })),
     removeAward: (teamId, id) => setData(d => ({ ...d, teams: d.teams.map(t => t.id === teamId ? { ...t, stickers: t.stickers.filter(s => s.id !== id) } : t) })),
     importSave: v => setData(d => mergeSave(d, v)), sync, cloudEnabled: CLOUD_ENABLED, syncNow,
     join: async code => { await joinRoom(code); lastSent.current = ''; await syncNow(); },
-    joinTeam: async code => { const id = await joinTeam(code); lastSent.current = ''; await syncNow(); setData(d => ({ ...d, activeId: id })); return id; },
+    joinTeam: async code => { const id = await joinTeam(code); lastSent.current = ''; await syncNow(); setStickerNotices([]); setData(d => ({ ...d, activeId: id })); return id; },
   };
 }

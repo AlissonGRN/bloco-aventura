@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Smile, Meh, Frown, Sparkles, Users, Flame, Lightbulb, Bug, Focus, Heart, Compass, Flag, Check, Cloud, RefreshCw } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Smile, Meh, Frown, Sparkles, Users, Flame, Lightbulb, Bug, Focus, Heart, Compass, Flag, Check, Cloud, RefreshCw, X } from 'lucide-react';
 import { STICKERS } from '../data/classroom';
 import { Modal } from './UI';
 const icons = { users: Users, flame: Flame, lightbulb: Lightbulb, sparkles: Sparkles, bug: Bug, focus: Focus, heart: Heart, compass: Compass };
@@ -12,6 +12,21 @@ export function Sticker({ type, small = false }) {
   if (!s) return null;
   const Icon = icons[s.icon];
   return <span className={`sticker ${small ? 'small' : ''}`} style={{ '--sticker': s.color }} title={s.description}><span className="sticker-seal"><Icon size={small ? 20 : 32}/><Sparkles className="sticker-spark" size={12}/></span><strong>{s.name}</strong></span>;
+}
+export function StickerNotification({ notice, onDismiss }) {
+  const dismiss = useRef(onDismiss);
+  dismiss.current = onDismiss;
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => dismiss.current?.(notice.id), 9000);
+    return () => clearTimeout(timer);
+  }, [notice?.id]);
+  if (!notice) return null;
+  return <aside className="sticker-notification" role="status" aria-live="polite">
+    <Sticker type={notice.type}/>
+    <div><strong>{notice.teamName}, vocês ganharam!</strong><p>Seu professor enviou um sticker.{notice.note ? ` ${notice.note}` : ''}</p></div>
+    <button className="icon-btn" aria-label="Fechar notificação de sticker" onClick={() => onDismiss?.(notice.id)}><X size={18}/></button>
+  </aside>;
 }
 export function StickerAlbum({ team }) {
   return <section className="sticker-album"><div className="section-heading"><div><span className="eyebrow">CARINHO POR CADA DESCOBERTA</span><h2>Stickers do professor</h2></div><span className="muted">{team.stickers?.length || 0} recebidos</span></div>{team.stickers?.length ? <div className="stickers-grid">{[...team.stickers].reverse().map(s => <article className="sticker-card" key={s.id}><Sticker type={s.type}/>{s.note && <p>{s.note}</p>}<small>{s.awardedAt && new Date(s.awardedAt).toLocaleDateString('pt-BR')}</small></article>)}</div> : <div className="soft-note"><Sparkles size={28}/><p>Seu professor pode reconhecer suas ideias, sua persistência e o cuidado com a equipe. Os stickers vão aparecer aqui!</p></div>}</section>;

@@ -14,6 +14,8 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
       grant usage on schema auth to authenticated;
       insert into auth.users values ('${teacher}'),('${stranger}'),('${deviceA}'),('${deviceB}');`);
     await db.exec(await readFile(new URL('../supabase/migrations/202610060001_classroom.sql', import.meta.url),'utf8'));
+    await db.exec(`grant delete on public.bloco_teams to authenticated;
+      create policy teacher_delete_team on public.bloco_teams for delete to authenticated using (public.is_bloco_teacher(classroom_id));`);
     const generatedCode = (await db.query('select public.generate_bloco_join_code() as code')).rows[0].code;
     assert.match(generatedCode, /^[A-Z]{6}$/);
     await db.exec(`insert into public.teacher_profiles(id) values('${teacher}'),('${stranger}');
@@ -50,11 +52,13 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
     assert.equal((await rows("update public.bloco_teams set progress='{}' where id='team-a' returning id")).length,0,'Teacher reads progress without overwriting it');
     await as(stranger);
     assert.equal((await rows('select * from public.bloco_teams')).length,0);
+    assert.equal((await rows("delete from public.bloco_teams where id='team-a' returning id")).length,0,'another teacher cannot delete a team outside their classroom');
     await assert.rejects(db.query("insert into public.team_stickers(team_id,type) values('team-a','logic')"),/row-level security/);
     await as(deviceA); assert.equal((await rows('select * from public.team_stickers')).length,1);
     assert.equal((await rows("delete from public.team_stickers where id='award' returning id")).length,0);
     await as(deviceB); assert.equal((await rows('select * from public.team_stickers')).length,0);
     await as(teacher); await db.query("delete from public.team_stickers where id='award'");
+    assert.equal((await rows("delete from public.bloco_teams where id='team-a' returning id")).length,1,'the owning teacher can permanently delete a team');
     await as(deviceA); assert.equal((await rows('select * from public.team_stickers')).length,0);
     await db.exec('reset role; set role anon;');
     await assert.rejects(db.query('select * from public.bloco_teams'),/permission denied/);

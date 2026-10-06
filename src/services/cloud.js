@@ -41,6 +41,16 @@ export async function studentSnapshot() {
   const awards = unwrap(stickers);
   return { user, ...validateSave({ version: 2, classes: unwrap(classes).map(classFromRow), teams: unwrap(teams).map(t => ({ ...teamFromRow(t, awards), sharedAccess: t.owner_id !== user.id })) }) };
 }
+export async function subscribeToTeamStickers(teamId, onSticker) {
+  if (!CLOUD_ENABLED || !teamId || typeof onSticker !== 'function') return () => {};
+  await studentIdentity();
+  const channel = studentClient.channel(`stickers:${teamId}`)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'team_stickers', filter: `team_id=eq.${teamId}` }, ({ new: row }) => {
+      if (row?.id && row.type) onSticker({ id: row.id, type: row.type, note: row.note || '', awardedAt: row.created_at || new Date().toISOString() });
+    })
+    .subscribe();
+  return () => { void studentClient.removeChannel(channel); };
+}
 export async function saveStudentTeams(teams, classes) {
   const user = await studentIdentity();
   const records = teams.filter(t => classes.some(c => c.id === t.classId && c.classroomId) && (!t.cloudOwner || t.cloudOwner === user.id || t.sharedAccess)).map(t => ({ id: t.id, owner_id: t.cloudOwner || user.id, classroom_id: classes.find(c => c.id === t.classId).classroomId, class_id: t.classId, name: t.name, members: t.members, avatar: t.avatar, progress: t.progress, attempts: t.attempts, sessions: t.sessions, last_level: t.lastLevel }));
@@ -88,3 +98,7 @@ export async function teacherSnapshot() {
 export async function updateCloudTeam(teamId, values) { return unwrap(await teacherClient.from('bloco_teams').update({ name: values.name, members: values.members, avatar: values.avatar, class_id: values.classId }).eq('id', teamId).select()); }
 export async function cloudAward(teamId, type, note) { return unwrap(await teacherClient.from('team_stickers').insert({ team_id: teamId, type, note }).select()); }
 export async function cloudRemoveAward(id) { unwrap(await teacherClient.from('team_stickers').delete().eq('id', id)); }
+export async function cloudDeleteTeam(id) {
+  const rows = unwrap(await teacherClient.from('bloco_teams').delete().eq('id', id).select('id'));
+  if (!rows?.length) throw new Error('Equipe não encontrada ou sem permissão para excluí-la.');
+}
