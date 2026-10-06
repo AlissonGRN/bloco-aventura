@@ -1,0 +1,61 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { PGlite } from '@electric-sql/pglite';
+
+test('Supabase schema and RLS isolate devices, teachers, classes and rewards', async () => {
+  const db = new PGlite();
+  const teacher='10000000-0000-4000-8000-000000000001', stranger='10000000-0000-4000-8000-000000000002', deviceA='20000000-0000-4000-8000-000000000001', deviceB='20000000-0000-4000-8000-000000000002';
+  try {
+    // Model Supabase's authenticated role and auth.uid() claim in real PostgreSQL.
+    await db.exec(`create role anon; create role authenticated; create schema auth;
+      create table auth.users(id uuid primary key);
+      create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true),'')::uuid $$;
+      grant usage on schema auth to authenticated;
+      insert into auth.users values ('${teacher}'),('${stranger}'),('${deviceA}'),('${deviceB}');`);
+    await db.exec(await readFile(new URL('../supabase/migrations/202610060001_classroom.sql', import.meta.url),'utf8'));
+    await db.exec(`insert into public.teacher_profiles(id) values('${teacher}'),('${stranger}');
+      insert into public.classrooms(id,teacher_id,join_code) values('30000000-0000-4000-8000-000000000001','${teacher}','ABCDEF123456'),('30000000-0000-4000-8000-000000000002','${stranger}','UVWXYZ123456');
+      insert into public.class_groups(id,classroom_id,grade,section,name) values('class-a','30000000-0000-4000-8000-000000000001',1,'A','1º ano A'),('class-b','30000000-0000-4000-8000-000000000002',2,'B','2º ano B');`);
+    const as = async id => { await db.exec(`reset role; set role authenticated; select set_config('request.jwt.claim.sub','${id}',false);`); };
+    const rows = async sql => (await db.query(sql)).rows;
+    const insertTeam = (id, owner, group='class-a', room='30000000-0000-4000-8000-000000000001') => db.query(`insert into public.bloco_teams(id,owner_id,classroom_id,class_id,name,members) values($1,$2,$3,$4,'Exploradores','["Ana","Bia"]')`,[id,owner,room,group]);
+    await as(deviceA);
+    assert.equal((await rows('select * from public.class_groups')).length,0);
+    await assert.rejects(insertTeam('team-a',deviceA),/row-level security/);
+    await assert.rejects(db.query("select public.join_bloco_classroom('INVALIDO0000')"),/Código/);
+    await db.query("select public.join_bloco_classroom('ABCDEF123456')");
+    assert.equal((await rows('select * from public.class_groups')).length,1);
+    assert.equal((await rows('select * from public.classrooms')).length,0,'Join codes are not listed to students');
+    await insertTeam('team-a',deviceA);
+    await assert.rejects(insertTeam('forged-owner',deviceB),/row-level security/);
+    await assert.rejects(insertTeam('wrong-class',deviceA,'class-b'),/row-level security/);
+    await assert.rejects(db.query(`insert into public.teacher_profiles(id) values('${deviceA}')`),/permission denied/);
+    await assert.rejects(db.query(`insert into public.device_enrollments(user_id,classroom_id) values('${deviceA}','30000000-0000-4000-8000-000000000002')`),/permission denied/);
+    await assert.rejects(db.query("insert into public.team_stickers(team_id,type) values('team-a','logic')"),/row-level security/);
+    await db.query(`update public.bloco_teams set progress='{"1-1":{"stars":3}}' where id='team-a'`);
+    await assert.rejects(db.query(`update public.bloco_teams set progress='{"1-1":{"stars":999}}' where id='team-a'`),/Progresso inválido/);
+    await assert.rejects(db.query(`update public.bloco_teams set owner_id='${deviceB}' where id='team-a'`),/identidade/);
+    await assert.rejects(db.query(`update public.bloco_teams set name='Outra equipe' where id='team-a'`),/permission denied/,'a pupil cannot edit the team profile');
+    await as(deviceB); await db.query("select public.join_bloco_classroom('ABCDEF123456')"); await insertTeam('team-b',deviceB);
+    assert.deepEqual((await rows('select id from public.bloco_teams')).map(t=>t.id),['team-b']);
+    assert.equal((await rows("update public.bloco_teams set name='Hacked' where id='team-a' returning id")).length,0);
+    await as(teacher);
+    assert.equal((await rows('select * from public.bloco_teams')).length,2);
+    assert.equal((await rows('select * from public.class_groups')).length,1);
+    await db.query("insert into public.team_stickers(id,team_id,type,note) values('award','team-a','persistence','Ótimo esforço!')");
+    assert.equal((await rows("update public.bloco_teams set name='Cadastro corrigido' where id='team-a' returning id")).length,1,'the teacher can edit team profile');
+    assert.equal((await rows("update public.bloco_teams set progress='{}' where id='team-a' returning id")).length,0,'Teacher reads progress without overwriting it');
+    await as(stranger);
+    assert.equal((await rows('select * from public.bloco_teams')).length,0);
+    await assert.rejects(db.query("insert into public.team_stickers(team_id,type) values('team-a','logic')"),/row-level security/);
+    await as(deviceA); assert.equal((await rows('select * from public.team_stickers')).length,1);
+    assert.equal((await rows("delete from public.team_stickers where id='award' returning id")).length,0);
+    await as(deviceB); assert.equal((await rows('select * from public.team_stickers')).length,0);
+    await as(teacher); await db.query("delete from public.team_stickers where id='award'");
+    await as(deviceA); assert.equal((await rows('select * from public.team_stickers')).length,0);
+    await db.exec('reset role; set role anon;');
+    await assert.rejects(db.query('select * from public.bloco_teams'),/permission denied/);
+    await assert.rejects(db.query("select public.join_bloco_classroom('ABCDEF123456')"),/permission denied/);
+  } finally { await db.close(); }
+});

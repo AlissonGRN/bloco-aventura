@@ -1,0 +1,68 @@
+import { createClient } from '@supabase/supabase-js';
+import { validateSave } from '../data/classroom.js';
+import { classesForRoom } from '../data/classrooms.js';
+const url = import.meta.env?.VITE_SUPABASE_URL;
+const key = import.meta.env?.VITE_SUPABASE_ANON_KEY;
+export const CLOUD_ENABLED = Boolean(url && key);
+// Separate identities: a teacher login must never replace the device's student session.
+export const studentClient = CLOUD_ENABLED ? createClient(url, key, { auth: { storageKey: 'bloco.cloud.student', detectSessionInUrl: false } }) : null;
+export const teacherClient = CLOUD_ENABLED ? createClient(url, key, { auth: { storageKey: 'bloco.cloud.teacher', persistSession: false, detectSessionInUrl: false } }) : null;
+function unwrap(result) { if (result.error) throw result.error; return result.data; }
+let identityTask;
+export async function studentIdentity() {
+  if (identityTask) return identityTask;
+  identityTask = authenticateStudent();
+  try { return await identityTask; } finally { identityTask = null; }
+}
+async function authenticateStudent() {
+  const session = unwrap(await studentClient.auth.getSession()).session;
+  if (session) return session.user;
+  return unwrap(await studentClient.auth.signInAnonymously()).user;
+}
+export async function joinRoom(code) {
+  await studentIdentity();
+  return unwrap(await studentClient.rpc('join_bloco_classroom', { room_code: code.trim().toUpperCase() }));
+}
+const classFromRow = c => ({ id: c.id, name: c.name, grade: c.grade, section: c.section, archived: !c.active, classroomId: c.classroom_id });
+export function teamFromRow(t, stickers = []) {
+  return { id: t.id, name: t.name, members: t.members, avatar: t.avatar, classId: t.class_id, cloudOwner: t.owner_id, progress: t.progress || {}, attempts: t.attempts || {}, sessions: t.sessions || [], stickers: stickers.filter(s => s.team_id === t.id).map(s => ({ id: s.id, type: s.type, note: s.note, awardedAt: s.created_at })), currentSession: null, lastLevel: t.last_level, updatedAt: t.updated_at };
+}
+export async function studentSnapshot() {
+  const user = await studentIdentity();
+  const [classes, teams, stickers] = await Promise.all([
+    studentClient.from('class_groups').select('*').order('name'),
+    studentClient.from('bloco_teams').select('*').eq('owner_id', user.id),
+    studentClient.from('team_stickers').select('*'),
+  ]);
+  const awards = unwrap(stickers);
+  return { user, ...validateSave({ version: 2, classes: unwrap(classes).map(classFromRow), teams: unwrap(teams).map(t => teamFromRow(t, awards)) }) };
+}
+export async function saveStudentTeams(teams, classes) {
+  const user = await studentIdentity();
+  const records = teams.filter(t => classes.some(c => c.id === t.classId && c.classroomId) && (!t.cloudOwner || t.cloudOwner === user.id)).map(t => ({ id: t.id, owner_id: user.id, classroom_id: classes.find(c => c.id === t.classId).classroomId, class_id: t.classId, name: t.name, members: t.members, avatar: t.avatar, progress: t.progress, attempts: t.attempts, sessions: t.sessions, last_level: t.lastLevel }));
+  if (records.length) unwrap(await studentClient.from('bloco_teams').upsert(records));
+  return { ownerId: user.id, ids: records.map(t => t.id) };
+}
+export async function teacherLogin(email, password) {
+  const { user } = unwrap(await teacherClient.auth.signInWithPassword({ email, password }));
+  const profile = await teacherClient.from('teacher_profiles').select('id').eq('id', user.id).maybeSingle();
+  if (profile.error || !profile.data) { await teacherClient.auth.signOut(); throw new Error('Esta conta não está autorizada como professor.'); }
+  return user;
+}
+export const teacherLogout = () => teacherClient?.auth.signOut();
+export async function teacherSnapshot() {
+  const user = unwrap(await teacherClient.auth.getUser()).user;
+  let rooms = unwrap(await teacherClient.from('classrooms').select('*').eq('teacher_id', user.id));
+  if (!rooms.length) rooms = unwrap(await teacherClient.from('classrooms').insert({ teacher_id: user.id, name: 'Minha sala' }).select());
+  const expected = classesForRoom(rooms[0].id);
+  const current = unwrap(await teacherClient.from('class_groups').select('id').eq('classroom_id', rooms[0].id));
+  const currentIds = new Set(current.map(c => c.id));
+  const missing = expected.filter(c => !currentIds.has(c.id)).map(c => ({ id: c.id, classroom_id: rooms[0].id, name: c.name, grade: c.grade, section: c.section, active: true }));
+  if (missing.length) unwrap(await teacherClient.from('class_groups').insert(missing));
+  const [classes, teams, stickers] = await Promise.all([teacherClient.from('class_groups').select('*').eq('classroom_id', rooms[0].id).order('grade').order('section'), teacherClient.from('bloco_teams').select('*').eq('classroom_id', rooms[0].id).order('name'), teacherClient.from('team_stickers').select('*')]);
+  const awards = unwrap(stickers);
+  return { room: rooms[0], ...validateSave({ version: 2, classes: unwrap(classes).map(classFromRow), teams: unwrap(teams).map(t => teamFromRow(t, awards)) }) };
+}
+export async function updateCloudTeam(teamId, values) { return unwrap(await teacherClient.from('bloco_teams').update({ name: values.name, members: values.members, avatar: values.avatar, class_id: values.classId }).eq('id', teamId).select()); }
+export async function cloudAward(teamId, type, note) { return unwrap(await teacherClient.from('team_stickers').insert({ team_id: teamId, type, note }).select()); }
+export async function cloudRemoveAward(id) { unwrap(await teacherClient.from('team_stickers').delete().eq('id', id)); }
