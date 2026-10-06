@@ -47,7 +47,7 @@ export function Welcome({ classroom }) {
     <CloudStatus classroom={classroom}/><div className="local-note"><ShieldCheck size={17}/><span>{classroom.cloudEnabled ? 'Progresso sincronizado com o professor nas equipes conectadas.' : 'Nomes e progresso ficam salvos neste navegador.'}</span></div>
       </section>
     </main>
-    <footer className="welcome-footer"><span>Cinco mundos. Infinitas ideias.</span><div>{WORLDS.map(w => <span key={w.id} style={{ '--world': w.color }}><i/>Nível {w.id}</span>)}</div><span>Feito para aprender, juntos.</span></footer>
+    <footer className="welcome-footer"><span>Cinco mundos. Infinitas ideias.</span><div>{WORLDS.map(w => <span key={w.id} style={{ '--world': w.color }}><i/>Nível {w.id}</span>)}</div><span>Feito com ❤️ por Alisson Nascimento</span></footer>
   </div>;
 }
 
