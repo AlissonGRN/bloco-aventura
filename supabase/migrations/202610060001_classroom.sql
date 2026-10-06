@@ -5,11 +5,18 @@ create table public.teacher_profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   created_at timestamptz not null default now()
 );
+create function public.generate_bloco_join_code() returns text
+language sql volatile set search_path = '' as $$
+  select pg_catalog.string_agg(pg_catalog.chr(65 + pg_catalog.floor(pg_catalog.random() * 26)::integer), '' order by n)
+  from pg_catalog.generate_series(1, 6) as series(n);
+$$;
+revoke execute on function public.generate_bloco_join_code() from public, anon;
+grant execute on function public.generate_bloco_join_code() to authenticated;
 create table public.classrooms (
   id uuid primary key default gen_random_uuid(),
   teacher_id uuid not null unique references public.teacher_profiles(id) on delete cascade,
   name text not null default 'Minha sala' check (char_length(name) between 1 and 80),
-  join_code text not null unique default upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 12)),
+  join_code text not null unique default public.generate_bloco_join_code() check (join_code ~ '^[A-Z]{6}$'),
   created_at timestamptz not null default now()
 );
 create table public.class_groups (
@@ -24,7 +31,7 @@ create table public.class_groups (
   check (
     (grade = 1 and section in ('A','B','C')) or
     (grade = 2 and section in ('A','B')) or
-    (grade = 3 and section in ('A','C')) or
+    (grade = 3 and section in ('A','B','C')) or
     (grade in (4,5) and section in ('A','B','C'))
   ),
   check (name = grade::text || 'º ano ' || section)
@@ -50,10 +57,8 @@ create table public.bloco_teams (
   updated_at timestamptz not null default now(),
   foreign key (class_id, classroom_id) references public.class_groups(id, classroom_id)
 );
--- A teacher can edit team identity, while pupils can update only learning data.
-revoke update on public.bloco_teams from authenticated;
-grant update (progress, attempts, sessions, last_level, updated_at) on public.bloco_teams to authenticated;
-grant update (name, members, avatar, class_id) on public.bloco_teams to authenticated;
+-- Team access is limited by row-level policies. Table-level UPDATE is needed
+-- because the client uses PostgREST upsert (INSERT ... ON CONFLICT UPDATE).
 create table public.team_stickers (
   id text primary key default gen_random_uuid()::text,
   team_id text not null references public.bloco_teams(id) on delete cascade,
@@ -89,8 +94,9 @@ language plpgsql security definer set search_path = '' as $$
 declare room uuid;
 begin
   if auth.uid() is null then raise exception 'Entre antes de conectar o computador.'; end if;
-  if char_length(btrim(room_code)) <> 12 then raise exception 'Código da sala inválido.'; end if;
-  select id into room from public.classrooms where join_code = upper(btrim(room_code));
+  room_code := pg_catalog.upper(pg_catalog.btrim(room_code));
+  if room_code !~ '^[A-Z]{6}$' then raise exception 'Código da sala inválido.'; end if;
+  select id into room from public.classrooms where join_code = room_code;
   if room is null then raise exception 'Código da sala inválido.'; end if;
   insert into public.device_enrollments(user_id, classroom_id) values (auth.uid(), room) on conflict do nothing;
   return room;
@@ -102,6 +108,12 @@ declare member jsonb; item record; session jsonb;
 begin
   if TG_OP = 'UPDATE' and (new.id is distinct from old.id or new.owner_id is distinct from old.owner_id or new.classroom_id is distinct from old.classroom_id) then
     raise exception 'A identidade da equipe e da sala não pode ser alterada.';
+  end if;
+  if TG_OP = 'UPDATE' and public.is_bloco_teacher(old.classroom_id) and (
+    new.progress is distinct from old.progress or new.attempts is distinct from old.attempts or
+    new.sessions is distinct from old.sessions or new.last_level is distinct from old.last_level
+  ) then
+    return null;
   end if;
   for member in select value from jsonb_array_elements(new.members) loop
     if jsonb_typeof(member) <> 'string' or char_length(btrim(member #>> '{}')) not between 1 and 40 then raise exception 'Nome de aluno inválido.'; end if;
@@ -152,6 +164,6 @@ create policy sticker_read on public.team_stickers for select to authenticated u
 create policy teacher_award on public.team_stickers for insert to authenticated with check (public.teaches_bloco_team(team_id));
 create policy teacher_remove_award on public.team_stickers for delete to authenticated using (public.teaches_bloco_team(team_id));
 
-revoke execute on function public.is_bloco_teacher(uuid), public.is_bloco_enrolled(uuid), public.owns_bloco_team(text), public.teaches_bloco_team(text), public.join_bloco_classroom(text), public.validate_bloco_team() from public, anon;
-grant execute on function public.is_bloco_teacher(uuid), public.is_bloco_enrolled(uuid), public.owns_bloco_team(text), public.teaches_bloco_team(text), public.join_bloco_classroom(text) to authenticated;
+revoke execute on function public.generate_bloco_join_code(), public.is_bloco_teacher(uuid), public.is_bloco_enrolled(uuid), public.owns_bloco_team(text), public.teaches_bloco_team(text), public.join_bloco_classroom(text), public.validate_bloco_team() from public, anon;
+grant execute on function public.generate_bloco_join_code(), public.is_bloco_teacher(uuid), public.is_bloco_enrolled(uuid), public.owns_bloco_team(text), public.teaches_bloco_team(text), public.join_bloco_classroom(text) to authenticated;
 commit;

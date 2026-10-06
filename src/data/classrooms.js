@@ -1,7 +1,7 @@
 const definitions = [
   [1, ['A', 'B', 'C']],
   [2, ['A', 'B']],
-  [3, ['A', 'C']],
+  [3, ['A', 'B', 'C']],
   [4, ['A', 'B', 'C']],
   [5, ['A', 'B', 'C']],
 ];
@@ -18,3 +18,7 @@ export const classesForRoom = roomId => CLASS_OPTIONS.map(c => ({
   classroomId: roomId,
   archived: false,
 }));
+export const visibleClassOptions = classes => {
+  const online = new Set(classes.filter(c => c.classroomId).map(c => `${c.grade}-${c.section}`));
+  return classes.filter(c => c.classroomId || !online.has(`${c.grade}-${c.section}`));
+};

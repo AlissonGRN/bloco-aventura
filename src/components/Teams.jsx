@@ -4,6 +4,7 @@ import { Brand } from './UI';
 import { Robot, WorldArt } from './Art';
 import { CloudStatus } from './ClassroomExtras';
 import { WORLDS } from '../data/curriculum';
+import { visibleClassOptions } from '../data/classrooms';
 
 const avatarColors = ['#f2c75c', '#9cbad5', '#b3bd8c', '#c2a6d4', '#e5a18b'];
 export function TeamAvatar({ team, size = 'normal' }) {
@@ -24,8 +25,9 @@ export function TeamForm({ initial, onSave, onCancel, classes = [] }) {
     const label = name.trim() || (size === 1 ? members[0] : `Equipe ${members[0]}`);
     onSave({ name: label, members, avatar, classId }, initial?.id);
   }
+  const optionsToShow = visibleClassOptions(classes);
   return <form onSubmit={submit} className="team-form">
-    <label><span className="field-label">Qual é a turma?</span><select value={classId} onChange={e => setClassId(e.target.value)} required aria-label="Turma da equipe"><option value="">Escolha ano e turma</option>{[1, 2, 3, 4, 5].map(grade => { const options = classes.filter(c => c.grade === grade && (!c.archived || c.id === initial?.classId)).sort((a, b) => a.section.localeCompare(b.section)); return options.length ? <optgroup key={grade} label={`${grade}º ano`}>{options.map(c => <option key={c.id} value={c.id}>Turma {c.section}{c.classroomId ? " · online" : ""}</option>)}</optgroup> : null; })}</select></label>
+    <label><span className="field-label">Qual é a turma?</span><select value={classId} onChange={e => setClassId(e.target.value)} required aria-label="Turma da equipe"><option value="">Escolha ano e turma</option>{[1, 2, 3, 4, 5].map(grade => { const options = optionsToShow.filter(c => c.grade === grade && (!c.archived || c.id === initial?.classId)).sort((a, b) => a.section.localeCompare(b.section)); return options.length ? <optgroup key={grade} label={`${grade}º ano`}>{options.map(c => <option key={c.id} value={c.id}>Turma {c.section}</option>)}</optgroup> : null; })}</select></label>
     <label className="field-label">Quantos vão jogar?</label>
     <div className="team-sizes" role="group" aria-label="Quantidade de alunos">{[1, 2, 3, 4].map(n => <button type="button" key={n} className={size === n ? 'selected' : ''} aria-pressed={size === n} onClick={() => setSize(n)}><span className="size-people">{Array.from({ length: n }, (_, i) => <UserRound key={i} size={16}/>)}</span><span>{['Individual', 'Dupla', 'Trio', 'Quarteto'][n - 1]}</span></button>)}</div>
     <div className="name-fields">{Array.from({ length: size }, (_, i) => <label key={i}><span className="field-label">{size === 1 ? 'Como você se chama?' : `Explorador ${i + 1}`}</span><input autoComplete="off" maxLength={40} required value={names[i]} onChange={e => setNames(ns => ns.map((n, j) => j === i ? e.target.value : n))} placeholder="Primeiro nome"/></label>)}</div>

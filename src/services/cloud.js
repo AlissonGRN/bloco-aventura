@@ -23,6 +23,10 @@ export async function joinRoom(code) {
   await studentIdentity();
   return unwrap(await studentClient.rpc('join_bloco_classroom', { room_code: code.trim().toUpperCase() }));
 }
+export async function joinTeam(code) {
+  await studentIdentity();
+  return unwrap(await studentClient.rpc('claim_bloco_team', { team_code: code.trim().toUpperCase() }));
+}
 const classFromRow = c => ({ id: c.id, name: c.name, grade: c.grade, section: c.section, archived: !c.active, classroomId: c.classroom_id });
 export function teamFromRow(t, stickers = []) {
   return { id: t.id, name: t.name, members: t.members, avatar: t.avatar, classId: t.class_id, cloudOwner: t.owner_id, progress: t.progress || {}, attempts: t.attempts || {}, sessions: t.sessions || [], stickers: stickers.filter(s => s.team_id === t.id).map(s => ({ id: s.id, type: s.type, note: s.note, awardedAt: s.created_at })), currentSession: null, lastLevel: t.last_level, updatedAt: t.updated_at };
@@ -31,18 +35,25 @@ export async function studentSnapshot() {
   const user = await studentIdentity();
   const [classes, teams, stickers] = await Promise.all([
     studentClient.from('class_groups').select('*').order('name'),
-    studentClient.from('bloco_teams').select('*').eq('owner_id', user.id),
+    studentClient.from('bloco_teams').select('*'),
     studentClient.from('team_stickers').select('*'),
   ]);
   const awards = unwrap(stickers);
-  return { user, ...validateSave({ version: 2, classes: unwrap(classes).map(classFromRow), teams: unwrap(teams).map(t => teamFromRow(t, awards)) }) };
+  return { user, ...validateSave({ version: 2, classes: unwrap(classes).map(classFromRow), teams: unwrap(teams).map(t => ({ ...teamFromRow(t, awards), sharedAccess: t.owner_id !== user.id })) }) };
 }
 export async function saveStudentTeams(teams, classes) {
   const user = await studentIdentity();
-  const records = teams.filter(t => classes.some(c => c.id === t.classId && c.classroomId) && (!t.cloudOwner || t.cloudOwner === user.id)).map(t => ({ id: t.id, owner_id: user.id, classroom_id: classes.find(c => c.id === t.classId).classroomId, class_id: t.classId, name: t.name, members: t.members, avatar: t.avatar, progress: t.progress, attempts: t.attempts, sessions: t.sessions, last_level: t.lastLevel }));
-  if (records.length) unwrap(await studentClient.from('bloco_teams').upsert(records));
-  return { ownerId: user.id, ids: records.map(t => t.id) };
+  const records = teams.filter(t => classes.some(c => c.id === t.classId && c.classroomId) && (!t.cloudOwner || t.cloudOwner === user.id || t.sharedAccess)).map(t => ({ id: t.id, owner_id: t.cloudOwner || user.id, classroom_id: classes.find(c => c.id === t.classId).classroomId, class_id: t.classId, name: t.name, members: t.members, avatar: t.avatar, progress: t.progress, attempts: t.attempts, sessions: t.sessions, last_level: t.lastLevel }));
+  const owned = records.filter(t => t.owner_id === user.id);
+  const shared = records.filter(t => t.owner_id !== user.id);
+  if (owned.length) unwrap(await studentClient.from('bloco_teams').upsert(owned));
+  for (const team of shared) {
+    const { id, owner_id, classroom_id, class_id, ...updates } = team;
+    unwrap(await studentClient.from('bloco_teams').update(updates).eq('id', id).select('id').single());
+  }
+  return { ownerId: user.id, ids: records.map(t => t.id), owners: Object.fromEntries(records.map(t => [t.id, t.owner_id])) };
 }
+export async function issueTeamCode(teamId) { return unwrap(await teacherClient.rpc('rotate_bloco_team_code', { team_id: teamId })); }
 export async function teacherLogin(email, password) {
   const { user } = unwrap(await teacherClient.auth.signInWithPassword({ email, password }));
   const profile = await teacherClient.from('teacher_profiles').select('id').eq('id', user.id).maybeSingle();

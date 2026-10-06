@@ -15,6 +15,7 @@ const state={remote:{user:{id:'device'},classes:[{id:'class-a',name:'Manhã',cla
 globalThis.__cloudState=state;
 await build({stdin:{contents:`export {useClassroom} from './src/hooks/useClassroom.js'; export {getLevel} from './src/data/curriculum.js';`,resolveDir:process.cwd(),loader:'js'},outfile:path.join(tmp,'hook.mjs'),bundle:true,format:'esm',platform:'node',packages:'external',logLevel:'silent',plugins:[{name:'cloud-adapter',setup(build){build.onResolve({filter:/services\/cloud\.js$/},()=>({path:'cloud-stub',namespace:'test'}));build.onLoad({filter:/.*/,namespace:'test'},()=>({contents:`export const CLOUD_ENABLED=true;
 export async function joinRoom(){}
+export async function joinTeam(){return 'team-a';}
 export async function studentSnapshot(){return structuredClone(globalThis.__cloudState.remote);}
 export async function saveStudentTeams(teams,classes){const s=globalThis.__cloudState;if(s.failure)throw new Error(s.failure);const valid=teams.filter(t=>classes.some(c=>c.id===t.classId&&c.classroomId));s.saves.push(structuredClone(valid));s.remote.teams=valid.map(t=>({...t,currentSession:null,cloudOwner:'device',stickers:s.remote.teams.find(r=>r.id===t.id)?.stickers||[]}));return{ownerId:'device',ids:valid.map(t=>t.id)};}` }));}}]});
 const {useClassroom,getLevel}=await import(pathToFileURL(path.join(tmp,'hook.mjs')));

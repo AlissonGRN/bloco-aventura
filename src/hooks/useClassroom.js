@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { nextLevel } from '../data/curriculum.js';
 import { STORAGE_KEY, emptySave, validateSave, mergeSave, mergeTeams, uid, newSession, STICKERS } from '../data/classroom.js';
-import { CLOUD_ENABLED, joinRoom, studentSnapshot, saveStudentTeams } from '../services/cloud.js';
+import { CLOUD_ENABLED, joinRoom, joinTeam, studentSnapshot, saveStudentTeams } from '../services/cloud.js';
 export { STORAGE_KEY, validateSave } from '../data/classroom.js';
 const now = () => new Date().toISOString();
 const unique = values => [...new Set(values)];
@@ -31,22 +31,30 @@ export function useClassroom() {
       if (hash !== lastSent.current) {
         const saved = await saveStudentTeams(current.teams, current.classes);
         lastSent.current = hash;
-        setData(d => ({ ...d, teams: d.teams.map(t => saved.ids.includes(t.id) ? { ...t, cloudOwner: saved.ownerId } : t) }));
+        setData(d => ({ ...d, teams: d.teams.map(t => saved.ids.includes(t.id) ? { ...t, cloudOwner: saved.owners?.[t.id] || saved.ownerId, sharedAccess: !!t.sharedAccess } : t) }));
       }
       const remote = await studentSnapshot();
       setData(d => {
-        const classes = [...new Map([...d.classes.filter(c => !c.classroomId), ...remote.classes].map(c => [c.id, c])).values()];
-        const map = new Map(d.teams.map(t => [t.id, t]));
+        const remoteByGrade = new Map(remote.classes.map(c => [`${c.grade}-${c.section}`, c]));
+        const classMap = new Map(d.classes.filter(c => !c.classroomId).map(c => [c.id, remoteByGrade.get(`${c.grade}-${c.section}`)?.id]).filter(([, id]) => id));
+        const classes = [...d.classes.filter(c => !c.classroomId && !remoteByGrade.has(`${c.grade}-${c.section}`)), ...remote.classes];
+        const map = new Map(d.teams.map(t => [t.id, { ...t, classId: classMap.get(t.classId) || t.classId }]));
         for (const t of remote.teams) {
           const local = map.get(t.id);
           // Keep the local editing/session state; the server owns rewards.
-          map.set(t.id, local ? { ...mergeTeams(local, t), ...local, progress: mergeTeams(local, t).progress, sessions: mergeTeams(local, t).sessions, attempts: mergeTeams(local, t).attempts, stickers: t.stickers, cloudOwner: t.cloudOwner } : t);
+          map.set(t.id, local ? { ...mergeTeams(local, t), ...local, progress: mergeTeams(local, t).progress, sessions: mergeTeams(local, t).sessions, attempts: mergeTeams(local, t).attempts, stickers: t.stickers, cloudOwner: t.cloudOwner, sharedAccess: t.sharedAccess } : t);
         }
         return { ...d, classes, teams: [...map.values()] };
       });
       const localOnly = latest.current.teams.filter(t => !remote.classes.some(c => c.id === t.classId)).length;
       setSync({ state: remote.classes.length ? 'synced' : 'unjoined', message: localOnly ? `${localOnly} equipe(s) ainda precisam de uma turma online para sincronizar.` : '' });
-    } catch (e) { setSync({ state: 'error', message: `Salvo neste computador. Não foi possível sincronizar: ${e.message || 'tente novamente'}` }); }
+    } catch (e) {
+      const detail = e.message || 'tente novamente';
+      const message = /row-level security policy.*bloco_teams/i.test(detail)
+        ? 'Este computador ainda não está conectado à sala do professor. Conecte com o código da sala e tente sincronizar novamente.'
+        : `Salvo neste computador. Não foi possível sincronizar: ${detail}`;
+      setSync({ state: 'error', message });
+    }
     finally { busy.current = false; }
   }, []);
   useEffect(() => {
@@ -90,5 +98,6 @@ export function useClassroom() {
     removeAward: (teamId, id) => setData(d => ({ ...d, teams: d.teams.map(t => t.id === teamId ? { ...t, stickers: t.stickers.filter(s => s.id !== id) } : t) })),
     importSave: v => setData(d => mergeSave(d, v)), sync, cloudEnabled: CLOUD_ENABLED, syncNow,
     join: async code => { await joinRoom(code); lastSent.current = ''; await syncNow(); },
+    joinTeam: async code => { const id = await joinTeam(code); lastSent.current = ''; await syncNow(); setData(d => ({ ...d, activeId: id })); return id; },
   };
 }

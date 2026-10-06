@@ -1,10 +1,12 @@
 # Colocar o Bloco online com Supabase e Vercel
 
+> **Estado atual:** a integração está preparada no código, mas só começa a sincronizar depois de conectar um projeto Supabase e publicar um novo build. Durante os testes em andamento, não altere as variáveis de produção nem faça novo deploy. O app atual continua usando o armazenamento local do navegador.
+
 ## 1. Preparar o Supabase
 
-Use um projeto dedicado ao Bloco para evitar misturar dados e regras com outras aplicações.
+Use um projeto dedicado ao Bloco para evitar misturar dados e regras com outras aplicações. Antes de criar, confira o plano/custo exibido no painel da Supabase.
 
-1. Abra o SQL Editor do projeto e execute uma vez `supabase/migrations/202610060001_classroom.sql`. Se usar Supabase CLI, aplique a migração no projeto vinculado com `supabase db push`.
+1. Abra o SQL Editor do projeto e execute uma vez `supabase/migrations/202610060001_classroom.sql`. Se usar Supabase CLI, aplique a migração no projeto vinculado com `supabase db push`. Isso cria as tabelas, índices, funções, validações e políticas de isolamento (RLS). Não habilite acesso público às tabelas.
 2. Em Authentication, habilite **Anonymous Sign-Ins**. Isso cria a identidade do computador; não solicita e-mail aos alunos.
 3. Crie sua conta de professor em **Authentication → Users → Add user**, com seu e-mail, sua senha e confirmação do e-mail. Defina a senha diretamente no painel, nunca em arquivos do projeto ou no chat.
 4. Copie o UUID dessa conta. No SQL Editor, autorize somente essa conta:
@@ -21,7 +23,7 @@ O trecho acima é um modelo; substitua o texto pelo UUID real. A aplicação nã
 
 ## 2. Configurar e publicar na Vercel
 
-Na Vercel, importe o repositório com este projeto (ou use o Vercel CLI dentro da pasta do projeto). A raiz deve conter `package.json` e `vercel.json`.
+**Faça esta etapa só quando terminar os testes e autorizar a publicação.** Na Vercel, conecte o repositório com este projeto (ou use o Vercel CLI dentro da pasta do projeto). A raiz deve conter `package.json` e `vercel.json`.
 
 | Configuração | Valor |
 | --- | --- |
@@ -38,10 +40,10 @@ Para testar localmente, copie `.env.example` para `.env.local`, preencha apenas 
 
 ## 3. Primeiro acesso
 
-1. Abra o endereço publicado, entre no **Espaço do professor** com a conta autorizada e crie as turmas.
-2. Anote o código da sala exibido no painel.
+1. Depois do deploy autorizado, abra o endereço publicado, entre no **Espaço do professor** com a conta autorizada e crie as turmas.
+2. Anote o código de seis letras exibido no painel.
 3. Em cada computador dos alunos, use **Conectar à sala do professor** e digite o código. Basta conectar uma vez por navegador.
-4. Na criação da equipe, escolha o ano e a letra da turma com o marcador **online**. A lista válida é 1º A/B/C, 2º A/B, 3º A/C, 4º A/B/C e 5º A/B/C. O cadastro de cada equipe só pode ser editado no painel do professor.
+4. Na criação da equipe, escolha o ano e a letra da turma. A lista válida é 1º A/B/C, 2º A/B, 3º A/B/C, 4º A/B/C e 5º A/B/C. Em outro computador, conecte a sala e digite o código de 8 letras da equipe; o professor gera esse código nos detalhes da equipe. O cadastro de cada equipe só pode ser editado no painel do professor.
 5. Resolva um desafio de teste, encerre a sessão e confirme no painel de outro computador que o progresso e o feedback chegaram.
 6. Conceda um sticker e confirme a chegada em **Conquistas** na equipe. A consulta automática ocorre a cada 30 segundos.
 
@@ -55,6 +57,7 @@ As turmas online são fixas e criadas automaticamente para a sala do professor. 
 - O código da sala permite cadastrar o computador, mas não ler equipes de outros computadores.
 - O professor vê somente as turmas e equipes da própria sala. Alunos não podem atribuir stickers nem se registrar como professores.
 - Nenhuma tabela contém a senha do professor. Nunca coloque uma senha ou chave administrativa em `VITE_*`, pois essas variáveis vão para o navegador.
+- A chave publicável aparece no código enviado ao navegador por definição. A proteção dos dados depende das políticas RLS instaladas pela migração; a chave secreta/service_role nunca deve ser usada no app.
 
 Progresso é informado pelo cliente e serve para acompanhamento pedagógico, não para avaliação inviolável. As políticas protegem acesso entre contas e privilégios; não impedem que alguém altere o próprio progresso pelas ferramentas do navegador.
 

@@ -13,7 +13,7 @@ Aplicação em **React 19 + Vite + Tailwind CSS 4**, em português, para aulas d
 - Feedback ao encerrar uma sessão: carinhas, dificuldade percebida e comentário opcional. Também é possível encerrar sem responder.
 - Painel do professor com senha, filtro por turma, busca por nomes, progresso por desafio, contagem de tentativas e histórico de sessões.
 - Oito stickers que o professor pode entregar com um recado. As equipes os encontram em Conquistas.
-- Turmas fixas: 1º A/B/C, 2º A/B, 3º A/C, 4º A/B/C e 5º A/B/C.
+- Turmas fixas: 1º A/B/C, 2º A/B, 3º A/B/C, 4º A/B/C e 5º A/B/C.
 - Alunos não editam cadastros de equipe; alterações ficam no painel do professor. O banco separa os dados de cada equipe.
 - Backup JSON e importação combinando equipes e melhores resultados, sem incluir a senha.
 - Adaptador Supabase com autenticação do professor, identidade anônima por computador, regras de acesso no banco e fila local de sincronização.

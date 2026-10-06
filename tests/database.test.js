@@ -14,8 +14,10 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
       grant usage on schema auth to authenticated;
       insert into auth.users values ('${teacher}'),('${stranger}'),('${deviceA}'),('${deviceB}');`);
     await db.exec(await readFile(new URL('../supabase/migrations/202610060001_classroom.sql', import.meta.url),'utf8'));
+    const generatedCode = (await db.query('select public.generate_bloco_join_code() as code')).rows[0].code;
+    assert.match(generatedCode, /^[A-Z]{6}$/);
     await db.exec(`insert into public.teacher_profiles(id) values('${teacher}'),('${stranger}');
-      insert into public.classrooms(id,teacher_id,join_code) values('30000000-0000-4000-8000-000000000001','${teacher}','ABCDEF123456'),('30000000-0000-4000-8000-000000000002','${stranger}','UVWXYZ123456');
+      insert into public.classrooms(id,teacher_id,join_code) values('30000000-0000-4000-8000-000000000001','${teacher}','ABCDEF'),('30000000-0000-4000-8000-000000000002','${stranger}','UVWXYZ');
       insert into public.class_groups(id,classroom_id,grade,section,name) values('class-a','30000000-0000-4000-8000-000000000001',1,'A','1º ano A'),('class-b','30000000-0000-4000-8000-000000000002',2,'B','2º ano B');`);
     const as = async id => { await db.exec(`reset role; set role authenticated; select set_config('request.jwt.claim.sub','${id}',false);`); };
     const rows = async sql => (await db.query(sql)).rows;
@@ -24,7 +26,7 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
     assert.equal((await rows('select * from public.class_groups')).length,0);
     await assert.rejects(insertTeam('team-a',deviceA),/row-level security/);
     await assert.rejects(db.query("select public.join_bloco_classroom('INVALIDO0000')"),/Código/);
-    await db.query("select public.join_bloco_classroom('ABCDEF123456')");
+    await db.query("select public.join_bloco_classroom('ABCDEF')");
     assert.equal((await rows('select * from public.class_groups')).length,1);
     assert.equal((await rows('select * from public.classrooms')).length,0,'Join codes are not listed to students');
     await insertTeam('team-a',deviceA);
@@ -36,8 +38,8 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
     await db.query(`update public.bloco_teams set progress='{"1-1":{"stars":3}}' where id='team-a'`);
     await assert.rejects(db.query(`update public.bloco_teams set progress='{"1-1":{"stars":999}}' where id='team-a'`),/Progresso inválido/);
     await assert.rejects(db.query(`update public.bloco_teams set owner_id='${deviceB}' where id='team-a'`),/identidade/);
-    await assert.rejects(db.query(`update public.bloco_teams set name='Outra equipe' where id='team-a'`),/permission denied/,'a pupil cannot edit the team profile');
-    await as(deviceB); await db.query("select public.join_bloco_classroom('ABCDEF123456')"); await insertTeam('team-b',deviceB);
+    assert.equal((await rows(`update public.bloco_teams set name='Equipe A' where id='team-a' returning id`)).length,1,'a pupil can update their own team');
+    await as(deviceB); await db.query("select public.join_bloco_classroom('ABCDEF')"); await insertTeam('team-b',deviceB);
     assert.deepEqual((await rows('select id from public.bloco_teams')).map(t=>t.id),['team-b']);
     assert.equal((await rows("update public.bloco_teams set name='Hacked' where id='team-a' returning id")).length,0);
     await as(teacher);
@@ -56,6 +58,6 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
     await as(deviceA); assert.equal((await rows('select * from public.team_stickers')).length,0);
     await db.exec('reset role; set role anon;');
     await assert.rejects(db.query('select * from public.bloco_teams'),/permission denied/);
-    await assert.rejects(db.query("select public.join_bloco_classroom('ABCDEF123456')"),/permission denied/);
+    await assert.rejects(db.query("select public.join_bloco_classroom('ABCDEF')"),/permission denied/);
   } finally { await db.close(); }
 });
