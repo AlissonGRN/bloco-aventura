@@ -46,7 +46,18 @@ export async function saveStudentTeams(teams, classes) {
   const records = teams.filter(t => classes.some(c => c.id === t.classId && c.classroomId) && (!t.cloudOwner || t.cloudOwner === user.id || t.sharedAccess)).map(t => ({ id: t.id, owner_id: t.cloudOwner || user.id, classroom_id: classes.find(c => c.id === t.classId).classroomId, class_id: t.classId, name: t.name, members: t.members, avatar: t.avatar, progress: t.progress, attempts: t.attempts, sessions: t.sessions, last_level: t.lastLevel }));
   const owned = records.filter(t => t.owner_id === user.id);
   const shared = records.filter(t => t.owner_id !== user.id);
-  if (owned.length) unwrap(await studentClient.from('bloco_teams').upsert(owned));
+  if (owned.length) {
+    // A PostgREST upsert also evaluates UPDATE RLS while creating a new row.
+    // That policy looks up the current owner, so first-time team creation is denied.
+    // Split inserts and updates, and never send identity/classroom fields to UPDATE.
+    const existing = new Set(unwrap(await studentClient.from('bloco_teams').select('id').in('id', owned.map(t => t.id))).map(t => t.id));
+    const created = owned.filter(t => !existing.has(t.id));
+    if (created.length) unwrap(await studentClient.from('bloco_teams').insert(created));
+    for (const team of owned.filter(t => existing.has(t.id))) {
+      const { id, owner_id, classroom_id, class_id, ...updates } = team;
+      unwrap(await studentClient.from('bloco_teams').update(updates).eq('id', id));
+    }
+  }
   for (const team of shared) {
     const { id, owner_id, classroom_id, class_id, ...updates } = team;
     unwrap(await studentClient.from('bloco_teams').update(updates).eq('id', id).select('id').single());

@@ -51,7 +51,7 @@ export function useClassroom() {
     } catch (e) {
       const detail = e.message || 'tente novamente';
       const message = /row-level security policy.*bloco_teams/i.test(detail)
-        ? 'Este computador ainda não está conectado à sala do professor. Conecte com o código da sala e tente sincronizar novamente.'
+        ? 'O banco recusou a sincronização desta equipe. Confira o código da sala e tente novamente; o progresso continua salvo neste computador.'
         : `Salvo neste computador. Não foi possível sincronizar: ${detail}`;
       setSync({ state: 'error', message });
     }
