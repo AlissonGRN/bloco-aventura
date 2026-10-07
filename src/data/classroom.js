@@ -11,6 +11,11 @@ export const STICKERS = [
   { id: 'focus', name: 'Superatenção', icon: 'focus', color: '#b77684', description: 'Prestou atenção aos detalhes do desafio.' },
   { id: 'helper', name: 'Mão amiga', icon: 'heart', color: '#ca8178', description: 'Ajudou alguém a entender, sem fazer por ele.' },
   { id: 'explorer', name: 'Explorador', icon: 'compass', color: '#80a35b', description: 'Experimentou novos caminhos e novas ideias.' },
+  { id: 'kindness', name: 'Bom comportamento', icon: 'smile', color: '#6d9a83', description: 'Agiram com gentileza e ajudaram a manter um bom clima na aula.' },
+  { id: 'respect', name: 'Respeito e escuta', icon: 'ear', color: '#6689ae', description: 'Ouviram as ideias dos colegas com atenção e respeito.' },
+  { id: 'care', name: 'Guardiões do cuidado', icon: 'hand-heart', color: '#bd817d', description: 'Cuidaram dos materiais e usaram o computador com responsabilidade.' },
+  { id: 'participation', name: 'Participação', icon: 'hand', color: '#b18a43', description: 'Participaram da atividade e compartilharam suas ideias.' },
+  { id: 'learning-buddies', name: 'Parceiros de aprendizagem', icon: 'handshake', color: '#8a75aa', description: 'Colaboraram e ajudaram todos da equipe a aprender.' },
 ];
 export function uid() {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();

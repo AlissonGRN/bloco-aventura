@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Smile, Meh, Frown, Sparkles, Users, Flame, Lightbulb, Bug, Focus, Heart, Compass, Flag, Check, Cloud, RefreshCw, X } from 'lucide-react';
+import { Smile, Meh, Frown, Sparkles, Users, Flame, Lightbulb, Bug, Focus, Heart, Compass, Flag, Check, Cloud, RefreshCw, X, Ear, HandHeart, Hand, Handshake } from 'lucide-react';
 import { STICKERS } from '../data/classroom';
 import { Modal } from './UI';
-const icons = { users: Users, flame: Flame, lightbulb: Lightbulb, sparkles: Sparkles, bug: Bug, focus: Focus, heart: Heart, compass: Compass };
+const icons = { users: Users, flame: Flame, lightbulb: Lightbulb, sparkles: Sparkles, bug: Bug, focus: Focus, heart: Heart, compass: Compass, smile: Smile, ear: Ear, 'hand-heart': HandHeart, hand: Hand, handshake: Handshake };
 export const FEELINGS = [{ id: 'loved', label: 'Foi legal!', Icon: Smile }, { id: 'okay', label: 'Foi mais ou menos', Icon: Meh }, { id: 'hard', label: 'Precisei de ajuda', Icon: Frown }];
 export const DIFFICULTIES = [{ id: 'easy', label: 'Fácil', symbol: '●' }, { id: 'right', label: 'Na medida', symbol: '●●' }, { id: 'hard', label: 'Difícil', symbol: '●●●' }];
 export const feelingLabel = id => FEELINGS.find(f => f.id === id)?.label || 'Sem resposta';

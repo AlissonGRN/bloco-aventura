@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateSave, mergeSave, emptySave } from '../src/data/classroom.js';
+import { validateSave, mergeSave, emptySave, STICKERS } from '../src/data/classroom.js';
 import { createLock, verifyPassword, LOCK_KEY } from '../src/services/teacherLock.js';
 const original = { id: 'a', name: 'Equipe A', members: ['Ana'], progress: { '1-1': { stars: 3, completedAt:'2026-10-05T10:00:00Z' } } };
 test('V1 migration preserves progress and gives existing teams an unassigned class',()=>{
@@ -12,6 +12,12 @@ test('V1 migration preserves progress and gives existing teams an unassigned cla
 test('the school has exactly the requested class sections',()=>{
   const data=emptySave();
   assert.deepEqual(data.classes.map(c=>`${c.grade}-${c.section}`),['1-A','1-B','1-C','2-A','2-B','3-A','3-B','3-C','4-A','4-B','4-C','5-A','5-B','5-C']);
+});
+test('classroom stickers include positive behavior, respect, care, participation and peer learning',()=>{
+  const ids = new Set(STICKERS.map(s => s.id));
+  for (const id of ['kindness','respect','care','participation','learning-buddies']) assert.ok(ids.has(id), `missing ${id}`);
+  const data=validateSave({version:2,teams:[{...original,stickers:['kindness','respect','care','participation','learning-buddies'].map((type,i)=>({id:`s${i}`,type}))}]});
+  assert.equal(data.teams[0].stickers.length,5);
 });
 test('Backup merge preserves best stars and unions history without duplicating teams',()=>{
   const first=validateSave({version:1,teams:[original]});
