@@ -1,8 +1,8 @@
 import { useId } from 'react';
-import { ArrowUp, ArrowRight, ArrowDown, ArrowLeft, Sprout, Compass, Repeat2, GitFork, Rocket } from 'lucide-react';
+import { ArrowUp, ArrowRight, ArrowDown, ArrowLeft, Sprout, Compass, Repeat2, GitFork, Rocket, Grid2X2, Blocks } from 'lucide-react';
 
 export const directionIcon = { R: ArrowRight, L: ArrowLeft, U: ArrowUp, D: ArrowDown };
-export const worldIcon = { sprout: Sprout, compass: Compass, repeat: Repeat2, split: GitFork, rocket: Rocket };
+export const worldIcon = { sprout: Sprout, compass: Compass, repeat: Repeat2, split: GitFork, rocket: Rocket, grid: Grid2X2, blocks: Blocks };
 
 export function Robot({ className = '', happy = false, color = '#f2c75c' }) {
   return <svg viewBox="0 0 120 140" fill="none" className={className} aria-hidden="true">
@@ -33,8 +33,8 @@ function Tree({ x, y, scale = 1, color = '#5d9466', pine = false }) {
 
 export function WorldArt({ type = 'garden', className = '', hero = false }) {
   const id = useId().replaceAll(':', '');
-  const island = type === 'island', forest = type === 'forest', station = type === 'station', valley = type === 'valley';
-  const top = island ? '#a8d6cc' : forest ? '#b8c6ae' : station ? '#edcdb4' : valley ? '#ead99f' : '#b9d7a0';
+  const island = type === 'island', forest = type === 'forest', station = type === 'station', valley = type === 'valley', maze = type.startsWith('maze-'), mazeLoops = type === 'maze-loops';
+  const top = maze ? mazeLoops ? '#d1c4e2' : '#b7d8d7' : island ? '#a8d6cc' : forest ? '#b8c6ae' : station ? '#edcdb4' : valley ? '#ead99f' : '#b9d7a0';
   const treeColor = forest ? '#75876a' : valley ? '#b2a064' : '#66966b';
   return <svg viewBox="0 0 440 270" className={className} fill="none" aria-hidden="true">
     <defs><linearGradient id={`${id}land`} x1="190" y1="90" x2="230" y2="250" gradientUnits="userSpaceOnUse"><stop stopColor={top}/><stop offset="1" stopColor={island ? '#8dbcb1' : '#a4bf86'}/></linearGradient></defs>
@@ -49,7 +49,7 @@ export function WorldArt({ type = 'garden', className = '', hero = false }) {
     <Tree x={278} y={90} scale={.65} color={valley ? '#c6ad5f' : treeColor} pine={forest}/>
     {!station && <Tree x={141} y={187} scale={.48} color={treeColor} pine={forest}/>}
     <g transform="translate(294 101)"><path d="M0 28v-45" stroke="#46634d" strokeWidth="4" strokeLinecap="round"/><path d="M2-16h26l-7 10 7 10H2" fill={forest ? '#ac92c9' : '#ecb552'}/></g>
-    <g fill="#7aa370"><ellipse cx="213" cy="101" rx="12" ry="5"/><ellipse cx="306" cy="188" rx="14" ry="6"/></g>
+    {maze ? <g fill={mazeLoops ? '#82739c' : '#668b8d'} opacity=".9"><rect x="160" y="121" width="24" height="18" rx="4"/><rect x="211" y="148" width="24" height="18" rx="4"/><rect x="263" y="121" width="24" height="18" rx="4"/></g> : <g fill="#7aa370"><ellipse cx="213" cy="101" rx="12" ry="5"/><ellipse cx="306" cy="188" rx="14" ry="6"/></g>}
     <g fill="#fbf8dc"><circle cx="167" cy="107" r="4"/><circle cx="174" cy="111" r="3"/><circle cx="294" cy="182" r="4"/></g>
     <g transform="translate(236 155)"><path d="m0-11 8 11-8 11-8-11z" fill="#fff7b5" stroke="#d3a443" strokeWidth="2"/></g>
     {station ? <g transform="translate(193 76)"><path d="M0 32q-15 13-15 26l20-8m17-18q15 13 15 26l-20-8" fill="#c77f68"/><path d="M-1 42V5q0-23 12-35Q23-17 23 5v37" fill="#fef4df"/><circle cx="11" cy="7" r="9" fill="#77a6a6"/><path d="m5 45 6 18 6-18" fill="#edb956"/></g> : <svg x={156} y={78} width={78} height={96}><Robot happy={hero}/></svg>}

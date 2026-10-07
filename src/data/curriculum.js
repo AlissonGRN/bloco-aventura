@@ -27,7 +27,12 @@ const guidance = [
   'Teste cada programa em cenários diferentes. A última trilha introduz funções em problemas de sequência, repetição e decisão.',
   'Misture todos os conceitos. Algumas missões exigem função; outras permitem escolher a estratégia. Priorize a explicação e os testes.',
 ];
-export const WORLDS = WORLDS_BASE.map((w, i) => ({ ...w, name: i === 2 ? 'Vale dos padrões' : w.name, topic: topics[i], description: descriptions[i], skill: guidance[i], teacher: guidance[i], trails: trails[i].map((title, j) => ({ number: j + 1, title, first: j * 10 + 1, last: j * 10 + 10, discussion: discussions[i][j] })) }));
+const makeTrails = (titles, prompts) => titles.map((title, j) => ({ number: j + 1, title, first: j * 10 + 1, last: j * 10 + 10, discussion: prompts[j] }));
+export const WORLDS = [
+  ...WORLDS_BASE.map((w, i) => ({ ...w, name: i === 2 ? 'Vale dos padrões' : w.name, topic: topics[i], description: descriptions[i], skill: guidance[i], teacher: guidance[i], trails: makeTrails(trails[i], discussions[i]) })),
+  { id: 6, name: 'Labirinto das setas', short: 'Labirinto', topic: 'Rotas, obstáculos e caminho mínimo', description: 'Leia o mapa, contorne paredes e encontre a menor rota.', color: '#397c86', soft: '#e1f2f1', type: 'maze-arrows', icon: 'grid', skill: 'Planejar rotas em uma grade, evitar paredes e comparar o tamanho dos caminhos. As setas aparecem primeiro; repetir é liberado nas trilhas finais.', teacher: 'Conversem sobre caminhos possíveis e contem os passos. Nas trilhas 3 e 4, os blocos repetir ajudam a representar trechos iguais. O objetivo é alcançar a bandeira pelo menor caminho.', trails: makeTrails(['Ler o mapa', 'Contornar paredes', 'Rotas mais curtas', 'Mestre do labirinto'], ['Que caminho vocês imaginaram antes de montar as setas?', 'Qual parede obrigou Bip a mudar de direção?', 'Como sabemos que a rota tem menos passos?', 'Onde uma repetição economiza blocos?']) },
+  { id: 7, name: 'Labirinto dos padrões', short: 'Padrões', topic: 'Repetições, decomposição e funções', description: 'Use padrões para atravessar mapas cheios de paredes.', color: '#765c99', soft: '#eee7f6', type: 'maze-loops', icon: 'blocks', skill: 'Representar rotas mínimas com laços, decompor um trajeto e reutilizar trechos em funções.', teacher: 'Os desafios começam usando repetir. Nas últimas trilhas, Meu bloco permite guardar um trecho do caminho e chamá-lo no programa principal. Incentive a equipe a conferir o menor número de passos.', trails: makeTrails(['Primeiros padrões', 'Repetições no mapa', 'Peças reutilizáveis', 'Funções no labirinto'], ['Que trecho do caminho se repete?', 'Como representar o mesmo padrão com menos blocos?', 'Que parte da rota poderia virar Meu bloco?', 'A função ajudou a organizar o caminho?']) },
+];
 const seq = text => [...text].map(move);
 const dirs = ['R', 'U', 'L', 'D'];
 const rot = (d, n) => dirs[(dirs.indexOf(d) + n) % 4];
@@ -89,11 +94,71 @@ three.forEach((paths, i) => {
   add(5, 31 + i, ['A escolha é de vocês', 'Invente sua estratégia', 'O caminho surpresa', 'Código em equipe', 'Poucas peças, muitas rotas', 'O plano reutilizável', 'Uma regra para explorar', 'Integre as descobertas', 'A expedição final', 'Inventores do futuro'][i], rotPath(paths[0], turns), sol, { kind: 'compose', boards: paths.map(p => boardFromPath(rotPath(p, turns))), definition: def, required: withFunction ? ['call', 'repeat', 'if'] : ['repeat', 'if'], budget: countBlocks(sol) + countBlocks(def), concept: 'Integração: planejar, decompor, testar e melhorar', instruction: 'Resolva os cenários com o mesmo programa e respeite a meta de blocos.' });
 });
 
+const mazeDirections = ['R', 'D', 'L', 'U'];
+function mazeBoard(variant) {
+  const cols = 8, rows = 7, start = { x: 0, y: variant % 2 ? 6 : 0 }, goal = { x: 7, y: variant % 2 ? 0 : 6 };
+  const walls = [];
+  const gateOptions = [1, 3, 5];
+  const gateA = gateOptions[variant % 3], gateB = gateOptions[Math.floor(variant / 3) % 3];
+  for (let y = 0; y < rows; y++) {
+    if (y !== gateA) walls.push({ x: 2, y });
+    if (y !== gateB) walls.push({ x: 5, y });
+  }
+  const wallSet = new Set(walls.map(p => `${p.x},${p.y}`));
+  const cells = Array.from({ length: rows * cols }, (_, i) => ({ x: i % cols, y: Math.floor(i / cols) })).filter(p => !wallSet.has(`${p.x},${p.y}`));
+  const cellSet = new Set(cells.map(p => `${p.x},${p.y}`));
+  const queue = [start], previous = new Map([[`${start.x},${start.y}`, null]]);
+  for (let i = 0; i < queue.length && !previous.has(`${goal.x},${goal.y}`); i++) {
+    const p = queue[i];
+    for (const d of mazeDirections) {
+      const [dx, dy] = ({ R: [1, 0], D: [0, 1], L: [-1, 0], U: [0, -1] })[d];
+      const next = { x: p.x + dx, y: p.y + dy }, key = `${next.x},${next.y}`;
+      if (cellSet.has(key) && !previous.has(key)) { previous.set(key, { ...p, direction: d }); queue.push(next); }
+    }
+  }
+  const path = [];
+  for (let cursor = `${goal.x},${goal.y}`; previous.get(cursor);) { const p = previous.get(cursor); path.push(p.direction); cursor = `${p.x},${p.y}`; }
+  path.reverse();
+  return { layout: 'maze', cols, rows, start, goal, cells, walls, crystals: [], shortestMoves: path.length, solutionPath: path };
+}
+function compressPath(path) {
+  const blocks = [];
+  for (let i = 0; i < path.length;) {
+    let end = i + 1;
+    while (end < path.length && path[end] === path[i]) end++;
+    const count = end - i;
+    blocks.push(count > 1 ? repeat(count, [move(path[i])]) : move(path[i]));
+    i = end;
+  }
+  return blocks;
+}
+const mazeTitles = [
+  ['A entrada do labirinto', 'Primeiro corredor', 'Parede à frente', 'A curva azul', 'Portão estreito', 'Caminho de pedra', 'Vire no momento certo', 'Duas paredes', 'Rota do jardim secreto', 'A primeira saída', 'Corredor comprido', 'Desvio à esquerda', 'Mapa embaralhado', 'Entre as muralhas', 'A passagem escondida', 'Caminho de ida e volta', 'A muralha alta', 'Rota pelo centro', 'Desafio das três paredes', 'Explorador de labirintos', 'Mais passos, mesmo mapa', 'Economize as setas', 'Repetir no corredor', 'Uma curva repetida', 'Padrões entre paredes', 'Repetição no desvio', 'Rota compacta', 'Caminho em partes', 'Menos blocos, mesma rota', 'A volta inteligente', 'Labirinto avançado', 'O corredor dos padrões', 'Desvio econômico', 'Repetir para avançar', 'O caminho mais curto', 'Rota de especialista', 'A última muralha', 'Padrão escondido', 'Mestre das setas', 'Saída do labirinto'],
+  ['Repetir para começar', 'O primeiro desvio', 'Corredor em dobro', 'Padrão entre muros', 'Repita e vire', 'Uma rota compacta', 'Paredes alternadas', 'O mapa sinuoso', 'Dois corredores', 'Saída em zigue-zague', 'O padrão continua', 'Caminho com curvas', 'Repita para contornar', 'Sequência bem guardada', 'Entre quatro paredes', 'Rota de ida e volta', 'Desvio repetido', 'Padrões no mapa', 'Labirinto em partes', 'O caminho econômico', 'Uma função a caminho', 'Prepare sua sequência', 'Separe o trajeto', 'Uma peça reutilizável', 'F de função', 'Chame sua criação', 'Meu bloco no mapa', 'Repetir e chamar', 'Função no corredor', 'Organize a rota', 'Função e labirinto', 'Chame duas vezes', 'Peças que se repetem', 'Um caminho em blocos', 'Desvio reutilizável', 'Função para avançar', 'O mapa mais difícil', 'Construa sua estratégia', 'Últimas paredes', 'Mestre das funções'],
+];
+for (const grade of [6, 7]) {
+  for (let number = 1; number <= MISSIONS_PER_LEVEL; number++) {
+    const board = mazeBoard(number - 1), path = board.solutionPath;
+    let solution = grade === 6 && number < 21 ? path.map(move) : compressPath(path), definition = [], required = grade === 6 ? (number >= 21 ? ['repeat'] : []) : ['repeat'];
+    let allowed = grade === 6 ? (number >= 21 ? ['move', 'repeat'] : ['move']) : (number >= 31 ? ['move', 'repeat', 'call'] : ['move', 'repeat']);
+    if (grade === 7 && number >= 31) {
+      const first = solution.shift();
+      definition = first.type === 'repeat' ? [first] : [first];
+      solution = [call(), ...solution];
+      required = ['repeat', 'call'];
+    }
+    const concept = grade === 6
+      ? number < 21 ? 'Setas e planejamento de rotas' : 'Repetições e caminho mínimo'
+      : number < 31 ? 'Repetições e caminhos mínimos' : 'Decomposição e funções';
+    extra.push({ id: `${grade}-${number}`, grade, number, title: mazeTitles[grade - 6][number - 1], concept, instruction: `Chegue à bandeira pelo menor caminho. Há ${board.shortestMoves} passos na rota mais curta; evite as paredes.`, hint: grade === 6 && number < 21 ? 'Conte os passos e procure uma rota sem encostar nas paredes.' : grade === 7 && number >= 31 ? 'Guarde o primeiro trecho em Meu bloco e use F no programa. Confirme que Bip percorre a menor rota.' : 'Agrupe os passos repetidos em um bloco amarelo. Compare a quantidade de passos com o caminho mais curto.', boards: [board], solution, definition, required, allowed, kind: 'maze', maxBlocks: 40, shortestPath: true });
+  }
+}
+
 export const LEVELS = [...ORIGINAL, ...extra].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
-  const allowed = ['move'];
-  if (l.grade >= 3 || (l.grade === 2 && l.number >= 21)) allowed.push('repeat');
-  if (l.grade >= 4 || (l.grade === 3 && l.number >= 21)) allowed.push('if');
-  if (l.grade === 5 || (l.grade === 4 && l.number >= 31)) allowed.push('call');
+  const allowed = l.allowed || ['move'];
+  if (!l.allowed && (l.grade >= 3 || (l.grade === 2 && l.number >= 21))) allowed.push('repeat');
+  if (!l.allowed && (l.grade >= 4 || (l.grade === 3 && l.number >= 21))) allowed.push('if');
+  if (!l.allowed && (l.grade === 5 || (l.grade === 4 && l.number >= 31))) allowed.push('call');
   const trail = Math.floor((l.number - 1) / 10) + 1;
   return { ...l, kind: l.kind || (l.starter ? 'debug' : l.boards.length > 1 ? 'adapt' : 'build'), allowed, trail, discussion: WORLDS[l.grade - 1].trails[trail - 1].discussion };
 });

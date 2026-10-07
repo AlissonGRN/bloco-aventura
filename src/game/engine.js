@@ -19,9 +19,10 @@ export function simulate(level, program, definition = [], scenario = 0) {
   const timeline = [];
   let failure = null;
   let instructions = 0;
+  let moves = 0;
   const usedTypes = new Set();
   function snapshot(block, extra = {}) {
-    timeline.push({ position: { ...position }, collected: [...collected], blockId: block.id, ...extra });
+    timeline.push({ position: { ...position }, collected: [...collected], blockId: block.id, moves, ...extra });
   }
   function canMove(direction) {
     const d = DIRS[direction];
@@ -41,6 +42,7 @@ export function simulate(level, program, definition = [], scenario = 0) {
         }
         position.x += DIRS[b.direction][0];
         position.y += DIRS[b.direction][1];
+        moves++;
         if (crystals.has(key(position))) collected.add(key(position));
         snapshot(b, { kind: 'move', direction: b.direction });
       } else if (b.type === 'repeat') {
@@ -69,13 +71,14 @@ export function simulate(level, program, definition = [], scenario = 0) {
   else if (level.allowed && [...typesIn(program), ...typesIn(definition)].some(t => !level.allowed.includes(t))) failure = 'Use os blocos disponíveis nesta missão.';
   else execute(program);
   if (!failure && !same(position, board.goal)) failure = 'Ainda falta chegar à bandeira. Seu plano está quase lá!';
+  if (!failure && board.shortestMoves && moves > board.shortestMoves) failure = `Bip chegou, mas deu ${moves} passos. Tente encontrar o menor caminho: ${board.shortestMoves} passos.`;
   if (!failure && collected.size < crystals.size) failure = 'Faltou pegar um cristal. Passe por todos antes de terminar.';
   if (!failure && level.required.some(t => !usedTypes.has(t))) {
     const names = { repeat: 'repetir', if: 'se/senão', call: 'F (Meu bloco)' };
     failure = `Você encontrou o caminho! Agora resolva usando ${level.required.filter(t => !usedTypes.has(t)).map(t => names[t]).join(' e ')}, a ideia desta missão.`;
   }
   if (!failure && level.budget && countBlocks(program) + countBlocks(definition) > level.budget) failure = `Caminho resolvido! Agora simplifique o plano para usar até ${level.budget} blocos.`;
-  return { success: !failure, failure, timeline, position, collected: [...collected], scenario, stars: failure ? 0 : (countBlocks(program) + countBlocks(definition) <= referenceCount(level) ? 3 : 2) };
+  return { success: !failure, failure, timeline, position, collected: [...collected], moves, scenario, stars: failure ? 0 : (countBlocks(program) + countBlocks(definition) <= referenceCount(level) ? 3 : 2) };
 }
 
 export function evaluateAll(level, program, definition = []) {

@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { LEVELS, move, repeat, branch, call, countBlocks, getLevel } from '../src/data/curriculum.js';
 import { simulate, evaluateAll, withIds, editList } from '../src/game/engine.js';
 
-test('200 unique missions, 40 per difficulty', () => {
-  assert.equal(LEVELS.length, 200);
-  assert.equal(new Set(LEVELS.map(l => l.id)).size, 200);
-  for (let grade = 1; grade <= 5; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
+test('280 unique missions, 40 per level', () => {
+  assert.equal(LEVELS.length, 280);
+  assert.equal(new Set(LEVELS.map(l => l.id)).size, 280);
+  for (let grade = 1; grade <= 7; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
 });
 for (const l of LEVELS) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
   const result = evaluateAll(l, withIds(l.solution), withIds(l.definition));
@@ -65,6 +65,19 @@ test('Optimization budgets are enforced even when the path is solved', () => {
   const expanded = l.starter;
   assert.match(simulate({...l,required:[]}, expanded).failure,/simplifique/);
   assert.equal(evaluateAll(l,l.solution,l.definition).success,true);
+});
+test('Maze walls block movement and the goal only counts when reached by a shortest route', () => {
+  const l = getLevel('6-1'), board = l.boards[0];
+  assert.equal(board.layout, 'maze');
+  assert.ok(board.walls.length > 0);
+  assert.equal(evaluateAll(l, withIds(l.solution)).success, true);
+  const longer = [...l.solution, move('L'), move('R')];
+  assert.match(evaluateAll(l, withIds(longer)).results[0].failure, /menor caminho/);
+  assert.match(evaluateAll(l, [move('R'), move('R'), move('D')]).results[0].failure, /parede|caminho/i);
+  assert.ok(getLevel('6-20').allowed.includes('move') && !getLevel('6-20').allowed.includes('repeat'));
+  assert.ok(getLevel('6-21').allowed.includes('repeat') && getLevel('6-21').required.includes('repeat'));
+  assert.ok(getLevel('7-1').allowed.includes('repeat') && getLevel('7-1').required.includes('repeat'));
+  assert.ok(!getLevel('7-30').allowed.includes('call') && getLevel('7-31').allowed.includes('call'));
 });
 test('Debugging starters contain an observable problem and all prescribed blocks are available', () => {
   for (const l of LEVELS) {
