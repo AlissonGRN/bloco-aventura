@@ -16,6 +16,11 @@ export const STICKERS = [
   { id: 'care', name: 'Guardiões do cuidado', icon: 'hand-heart', color: '#bd817d', description: 'Cuidaram dos materiais e usaram o computador com responsabilidade.' },
   { id: 'participation', name: 'Participação', icon: 'hand', color: '#b18a43', description: 'Participaram da atividade e compartilharam suas ideias.' },
   { id: 'learning-buddies', name: 'Parceiros de aprendizagem', icon: 'handshake', color: '#8a75aa', description: 'Colaboraram e ajudaram todos da equipe a aprender.' },
+  { id: 'organization', name: 'Equipe organizada', icon: 'list-checks', color: '#658a9b', description: 'Organizaram as ideias, os blocos e o espaço de trabalho.' },
+  { id: 'responsibility', name: 'Equipe responsável', icon: 'shield-check', color: '#6f8d63', description: 'Cumpriram os combinados e cuidaram bem da atividade.' },
+  { id: 'patience', name: 'Paciência de mestre', icon: 'hourglass', color: '#a47d52', description: 'Esperaram a vez e deram tempo para todos participarem.' },
+  { id: 'bravery', name: 'Coragem para tentar', icon: 'rocket', color: '#b87758', description: 'Tiveram coragem de experimentar, mesmo sem saber o resultado.' },
+  { id: 'celebration', name: 'Torcida amiga', icon: 'party-popper', color: '#a16e9b', description: 'Comemoraram as conquistas dos colegas com alegria e respeito.' },
 ];
 export function uid() {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();

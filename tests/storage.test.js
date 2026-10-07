@@ -13,11 +13,12 @@ test('the school has exactly the requested class sections',()=>{
   const data=emptySave();
   assert.deepEqual(data.classes.map(c=>`${c.grade}-${c.section}`),['1-A','1-B','1-C','2-A','2-B','3-A','3-B','3-C','4-A','4-B','4-C','5-A','5-B','5-C']);
 });
-test('classroom stickers include positive behavior, respect, care, participation and peer learning',()=>{
+test('classroom stickers include positive behavior, respect, care, participation and learning attitudes',()=>{
   const ids = new Set(STICKERS.map(s => s.id));
-  for (const id of ['kindness','respect','care','participation','learning-buddies']) assert.ok(ids.has(id), `missing ${id}`);
-  const data=validateSave({version:2,teams:[{...original,stickers:['kindness','respect','care','participation','learning-buddies'].map((type,i)=>({id:`s${i}`,type}))}]});
-  assert.equal(data.teams[0].stickers.length,5);
+  const additions=['kindness','respect','care','participation','learning-buddies','organization','responsibility','patience','bravery','celebration'];
+  for (const id of additions) assert.ok(ids.has(id), `missing ${id}`);
+  const data=validateSave({version:2,teams:[{...original,stickers:additions.map((type,i)=>({id:`s${i}`,type}))}]});
+  assert.equal(data.teams[0].stickers.length,additions.length);
 });
 test('Backup merge preserves best stars and unions history without duplicating teams',()=>{
   const first=validateSave({version:1,teams:[original]});
