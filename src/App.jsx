@@ -32,7 +32,7 @@ export default function App() {
         {route.page === 'explore' && team && <Dashboard team={team} onWorld={openWorld} onLevel={openLevel}/>}
         {route.page === 'world' && team && <WorldMap world={WORLDS[route.grade - 1]} team={team} key={route.grade} onBack={() => navigate('explore')} onLevel={openLevel}/>}
         {route.page === 'game' && team && <Game key={`${team.id}-${route.levelId}`} level={getLevel(route.levelId)} team={team} onBack={() => openWorld(getLevel(route.levelId).grade)} onNext={openLevel} onWorld={openWorld} onComplete={classroom.complete} onAttempt={classroom.attempt}/>}
-        {route.page === 'achievements' && team && <Achievements team={team} onExplore={() => navigate('explore')}/>}
+        {route.page === 'achievements' && team && <Achievements team={team} onExplore={() => navigate('explore')} onSkinChange={avatar => classroom.updateTeam({ avatar }, team.id)}/>}
         {route.page === 'teams' && team && <TeamsPage classroom={classroom} onNew={() => setModal({ type: 'new' })} onSelect={selectTeam}/>}
         {route.page === 'teacher' && <TeacherPage classroom={classroom}/>}
       </main>{route.page !== 'game' && <footer className="app-footer"><span>bloco. <span>Pequenos blocos, grandes ideias.</span></span><span>Feito com ❤️ por Alisson Nascimento</span></footer>}

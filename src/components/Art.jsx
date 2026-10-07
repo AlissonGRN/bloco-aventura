@@ -1,21 +1,32 @@
 import { useId } from 'react';
 import { ArrowUp, ArrowRight, ArrowDown, ArrowLeft, Sprout, Compass, Repeat2, GitFork, Rocket, Grid2X2, Blocks } from 'lucide-react';
+import { ROBOT_SKINS } from '../data/classroom.js';
 
 export const directionIcon = { R: ArrowRight, L: ArrowLeft, U: ArrowUp, D: ArrowDown };
 export const worldIcon = { sprout: Sprout, compass: Compass, repeat: Repeat2, split: GitFork, rocket: Rocket, grid: Grid2X2, blocks: Blocks };
 
-export function Robot({ className = '', happy = false, color = '#f2c75c' }) {
+export function Robot({ className = '', happy = false, color, skin = 0 }) {
+  const skinIndex = Math.max(0, Math.min(ROBOT_SKINS.length - 1, Number(skin) || 0));
+  const robotColor = color || ROBOT_SKINS[skinIndex].color;
   return <svg viewBox="0 0 120 140" fill="none" className={className} aria-hidden="true">
     <ellipse cx="60" cy="130" rx="30" ry="7" fill="#24473c" opacity=".12" />
     <path d="M43 112v13m34-13v13" stroke="#294e43" strokeWidth="11" strokeLinecap="round" />
-    <path d={happy ? 'M26 83 12 66m82 17 14-17' : 'M28 85 17 96m75-11 11 11'} stroke={color} strokeWidth="12" strokeLinecap="round" />
-    <rect x="29" y="71" width="62" height="46" rx="16" fill={color} />
+    <path d={happy ? 'M26 83 12 66m82 17 14-17' : 'M28 85 17 96m75-11 11 11'} stroke={robotColor} strokeWidth="12" strokeLinecap="round" />
+    <rect x="29" y="71" width="62" height="46" rx="16" fill={robotColor} />
     <rect x="41" y="85" width="38" height="22" rx="7" fill="#fffaf0" />
     <path d="m54 96 4 4 8-9" stroke="#50886b" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
     <path d="M60 28V14" stroke="#365e4c" strokeWidth="5" strokeLinecap="round" />
     <circle cx="60" cy="10" r="7" fill="#50886b" />
-    <rect x="12" y="40" width="12" height="24" rx="6" fill={color} /><rect x="96" y="40" width="12" height="24" rx="6" fill={color} />
-    <rect x="20" y="26" width="80" height="53" rx="18" fill={color} />
+    <rect x="12" y="40" width="12" height="24" rx="6" fill={robotColor} /><rect x="96" y="40" width="12" height="24" rx="6" fill={robotColor} />
+    <rect x="20" y="26" width="80" height="53" rx="18" fill={robotColor} />
+    {skinIndex === 5 && <path d="m87 27 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" fill="#fff0a7" stroke="#8162be" strokeWidth="2"/>}
+    {skinIndex === 6 && <path d="m60 15 5 7-5 7-5-7z" fill="#e7ffff" stroke="#46aab8" strokeWidth="2"/>}
+    {skinIndex === 7 && <path d="M60 13c8 8 7 13 0 18-7-5-8-10 0-18Z" fill="#ffcd70" stroke="#d2573c" strokeWidth="2"/>}
+    {skinIndex === 8 && <path d="M24 61q36 12 72 0v9q-36 15-72 0z" fill="#344152" opacity=".9"/>}
+    {skinIndex === 9 && <path d="M58 18q-15-12-18 1 8 9 18-1Zm4 0q15-12 18 1-8 9-18-1Z" fill="#e3f2c5" stroke="#4e8757" strokeWidth="2"/>}
+    {skinIndex === 10 && <path d="m41 29 4-10 9 7 6-12 6 12 9-7 4 10z" fill="#ffe995" stroke="#b58520" strokeWidth="2"/>}
+    {skinIndex === 11 && <g stroke="#713c69" strokeWidth="3" fill="none"><circle cx="43" cy="49" r="10"/><circle cx="77" cy="49" r="10"/><path d="M53 49h14m-34-3-6-3m46 6h6"/></g>}
+    {skinIndex === 12 && <path d="M43 20q17-10 34 0" stroke="#fff4a8" strokeWidth="4" strokeLinecap="round"/>}
     <rect x="28" y="35" width="64" height="35" rx="12" fill="#fffaf0" />
     {happy ? <g stroke="#284c41" strokeWidth="5" strokeLinecap="round"><path d="m39 50 4-4 4 4m26 0 4-4 4 4" /></g> : <g fill="#284c41"><rect x="39" y="44" width="8" height="12" rx="4" /><rect x="73" y="44" width="8" height="12" rx="4" /></g>}
     <path d="M54 57q6 7 12 0" stroke="#284c41" strokeWidth="3" strokeLinecap="round" />

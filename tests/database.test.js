@@ -14,6 +14,9 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
       grant usage on schema auth to authenticated;
       insert into auth.users values ('${teacher}'),('${stranger}'),('${deviceA}'),('${deviceB}');`);
     await db.exec(await readFile(new URL('../supabase/migrations/202610060001_classroom.sql', import.meta.url),'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/202610060009_maze_levels_progress.sql', import.meta.url),'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/202610070001_robot_skins.sql', import.meta.url),'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/202610070002_fix_skin_unlock_validation.sql', import.meta.url),'utf8'));
     await db.exec(`grant delete on public.bloco_teams to authenticated;
       create policy teacher_delete_team on public.bloco_teams for delete to authenticated using (public.is_bloco_teacher(classroom_id));`);
     const generatedCode = (await db.query('select public.generate_bloco_join_code() as code')).rows[0].code;
@@ -38,7 +41,11 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
     await assert.rejects(db.query(`insert into public.device_enrollments(user_id,classroom_id) values('${deviceA}','30000000-0000-4000-8000-000000000002')`),/permission denied/);
     await assert.rejects(db.query("insert into public.team_stickers(team_id,type) values('team-a','logic')"),/row-level security/);
     await db.query(`update public.bloco_teams set progress='{"1-1":{"stars":3}}' where id='team-a'`);
-    await assert.rejects(db.query(`update public.bloco_teams set progress='{"1-1":{"stars":999}}' where id='team-a'`),/Progresso inválido/);
+    await db.query(`update public.bloco_teams set progress='{"6-1":{"stars":3},"7-40":{"stars":2}}', last_level='7-40' where id='team-a'`);
+    await db.query(`update public.bloco_teams set progress='{"6-1":{"stars":3},"7-40":{"stars":2},"1-1":{"stars":3},"1-2":{"stars":2},"1-3":{"stars":3}}', avatar=5 where id='team-a'`);
+    await assert.rejects(db.query('update public.bloco_teams set avatar=6 where id=\'team-a\''),/skin ainda não foi desbloqueada/i);
+    await assert.rejects(db.query(`update public.bloco_teams set progress='{"8-1":{"stars":3}}', avatar=4 where id='team-a'`),/Progresso inválido/);
+    await assert.rejects(db.query(`update public.bloco_teams set progress='{"1-1":{"stars":999}}', avatar=4 where id='team-a'`),/Progresso inválido/);
     await assert.rejects(db.query(`update public.bloco_teams set owner_id='${deviceB}' where id='team-a'`),/identidade/);
     assert.equal((await rows(`update public.bloco_teams set name='Equipe A' where id='team-a' returning id`)).length,1,'a pupil can update their own team');
     await as(deviceB); await db.query("select public.join_bloco_classroom('ABCDEF')"); await insertTeam('team-b',deviceB);

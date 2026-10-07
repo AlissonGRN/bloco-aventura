@@ -6,7 +6,7 @@ import { Robot, Gem } from './Art';
 import { Modal, Stars } from './UI';
 import BlockEditor from './BlockEditor';
 
-function Board({ board, frame, grade }) {
+function Board({ board, frame, grade, skin = 0 }) {
   const path = new Set(board.cells.map(p => `${p.x},${p.y}`));
   const crystals = new Set(board.crystals.map(p => `${p.x},${p.y}`));
   const walls = new Set((board.walls || []).map(p => `${p.x},${p.y}`));
@@ -17,7 +17,7 @@ function Board({ board, frame, grade }) {
       const isPath = path.has(k), isGoal = x === board.goal.x && y === board.goal.y;
       return <div className={`board-cell ${isPath ? 'path-cell' : walls.has(k) ? 'wall-cell' : 'grass-cell'} ${isGoal ? 'goal-cell' : ''}`} key={k}>{isPath && <><span className="tile-top"/>{isGoal ? <Flag className="goal-flag" fill="currentColor"/> : crystals.has(k) && !collected.has(k) ? <Gem className="board-gem"/> : x === board.start.x && y === board.start.y ? <span className="start-mark"/> : <span className="path-pebble"/>}</>}{walls.has(k) && <span className="maze-wall" aria-hidden="true"/>}{!isPath && !walls.has(k) && (i * 7 + grade) % 9 === 0 && <span className="grass-tuft">⌁</span>}{!isPath && !walls.has(k) && (i * 3 + grade) % 19 === 0 && <span className="board-flower">✿</span>}</div>;
     })}
-    <div className={`board-robot ${frame.kind === 'blocked' ? 'bump' : ''}`} style={{ left: `${frame.position.x / board.cols * 100}%`, top: `${frame.position.y / board.rows * 100}%`, width: `${100 / board.cols}%`, height: `${100 / board.rows}%` }}><Robot happy={frame.kind === 'win'}/></div>
+    <div className={`board-robot ${frame.kind === 'blocked' ? 'bump' : ''}`} style={{ left: `${frame.position.x / board.cols * 100}%`, top: `${frame.position.y / board.rows * 100}%`, width: `${100 / board.cols}%`, height: `${100 / board.rows}%` }}><Robot happy={frame.kind === 'win'} skin={skin}/></div>
   </div></div><span className="board-decoration leaf-one">✦</span><span className="board-decoration leaf-two">✦</span></div>;
 }
 
@@ -96,11 +96,11 @@ export default function Game({ level, team, onBack, onNext, onWorld, onComplete,
   return <div className={`game-page grade-${level.grade}`} style={{ '--world': world.color, '--world-soft': world.soft }}>
     <div className="game-breadcrumb"><button className="text-back" onClick={onBack}><ArrowLeft size={18}/><span>{world.short}</span></button><ChevronRight size={14}/><span>Desafio {level.number} de 40</span><span className="game-grade-badge">Nível {level.grade}</span><Stars count={team.progress[level.id]?.stars || 0}/></div>
     <div className="game-title"><div><span className="eyebrow">{level.concept}</span><h1>{level.title}</h1></div><div className="flex items-center gap-2"><button className="btn secondary small" onClick={() => setDemo(true)}><Play size={15}/>Como jogar</button></div></div>
-    <div className="mission-bar"><div className="visual-mission"><Robot/><ArrowRight size={21}/>{board.crystals.length > 0 && <><Gem/><ArrowRight size={21}/></>}<Flag size={25} fill="currentColor"/></div><p>{level.instruction}</p><span className="mission-label">SUA MISSÃO</span></div>
+    <div className="mission-bar"><div className="visual-mission"><Robot skin={team.avatar}/><ArrowRight size={21}/>{board.crystals.length > 0 && <><Gem/><ArrowRight size={21}/></>}<Flag size={25} fill="currentColor"/></div><p>{level.instruction}</p><span className="mission-label">SUA MISSÃO</span></div>
     <div className="game-layout"><section className="game-stage"><div className="board-toolbar"><span><span className="status-dot"/>{level.boards.length > 1 ? `O mesmo código, ${level.boards.length} caminhos` : level.kind === 'maze' ? 'Encontre a menor rota' : 'O caminho do Bip'}</span>{level.kind === 'maze' ? <div className="crystal-counter move-counter">Passos: {frame.moves}<span>/ {board.shortestMoves}</span></div> : <div className="crystal-counter"><Gem/>{frame.collected.length}<span>/ {board.crystals.length}</span></div>}</div>
       {level.boards.length > 1 && <div className="scenario-tabs" role="group" aria-label="Cenário do desafio">{level.boards.map((_, i) => <button key={i} className={scenario === i ? 'selected' : ''} disabled={mode === 'running'} onClick={() => reset(i)}>Cenário {i + 1}</button>)}</div>}
-      <Board board={board} frame={frame} grade={level.grade}/>
-      <div className={`bip-message ${feedback ? 'needs-help' : ''}`} role="status" aria-live="polite"><Robot/><div><span>BIP DIZ</span><p>{robotText}</p></div>{feedback && <RotateCcw size={24} className="visual-retry" aria-hidden="true"/>}</div>
+      <Board board={board} frame={frame} grade={level.grade} skin={team.avatar}/>
+      <div className={`bip-message ${feedback ? 'needs-help' : ''}`} role="status" aria-live="polite"><Robot skin={team.avatar}/><div><span>BIP DIZ</span><p>{robotText}</p></div>{feedback && <RotateCcw size={24} className="visual-retry" aria-hidden="true"/>}</div>
       <div className="board-actions"><button className="help-link" onClick={() => setHint(h => !h)}><Lightbulb size={18}/>{hint ? 'Fechar dica' : 'Uma ajudinha?'}</button><button className="speed-button" onClick={() => setSlow(s => !s)} disabled={mode === 'running'} aria-label={slow ? 'Mudar para velocidade rápida' : 'Mudar para velocidade lenta'}>{slow ? <Turtle size={19}/> : <Rabbit size={19}/>}<span>{slow ? 'Sem pressa' : 'Mais rápido'}</span></button></div>
       {hint && <div className="hint-box"><p>{level.hint}</p></div>}
       {level.grade === 1 && <div className="visual-guide"><span><b>1</b><Hand size={24}/><ArrowRight size={25}/></span><ChevronRight size={16}/><span><b>2</b><Play size={25} fill="currentColor"/></span><ChevronRight size={16}/><span><b>3</b><Flag size={25}/></span></div>}

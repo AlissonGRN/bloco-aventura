@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateSave, mergeSave, emptySave, STICKERS } from '../src/data/classroom.js';
+import { validateSave, mergeSave, emptySave, STICKERS, ROBOT_SKINS, unlockedRobotSkins } from '../src/data/classroom.js';
 import { createLock, verifyPassword, LOCK_KEY } from '../src/services/teacherLock.js';
 const original = { id: 'a', name: 'Equipe A', members: ['Ana'], progress: { '1-1': { stars: 3, completedAt:'2026-10-05T10:00:00Z' } } };
 test('V1 migration preserves progress and gives existing teams an unassigned class',()=>{
@@ -19,6 +19,14 @@ test('classroom stickers include positive behavior, respect, care, participation
   for (const id of additions) assert.ok(ids.has(id), `missing ${id}`);
   const data=validateSave({version:2,teams:[{...original,stickers:additions.map((type,i)=>({id:`s${i}`,type}))}]});
   assert.equal(data.teams[0].stickers.length,additions.length);
+});
+test('Bip skins unlock from completed challenges and saved teams cannot select locked skins',()=>{
+  assert.equal(ROBOT_SKINS.length,13);
+  assert.equal(unlockedRobotSkins({}),5);
+  assert.equal(unlockedRobotSkins(Object.fromEntries(Array.from({length:15},(_,i)=>[`1-${i+1}`,{stars:2}]))),7);
+  const progress=Object.fromEntries(Array.from({length:4},(_,i)=>[`1-${i+1}`,{stars:2}]));
+  const team=validateSave({version:2,teams:[{...original,progress,avatar:8}] }).teams[0];
+  assert.equal(team.avatar,4,'a locked appearance is clamped to the highest unlocked skin');
 });
 test('Backup merge preserves best stars and unions history without duplicating teams',()=>{
   const first=validateSave({version:1,teams:[original]});
