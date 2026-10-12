@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { LEVELS, WORLDS, SEQUENCE_TASKS, move, repeat, branch, call, countBlocks, getLevel } from '../src/data/curriculum.js';
 import { simulate, evaluateAll, withIds, editList } from '../src/game/engine.js';
 
-test('360 unique missions, 40 per level', () => {
-  assert.equal(LEVELS.length, 360);
+test('320 unique missions, 40 per level', () => {
+  assert.equal(LEVELS.length, 320);
   assert.equal(new Set(LEVELS.map(l => l.id)).size, 360);
-  for (let grade = 1; grade <= 9; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
-  assert.equal(WORLDS.length, 9);
+  for (let grade = 1; grade <= 8; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
+  assert.equal(WORLDS.length, 8);
 });
 for (const l of LEVELS.filter(l => !['sequence','circuit'].includes(l.kind))) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
   const result = evaluateAll(l, withIds(l.solution), withIds(l.definition));
@@ -19,19 +19,12 @@ for (const l of LEVELS.filter(l => !['sequence','circuit'].includes(l.kind))) te
     assert.equal(new Set(b.cells.map(p => `${p.x},${p.y}`)).size, b.cells.length);
   }
 });
-test('Arduino circuit and reading sequence levels each have 40 progressively designed challenges', () => {
+test('The daily-life sequence level has 40 reading challenges with ordered solutions', () => {
   assert.equal(SEQUENCE_TASKS.length, 40);
-  const circuits = LEVELS.filter(l => l.grade === 8), reading = LEVELS.filter(l => l.grade === 9);
-  assert.equal(circuits.length, 40); assert.equal(reading.length, 40);
-  assert.ok(circuits.every(l => l.kind === 'circuit' && l.parts.length >= 3 && l.connections.length >= 3));
+  const reading = LEVELS.filter(l => l.grade === 8);
+  assert.equal(reading.length, 40);
   assert.ok(reading.every(l => l.sequenceMode === 'words' && l.steps.length >= 4));
   for (const l of reading) assert.deepEqual(l.solution, l.steps.map((_, i) => i));
-  assert.ok(circuits[0].connections.length < circuits[10].connections.length);
-  assert.ok(circuits[20].connections.length < circuits[30].connections.length);
-  for (const l of circuits) {
-    const ports = new Set(l.parts.flatMap(part => part.ports.map(port => port.id)));
-    assert.ok(l.connections.flat().every(port => ports.has(port)), l.id);
-  }
 });
 test('Reject empty program, walls, unfinished paths and missed crystals', () => {
   assert.equal(simulate(LEVELS[0], []).success, false);
