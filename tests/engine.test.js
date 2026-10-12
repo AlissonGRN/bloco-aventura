@@ -1,13 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LEVELS, WORLDS, SEQUENCE_TASKS, move, repeat, branch, call, countBlocks, getLevel } from '../src/data/curriculum.js';
+import { LEVELS, WORLDS, SEQUENCE_TASKS, move, repeat, branch, call, actionBlock, countBlocks, getLevel } from '../src/data/curriculum.js';
 import { simulate, evaluateAll, withIds, editList } from '../src/game/engine.js';
 
-test('320 unique missions, 40 per level', () => {
-  assert.equal(LEVELS.length, 320);
+test('360 unique missions, 40 per level', () => {
+  assert.equal(LEVELS.length, 360);
   assert.equal(new Set(LEVELS.map(l => l.id)).size, 360);
-  for (let grade = 1; grade <= 8; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
-  assert.equal(WORLDS.length, 8);
+  for (let grade = 1; grade <= 9; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
+  assert.equal(WORLDS.length, 9);
 });
 for (const l of LEVELS.filter(l => !['sequence','circuit'].includes(l.kind))) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
   const result = evaluateAll(l, withIds(l.solution), withIds(l.definition));
@@ -25,6 +25,24 @@ test('The daily-life sequence level has 40 reading challenges with ordered solut
   assert.equal(reading.length, 40);
   assert.ok(reading.every(l => l.sequenceMode === 'words' && l.steps.length >= 4));
   for (const l of reading) assert.deepEqual(l.solution, l.steps.map((_, i) => i));
+});
+test('The action world teaches collecting, jumping, fighting, opening, loops, and functions', () => {
+  const actions = LEVELS.filter(l => l.grade === 9);
+  assert.equal(actions.length, 40);
+  assert.ok(actions.every(l => l.kind === 'actions'));
+  assert.ok(actions.slice(0, 10).every(l => l.allowed.includes('pick') && l.boards[0].items.length));
+  assert.ok(actions.slice(10, 20).every(l => l.solution.some(b => b.type === 'jump')));
+  assert.ok(actions.slice(25, 30).every(l => l.allowed.includes('open') && l.boards[0].doors.length));
+  assert.ok(actions.slice(30).every(l => l.allowed.includes('call') && l.solution.some(b => b.type === 'call')));
+  for (const level of actions) assert.equal(evaluateAll(level, withIds(level.solution), withIds(level.definition)).success, true, level.id);
+});
+test('Actions require the right target, and a locked door requires its key', () => {
+  assert.match(simulate(getLevel('9-11'), [actionBlock('jump', 'U')]).failure, /pular um buraco/);
+  const lockedDoor = getLevel('9-26');
+  const withoutKey = lockedDoor.solution.filter(block => block.type !== 'pick');
+  assert.match(simulate(lockedDoor, withIds(withoutKey)).failure, /pegue a chave/i);
+  const withoutAttack = getLevel('9-21').solution.filter(block => block.type !== 'attack');
+  assert.match(simulate(getLevel('9-21'), withIds(withoutAttack)).failure, /caminho nessa direção/);
 });
 test('Reject empty program, walls, unfinished paths and missed crystals', () => {
   assert.equal(simulate(LEVELS[0], []).success, false);

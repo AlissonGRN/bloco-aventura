@@ -1,9 +1,9 @@
 import { useId } from 'react';
-import { ArrowUp, ArrowRight, ArrowDown, ArrowLeft, Sprout, Compass, Repeat2, GitFork, Rocket, Grid2X2, Blocks, ListOrdered } from 'lucide-react';
+import { ArrowUp, ArrowRight, ArrowDown, ArrowLeft, Sprout, Compass, Repeat2, GitFork, Rocket, Grid2X2, Blocks, ListOrdered, Hand } from 'lucide-react';
 import { ROBOT_SKINS } from '../data/classroom.js';
 
 export const directionIcon = { R: ArrowRight, L: ArrowLeft, U: ArrowUp, D: ArrowDown };
-export const worldIcon = { sprout: Sprout, compass: Compass, repeat: Repeat2, split: GitFork, rocket: Rocket, grid: Grid2X2, blocks: Blocks, sequence: ListOrdered };
+export const worldIcon = { sprout: Sprout, compass: Compass, repeat: Repeat2, split: GitFork, rocket: Rocket, grid: Grid2X2, blocks: Blocks, sequence: ListOrdered, hand: Hand };
 
 export function Robot({ className = '', happy = false, color, skin = 0 }) {
   const skinIndex = Math.max(0, Math.min(ROBOT_SKINS.length - 1, Number(skin) || 0));

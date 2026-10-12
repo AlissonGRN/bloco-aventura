@@ -2067,6 +2067,14 @@ input:focus {
   background: #d8e2de;
   border: 1px solid #c3d0ca;
 }
+.gap-cell { background: #bad4c5; border: 1px solid #a6c5b3; }
+.action-gap { width: 72%; height: 58%; border: 3px solid #455b59; border-radius: 50%; background: radial-gradient(ellipse, #263d3b 35%, #47615a 75%); box-shadow: 0 4px 0 #91b19e; }
+.action-object { position: relative; z-index: 3; width: 48%; height: 52%; filter: drop-shadow(0 3px 1px #30423330); }
+.item-object { color: #649550; }
+.key-object { color: #d4a536; }
+.enemy-object { color: #a75d66; fill: #eeb7ac; }
+.door-object { color: #836a50; fill: #e6c992; }
+.open-door-object { color: #578b79; }
 .maze-wall {
   position: absolute;
   inset: 7%;
@@ -2080,6 +2088,8 @@ input:focus {
 .scene-6 .tile-top { background: #f5fff9; border-color: #c5ded7; box-shadow: 0 5px 0 #b3d0c7, 0 7px 5px #455d2810; }
 .scene-7 { background: #eae3f2; border-color: #ddd3e9; }
 .scene-7 .tile-top { background: #fffaff; border-color: #d9cee5; box-shadow: 0 5px 0 #c6b9d7, 0 7px 5px #455d2810; }
+.scene-9 { background: #f8e9df; border-color: #eddbcf; }
+.scene-9 .tile-top { background: #fffaf4; border-color: #ead6c6; box-shadow: 0 5px 0 #ddc4ad, 0 7px 5px #455d2810; }
 .tile-top {
   position: absolute;
   inset: 4%;

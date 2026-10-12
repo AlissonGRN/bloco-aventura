@@ -3,6 +3,7 @@ export { DIRS, DIRECTIONS, move, repeat, branch, call, countBlocks, boardFromPat
 
 export const MISSIONS_PER_LEVEL = 40;
 export const MISSIONS_PER_TRAIL = 10;
+export const actionBlock = (type, direction = 'R') => ({ type, direction });
 export const KIND_LABELS = { build: 'Monte o caminho', debug: 'Encontre o erro', optimize: 'Use menos blocos', adapt: 'Teste os cenários', compose: 'Combine suas ideias' };
 const topics = ['Sequências, direções e correção', 'Planejamento, padrões e repetições', 'Repetições, decisões e otimização', 'Condições, funções e depuração', 'Integração e resolução de problemas'];
 const descriptions = ['Observe, organize, teste e descubra novas possibilidades.', 'Planeje o trajeto e descubra jeitos de economizar blocos.', 'Um padrão pode se repetir. Uma escolha pode mudar tudo.', 'Olhe ao redor, escolha uma direção e reutilize suas ideias.', 'Transforme tudo o que descobriu em grandes invenções.'];
@@ -33,6 +34,7 @@ export const WORLDS = [
   { id: 6, name: 'Labirinto das setas', short: 'Labirinto', topic: 'Rotas, obstáculos e caminho mínimo', description: 'Leia o mapa, contorne paredes e encontre a menor rota.', color: '#397c86', soft: '#e1f2f1', type: 'maze-arrows', icon: 'grid', skill: 'Planejar rotas em uma grade, evitar paredes e comparar o tamanho dos caminhos. As setas aparecem primeiro; repetir é liberado nas trilhas finais.', teacher: 'Conversem sobre caminhos possíveis e contem os passos. Nas trilhas 3 e 4, os blocos repetir ajudam a representar trechos iguais. O objetivo é alcançar a bandeira pelo menor caminho.', trails: makeTrails(['Ler o mapa', 'Contornar paredes', 'Rotas mais curtas', 'Mestre do labirinto'], ['Que caminho vocês imaginaram antes de montar as setas?', 'Qual parede obrigou Bip a mudar de direção?', 'Como sabemos que a rota tem menos passos?', 'Onde uma repetição economiza blocos?']) },
   { id: 7, name: 'Labirinto dos padrões', short: 'Padrões', topic: 'Repetições, decomposição e funções', description: 'Use padrões para atravessar mapas cheios de paredes.', color: '#765c99', soft: '#eee7f6', type: 'maze-loops', icon: 'blocks', skill: 'Representar rotas mínimas com laços, decompor um trajeto e reutilizar trechos em funções.', teacher: 'Os desafios começam usando repetir. Nas últimas trilhas, Meu bloco permite guardar um trecho do caminho e chamá-lo no programa principal. Incentive a equipe a conferir o menor número de passos.', trails: makeTrails(['Primeiros padrões', 'Repetições no mapa', 'Peças reutilizáveis', 'Funções no labirinto'], ['Que trecho do caminho se repete?', 'Como representar o mesmo padrão com menos blocos?', 'Que parte da rota poderia virar Meu bloco?', 'A função ajudou a organizar o caminho?']) },
   { id: 8, name: 'Algoritmos do dia a dia', short: 'Algoritmos', topic: 'Algoritmos, decomposição e depuração', description: 'Coloque instruções simples na ordem certa e teste sua lógica.', color: '#508a72', soft: '#e4f2e9', type: 'sequence-words', icon: 'sequence', skill: 'Ler instruções, decompor uma rotina, comparar dependências entre etapas e corrigir sequências.', teacher: 'Antes de mover os cartões, leiam as ações e expliquem quais dependem umas das outras. Compare ordens alternativas e procure uma sequência válida.', trails: makeTrails(['Instruções em ordem', 'Rotinas e dependências', 'Corrija a sequência', 'Desafios de lógica'], ['Qual instrução precisa vir primeiro?', 'Que etapa depende do que veio antes?', 'Qual cartão está fora do lugar? Por quê?', 'Existe mais de uma ordem que funciona?']) },
+  { id: 9, name: 'Expedição das ações', short: 'Expedição', topic: 'Sequências, ações e interação', description: 'Além de andar, ensine Bip a pegar itens, saltar buracos, afastar criaturas e abrir portas.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Planejar ações no momento certo, combinar comandos com deslocamentos e reutilizar sequências.', teacher: 'Neste mundo, algumas casas têm itens, criaturas, portas e buracos. Pegar, atacar/afastar e abrir agem na casa indicada; pular atravessa exatamente um buraco. Peça que a equipe preveja o resultado de cada comando.', trails: makeTrails(['Pegar e levar', 'Pular com cuidado', 'Abrir passagem', 'Combinar as ações'], ['Quando Bip precisa pegar o item: antes ou depois de andar até ele?', 'Qual casa está faltando no caminho e como Bip pode atravessá-la?', 'O que precisa acontecer antes de a porta deixar Bip passar?', 'Como dividir e testar uma sequência maior?']) },
 ];
 const seq = text => [...text].map(move);
 const dirs = ['R', 'U', 'L', 'D'];
@@ -210,7 +212,143 @@ const sequenceLevels = SEQUENCE_TASKS.slice(0, MISSIONS_PER_LEVEL).map((task, in
   solution: task.steps.map((_, i) => i), allowed: [], maxBlocks: task.steps.length,
 }));
 
-export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
+const actionRoutes = [
+  'RRRRRRR', 'RRURRRDRR', 'RRUURRRDDRR', 'RRDDRRUURRR', 'RURRRDRRR',
+  'RRRRRRR', 'RRURRRDRR', 'RRUURRRDDRR', 'RRDDRRUURRR', 'RURRRDRRR',
+];
+const jumpingRoutes = [
+  'RRJRRR', 'RURJRRDR', 'RRDDJRRUUR', 'RRUURJRRD', 'RURRRJR',
+  'RRJRUURR', 'RRUJRRR', 'RRDDJRRUUR', 'RURJRRDR', 'RRUURJRRD',
+];
+const advancedRoutes = [
+  'RRURRRDRR', 'RRUURRRDDRR', 'RRDDRRUURRR', 'RRURRRDRR', 'RRUURRRDDRR',
+  'RRDDRRUURRR', 'RRURRRDRR', 'RRUURRRDDRR', 'RRDDRRUURRR', 'RRURRRDRR',
+];
+function createActionBoard(route) {
+  const start = { x: 0, y: 3 }, positions = [start], gaps = [];
+  let current = start;
+  for (const step of route) {
+    if (step === 'J') {
+      gaps.push({ x: current.x + 1, y: current.y });
+      current = { x: current.x + 2, y: current.y };
+    } else {
+      const [dx, dy] = ({ R: [1, 0], L: [-1, 0], U: [0, -1], D: [0, 1] })[step];
+      current = { x: current.x + dx, y: current.y + dy };
+    }
+    positions.push(current);
+  }
+  return { cols: 8, rows: 7, start, goal: positions.at(-1), cells: positions, gaps, items: [], enemies: [], doors: [], crystals: [] };
+}
+function compressActionMoves(blocks) {
+  const result = [];
+  for (let i = 0; i < blocks.length;) {
+    const block = blocks[i];
+    if (block.type !== 'move') { result.push(block); i++; continue; }
+    let end = i + 1;
+    while (end < blocks.length && blocks[end].type === 'move' && blocks[end].direction === block.direction) end++;
+    const count = end - i;
+    result.push(count > 1 ? repeat(count, [move(block.direction)]) : block);
+    i = end;
+  }
+  return result;
+}
+const actionLevels = Array.from({ length: MISSIONS_PER_LEVEL }, (_, index) => {
+  const number = index + 1;
+  const route = number <= 10 ? actionRoutes[index] : number <= 20 ? jumpingRoutes[index - 10] : number <= 30 ? (index % 2 ? jumpingRoutes[index % 10] : actionRoutes[index % 10]) : advancedRoutes[index - 30];
+  const board = createActionBoard(route);
+  const typeAt = new Map();
+  const place = (positionIndex, type, details = {}) => {
+    if (route[positionIndex - 1] === 'J') positionIndex++;
+    const position = board.cells[positionIndex];
+    if (!position) return;
+    const object = { ...position, ...details };
+    const list = type === 'pick' ? board.items : type === 'attack' ? board.enemies : board.doors;
+    list.push(object);
+    typeAt.set(`${position.x},${position.y}`, type);
+  };
+  if (number <= 10) {
+    place(2 + index % 2, 'pick', { item: 'crystal' });
+    if (number >= 6) place(5, 'pick', { item: 'crystal' });
+  } else if (number <= 20) {
+    place(number >= 16 ? 4 : 5, 'pick', { item: 'crystal' });
+    if (number >= 16) place(6, 'pick', { item: 'crystal' });
+  } else if (number <= 25) {
+    place(2, 'pick', { item: 'crystal' });
+    place(4, 'attack', { name: 'Criatura guardiã' });
+  } else if (number <= 30) {
+    place(2, 'pick', { item: 'key' });
+    place(4, 'attack', { name: 'Criatura guardiã' });
+    place(5, 'open', { name: 'Porta trancada', requiresKey: true });
+  } else {
+    place(3, 'pick', { item: 'key' });
+    place(5, 'attack', { name: 'Criatura guardiã' });
+    place(7, 'open', { name: 'Porta trancada', requiresKey: true });
+    if (number >= 36) place(8, 'pick', { item: 'crystal' });
+  }
+  const routeSteps = [...route];
+  const operations = [];
+  for (let stepIndex = 0; stepIndex < routeSteps.length; stepIndex++) {
+    const step = routeSteps[stepIndex];
+    if (step === 'J') {
+      operations.push(actionBlock('jump', 'R'));
+      continue;
+    }
+    const target = board.cells[stepIndex + 1];
+    const targetType = target && typeAt.get(`${target.x},${target.y}`);
+    if (targetType) operations.push(actionBlock(targetType, step));
+    operations.push(move(step));
+  }
+  let definition = [], program = operations;
+  const allowed = ['move', 'pick'];
+  const required = [];
+  if (number >= 11) { allowed.push('jump'); if (route.includes('J')) required.push('jump'); }
+  if (number >= 21) { allowed.push('attack', 'repeat'); }
+  if (number >= 26) { allowed.push('open'); required.push('attack', 'open', 'repeat'); }
+  if (number >= 31) {
+    allowed.push('call');
+    required.push('call');
+    definition = [move('R'), move('R')];
+    program = [call(), ...operations.slice(2)];
+  }
+  if (number >= 25) {
+    if (number < 31) required.push('attack', 'repeat');
+    program = compressActionMoves(program);
+  }
+  if (number >= 31) program = compressActionMoves(program);
+  const title = number <= 10
+    ? ['A primeira coleta', 'Pegue antes de seguir', 'Duas peças brilhantes', 'A curva do tesouro', 'Olhe ao redor', 'Cristais pelo caminho', 'Uma pausa para pegar', 'Mais uma descoberta', 'Colete e continue', 'Mochila do Bip'][index]
+    : number <= 20
+      ? ['O primeiro salto', 'Buraco no caminho', 'Salte e continue', 'Pulo na curva', 'Não caia no lago', 'Um salto comprido', 'Pular antes da curva', 'O salto escondido', 'Lacuna no caminho', 'Salto de especialista'][index - 10]
+      : number <= 30
+        ? ['Afaste a criatura', 'Guardiã do caminho', 'Pegue e avance', 'A criatura da ponte', 'Ação no momento certo', 'Chave da passagem', 'Abra a porta', 'A chave e a guardiã', 'Pule, pegue e abra', 'A passagem secreta'][index - 20]
+        : ['Meu bloco de passos', 'Um caminho em partes', 'Repita e reutilize', 'Pule usando uma função', 'Três ações em sequência', 'A chave do castelo', 'A rota organizada', 'Missão de resgate', 'Tudo no momento certo', 'Mestre das ações'][index - 30];
+  const objective = [
+    ...(board.items.some(item => item.item === 'key') ? ['pegar a chave'] : board.items.length ? ['pegar os itens'] : []),
+    ...(board.enemies.length ? ['afastar as criaturas'] : []),
+    ...(board.doors.length ? ['abrir a porta'] : []),
+  ];
+  const instruction = number <= 10
+    ? 'Leve Bip até os itens. Use “pegar” apontado para o item antes de seguir.'
+    : number <= 20
+      ? 'Atravesse os buracos com “pular” e pegue os itens do caminho.'
+      : number <= 25
+        ? 'Pegue o item, afaste a criatura com “atacar” e alcance a bandeira.'
+        : number <= 30
+          ? 'Pegue a chave, afaste a criatura e use “abrir” na porta trancada.'
+          : 'Combine pegar, pular, atacar e abrir. Organize partes do plano em repetir e Meu bloco.';
+  return {
+    id: `9-${number}`, grade: 9, number, title,
+    concept: number <= 10 ? 'Ações e sequências' : number <= 20 ? 'Pulos e obstáculos' : number <= 30 ? 'Interação e decisões' : 'Decomposição e funções',
+    instruction, hint: number <= 10 ? 'A ação acontece na direção escolhida. Bip pode pegar algo sem sair do lugar.' : number <= 20 ? 'Pular atravessa um buraco e pousa uma casa depois dele.' : number <= 30 ? 'Aponte a ação para o objeto ao lado. A chave abre a porta.' : 'Guarde os primeiros passos em Meu bloco e agrupe passos repetidos.',
+    discussion: `Conversem sobre a ordem das ações: ${objective.join(', ').toLocaleLowerCase('pt-BR') || 'chegue à bandeira'}.`,
+    kind: 'actions', boards: [board], solution: program, definition, required, allowed, maxBlocks: 40,
+  };
+});
+
+
+
+
+export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
   const allowed = l.allowed || ['move'];
   if (!l.allowed && (l.grade >= 3 || (l.grade === 2 && l.number >= 21))) allowed.push('repeat');
   if (!l.allowed && (l.grade >= 4 || (l.grade === 3 && l.number >= 21))) allowed.push('if');

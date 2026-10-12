@@ -186,6 +186,21 @@ test('A sticker notification tells the team what the teacher sent and can be dis
   assert.equal(dismissed,'award-1');
 });
 
+test('Action challenges show tools and let Bip pick an item on the board', async () => {
+  let completed = 0;
+  const level = getLevel('9-1');
+  await mount(createElement(Game, { level, team: team('action-team', 'Equipe Bip'), onComplete: () => completed++, onBack() {}, onNext() {}, onWorld() {} }));
+  assert.ok(document.querySelector('.action-object'), 'the item is visible in the grid');
+  for (const block of level.solution) await click(button(block.type === 'move' ? 'Adicionar direita' : 'Adicionar Pegar'));
+  await finishBySteps();
+  assert.equal(completed, 1);
+  assert.match(document.querySelector('.win-modal').textContent, /Vocês conseguiram/);
+
+  await mount(createElement(Game, { level: getLevel('9-11'), team: team('jump-team', 'Equipe Salto'), onBack() {}, onNext() {}, onWorld() {} }));
+  assert.ok(document.querySelector('.action-gap'), 'the gap is visible in a jumping challenge');
+  assert.ok(button('Adicionar Pular'), 'the jump command is available');
+});
+
 after(async () => { if (root) await act(async () => root.unmount()); dom.window.close(); await rm(dir, { recursive: true, force: true }); });
 
 test('The daily-life sequence level displays written actions and completes in order', async () => {

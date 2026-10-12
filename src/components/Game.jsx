@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Flag, Lightbulb, Play, Pause, RotateCcw, Footprints, Check, ChevronRight, Rabbit, Turtle, Hand } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Flag, Lightbulb, Play, Pause, RotateCcw, Footprints, Check, ChevronRight, Rabbit, Turtle, Hand, PackageOpen, KeyRound, Bug, DoorClosed, DoorOpen } from 'lucide-react';
 import { WORLDS, getLevel, referenceCount } from '../data/curriculum';
 import { evaluateAll, withIds } from '../game/engine';
 import { Robot, Gem } from './Art';
@@ -10,12 +10,18 @@ function Board({ board, frame, grade, skin = 0 }) {
   const path = new Set(board.cells.map(p => `${p.x},${p.y}`));
   const crystals = new Set(board.crystals.map(p => `${p.x},${p.y}`));
   const walls = new Set((board.walls || []).map(p => `${p.x},${p.y}`));
+  const gaps = new Set((board.gaps || []).map(p => `${p.x},${p.y}`));
+  const items = new Map((board.items || []).filter(item => !(frame.itemsPicked || []).includes(`${item.x},${item.y}`)).map(item => [`${item.x},${item.y}`, item]));
+  const enemies = new Set((board.enemies || []).filter(p => !(frame.defeated || []).includes(`${p.x},${p.y}`)).map(p => `${p.x},${p.y}`));
+  const doors = new Map((board.doors || []).map(p => [`${p.x},${p.y}`, { ...p, open: (frame.opened || []).includes(`${p.x},${p.y}`) }]));
   const collected = new Set(frame.collected || []);
   return <div className={`board-scene scene-${grade}`}><div className="board-cloud cloud-one"/><div className="board-cloud cloud-two"/><div className="board-ground"><div className="game-board" style={{ '--cols': board.cols, '--rows': board.rows, aspectRatio: `${board.cols} / ${board.rows}` }} role="img" aria-label={`Caminho com ${board.cols} colunas e ${board.rows} linhas. Bip está na coluna ${frame.position.x + 1}, linha ${frame.position.y + 1}. Bandeira na coluna ${board.goal.x + 1}, linha ${board.goal.y + 1}.`}>
     {Array.from({ length: board.rows * board.cols }, (_, i) => {
       const x = i % board.cols, y = Math.floor(i / board.cols), k = `${x},${y}`;
       const isPath = path.has(k), isGoal = x === board.goal.x && y === board.goal.y;
-      return <div className={`board-cell ${isPath ? 'path-cell' : walls.has(k) ? 'wall-cell' : 'grass-cell'} ${isGoal ? 'goal-cell' : ''}`} key={k}>{isPath && <><span className="tile-top"/>{isGoal ? <Flag className="goal-flag" fill="currentColor"/> : crystals.has(k) && !collected.has(k) ? <Gem className="board-gem"/> : x === board.start.x && y === board.start.y ? <span className="start-mark"/> : <span className="path-pebble"/>}</>}{walls.has(k) && <span className="maze-wall" aria-hidden="true"/>}{!isPath && !walls.has(k) && (i * 7 + grade) % 9 === 0 && <span className="grass-tuft">⌁</span>}{!isPath && !walls.has(k) && (i * 3 + grade) % 19 === 0 && <span className="board-flower">✿</span>}</div>;
+      const item = items.get(k), door = doors.get(k), enemy = enemies.has(k);
+      const entity = item ? item.item === 'key' ? <KeyRound className="action-object key-object"/> : <PackageOpen className="action-object item-object"/> : enemy ? <Bug className="action-object enemy-object"/> : door ? door.open ? <DoorOpen className="action-object open-door-object"/> : <DoorClosed className="action-object door-object"/> : null;
+      return <div className={`board-cell ${isPath ? 'path-cell' : gaps.has(k) ? 'gap-cell' : walls.has(k) ? 'wall-cell' : 'grass-cell'} ${isGoal ? 'goal-cell' : ''}`} key={k}>{isPath && <><span className="tile-top"/>{entity || (isGoal ? <Flag className="goal-flag" fill="currentColor"/> : crystals.has(k) && !collected.has(k) ? <Gem className="board-gem"/> : x === board.start.x && y === board.start.y ? <span className="start-mark"/> : <span className="path-pebble"/>)}</>}{gaps.has(k) && <span className="action-gap" aria-label="Buraco no caminho"/>}{walls.has(k) && <span className="maze-wall" aria-hidden="true"/>}{!isPath && !walls.has(k) && !gaps.has(k) && (i * 7 + grade) % 9 === 0 && <span className="grass-tuft">⌁</span>}{!isPath && !walls.has(k) && !gaps.has(k) && (i * 3 + grade) % 19 === 0 && <span className="board-flower">✿</span>}</div>;
     })}
     <div className={`board-robot ${frame.kind === 'blocked' ? 'bump' : ''}`} style={{ left: `${frame.position.x / board.cols * 100}%`, top: `${frame.position.y / board.rows * 100}%`, width: `${100 / board.cols}%`, height: `${100 / board.rows}%` }}><Robot happy={frame.kind === 'win'} skin={skin}/></div>
   </div></div><span className="board-decoration leaf-one">✦</span><span className="board-decoration leaf-two">✦</span></div>;
@@ -27,7 +33,7 @@ export default function Game({ level, team, onBack, onNext, onWorld, onComplete,
   const value = history.at(-1);
   const [target, setTarget] = useState({ root: 'program', path: [] });
   const [scenario, setScenario] = useState(0);
-  const [frame, setFrame] = useState({ position: level.boards[0].start, collected: [], moves: 0 });
+  const [frame, setFrame] = useState({ position: level.boards[0].start, collected: [], itemsPicked: [], defeated: [], opened: [], moves: 0 });
   const [mode, setMode] = useState('idle');
   const [feedback, setFeedback] = useState(null);
   const [win, setWin] = useState(null);
@@ -39,14 +45,14 @@ export default function Game({ level, team, onBack, onNext, onWorld, onComplete,
 
   useEffect(() => () => { clearTimeout(timer.current); playbackMode.current = 'idle'; }, []);
   function stop() { clearTimeout(timer.current); playbackMode.current = 'idle'; playback.current = null; setMode('idle'); }
-  function reset(index = scenario) { stop(); setScenario(index); setFrame({ position: level.boards[index].start, collected: [], moves: 0 }); setFeedback(null); }
+  function reset(index = scenario) { stop(); setScenario(index); setFrame({ position: level.boards[index].start, collected: [], itemsPicked: [], defeated: [], opened: [], moves: 0 }); setFeedback(null); }
   function change(next) { reset(); setHistory(h => [...h.slice(-39), next]); }
   function prepare() {
     onAttempt?.(level);
     const outcome = evaluateAll(level, value.program, value.definition);
     const events = [];
     for (const result of outcome.results) {
-      events.push({ kind: 'scene', scenario: result.scenario, position: level.boards[result.scenario].start, collected: [], moves: 0 });
+      events.push({ kind: 'scene', scenario: result.scenario, position: level.boards[result.scenario].start, collected: [], itemsPicked: [], defeated: [], opened: [], moves: 0 });
       result.timeline.forEach(f => events.push({ ...f, scenario: result.scenario }));
       if (!result.success) break;
     }
@@ -76,7 +82,7 @@ export default function Game({ level, team, onBack, onNext, onWorld, onComplete,
     if (!current || playbackMode.current !== 'running') return;
     const event = current.events[current.index++];
     if (!event || !apply(event)) return;
-    timer.current = setTimeout(tick, event.kind === 'move' || event.kind === 'scene' || event.kind === 'blocked' ? (slow ? 650 : 260) : (slow ? 240 : 100));
+    timer.current = setTimeout(tick, ['move', 'jump', 'pick', 'attack', 'open', 'scene', 'blocked'].includes(event.kind) ? (slow ? 650 : 260) : (slow ? 240 : 100));
   }
   function run() {
     if (mode === 'running') { clearTimeout(timer.current); playbackMode.current = 'paused'; setMode('paused'); return; }
@@ -92,12 +98,12 @@ export default function Game({ level, team, onBack, onNext, onWorld, onComplete,
     if (event?.kind === 'scene') { apply(event); event = current.events[current.index++]; }
     if (event) apply(event);
   }
-  const robotText = feedback || (mode === 'running' ? frame.kind === 'condition' ? (frame.condition ? 'Caminho livre! Vamos pelo “se”.' : 'Não está livre. Vamos pelo “senão”.') : 'Estou seguindo seu plano…' : mode === 'paused' ? 'Pausa para pensar. Qual será o próximo passo?' : level.kind === 'debug' ? 'Vamos observar e corrigir este programa?' : level.kind === 'optimize' ? 'Como usar menos blocos para chegar ao mesmo lugar?' : 'Primeiro, imagine o caminho. Depois, monte seu plano!');
+  const robotText = feedback || (mode === 'running' ? frame.kind === 'condition' ? (frame.condition ? 'Caminho livre! Vamos pelo “se”.' : 'Não está livre. Vamos pelo “senão”.') : frame.kind === 'pick' ? 'Peguei! Um passo de cada vez.' : frame.kind === 'jump' ? 'Saltei o buraco com segurança!' : frame.kind === 'attack' ? 'Caminho livre! Vamos continuar.' : frame.kind === 'open' ? 'A porta abriu! A chave foi útil.' : 'Estou seguindo seu plano…' : mode === 'paused' ? 'Pausa para pensar. Qual será o próximo passo?' : level.kind === 'debug' ? 'Vamos observar e corrigir este programa?' : level.kind === 'optimize' ? 'Como usar menos blocos para chegar ao mesmo lugar?' : level.kind === 'actions' ? 'Observe o que há no caminho. Qual ação Bip precisa fazer?' : 'Primeiro, imagine o caminho. Depois, monte seu plano!');
   return <div className={`game-page grade-${level.grade}`} style={{ '--world': world.color, '--world-soft': world.soft }}>
     <div className="game-breadcrumb"><button className="text-back" onClick={onBack}><ArrowLeft size={18}/><span>{world.short}</span></button><ChevronRight size={14}/><span>Desafio {level.number} de 40</span><span className="game-grade-badge">Nível {level.grade}</span><Stars count={team.progress[level.id]?.stars || 0}/></div>
     <div className="game-title"><div><span className="eyebrow">{level.concept}</span><h1>{level.title}</h1></div><div className="flex items-center gap-2"><button className="btn secondary small" onClick={() => setDemo(true)}><Play size={15}/>Como jogar</button></div></div>
     <div className="mission-bar"><div className="visual-mission"><Robot skin={team.avatar}/><ArrowRight size={21}/>{board.crystals.length > 0 && <><Gem/><ArrowRight size={21}/></>}<Flag size={25} fill="currentColor"/></div><p>{level.instruction}</p><span className="mission-label">SUA MISSÃO</span></div>
-    <div className="game-layout"><section className="game-stage"><div className="board-toolbar"><span><span className="status-dot"/>{level.boards.length > 1 ? `O mesmo código, ${level.boards.length} caminhos` : level.kind === 'maze' ? 'Encontre a menor rota' : 'O caminho do Bip'}</span>{level.kind === 'maze' ? <div className="crystal-counter move-counter">Passos: {frame.moves}<span>/ {board.shortestMoves}</span></div> : <div className="crystal-counter"><Gem/>{frame.collected.length}<span>/ {board.crystals.length}</span></div>}</div>
+    <div className="game-layout"><section className="game-stage"><div className="board-toolbar"><span><span className="status-dot"/>{level.boards.length > 1 ? `O mesmo código, ${level.boards.length} caminhos`  : level.kind === 'maze' ? 'Encontre a menor rota' : level.kind === 'actions' ? 'Explore, aja e chegue à bandeira' : 'O caminho do Bip'}</span>{level.kind === 'maze' ? <div className="crystal-counter move-counter">Passos: {frame.moves}<span>/ {board.shortestMoves}</span></div> : level.kind === 'actions' ? <div className="crystal-counter"><PackageOpen/>{(frame.itemsPicked || []).length}<span>/ {board.items.length} itens</span></div> : <div className="crystal-counter"><Gem/>{frame.collected.length}<span>/ {board.crystals.length}</span></div>}</div>
       {level.boards.length > 1 && <div className="scenario-tabs" role="group" aria-label="Cenário do desafio">{level.boards.map((_, i) => <button key={i} className={scenario === i ? 'selected' : ''} disabled={mode === 'running'} onClick={() => reset(i)}>Cenário {i + 1}</button>)}</div>}
       <Board board={board} frame={frame} grade={level.grade} skin={team.avatar}/>
       <div className={`bip-message ${feedback ? 'needs-help' : ''}`} role="status" aria-live="polite"><Robot skin={team.avatar}/><div><span>BIP DIZ</span><p>{robotText}</p></div>{feedback && <RotateCcw size={24} className="visual-retry" aria-hidden="true"/>}</div>
