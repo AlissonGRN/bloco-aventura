@@ -1,14 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LEVELS, move, repeat, branch, call, countBlocks, getLevel } from '../src/data/curriculum.js';
+import { LEVELS, WORLDS, SEQUENCE_TASKS, move, repeat, branch, call, countBlocks, getLevel } from '../src/data/curriculum.js';
 import { simulate, evaluateAll, withIds, editList } from '../src/game/engine.js';
 
-test('280 unique missions, 40 per level', () => {
-  assert.equal(LEVELS.length, 280);
-  assert.equal(new Set(LEVELS.map(l => l.id)).size, 280);
-  for (let grade = 1; grade <= 7; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
+test('360 unique missions, 40 per level', () => {
+  assert.equal(LEVELS.length, 360);
+  assert.equal(new Set(LEVELS.map(l => l.id)).size, 360);
+  for (let grade = 1; grade <= 9; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
+  assert.equal(WORLDS.length, 9);
 });
-for (const l of LEVELS) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
+for (const l of LEVELS.filter(l => l.kind !== 'sequence')) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
   const result = evaluateAll(l, withIds(l.solution), withIds(l.definition));
   assert.equal(result.success, true, result.results.map(r => r.failure).join(' / '));
   assert.equal(result.stars, 3);
@@ -17,6 +18,15 @@ for (const l of LEVELS) test(`All scenarios solvable: ${l.id} ${l.title}`, () =>
     assert.ok(b.cells.every(p => p.x >= 0 && p.x < b.cols && p.y >= 0 && p.y < b.rows));
     assert.equal(new Set(b.cells.map(p => `${p.x},${p.y}`)).size, b.cells.length);
   }
+});
+test('Daily-life sequence levels have 40 visual and 40 reading challenges with valid ordered solutions', () => {
+  assert.equal(SEQUENCE_TASKS.length, 40);
+  const visual = LEVELS.filter(l => l.grade === 8), reading = LEVELS.filter(l => l.grade === 9);
+  assert.equal(visual.length, 40); assert.equal(reading.length, 40);
+  assert.ok(visual.every(l => l.sequenceMode === 'symbols' && l.steps.length >= 4));
+  assert.ok(reading.every(l => l.sequenceMode === 'words' && l.steps.length >= 4));
+  assert.deepEqual(visual.map(l => l.steps.map(s => s[1])), reading.map(l => l.steps.map(s => s[1])));
+  for (const l of [...visual, ...reading]) assert.deepEqual(l.solution, l.steps.map((_, i) => i));
 });
 test('Reject empty program, walls, unfinished paths and missed crystals', () => {
   assert.equal(simulate(LEVELS[0], []).success, false);
@@ -81,6 +91,7 @@ test('Maze walls block movement and the goal only counts when reached by a short
 });
 test('Debugging starters contain an observable problem and all prescribed blocks are available', () => {
   for (const l of LEVELS) {
+    if (l.kind==='sequence') continue;
     if (l.kind==='debug') assert.equal(evaluateAll(l,l.starter||[],l.starterDefinition||[]).success,false,l.id);
     const collect = bs=>bs.flatMap(b=>[b.type,...collect(b.body||[]),...collect(b.elseBody||[])]);
     assert.ok([...collect(l.solution),...collect(l.definition)].every(t=>l.allowed.includes(t)),l.id);

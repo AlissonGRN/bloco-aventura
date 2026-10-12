@@ -17,6 +17,7 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
     await db.exec(await readFile(new URL('../supabase/migrations/202610060009_maze_levels_progress.sql', import.meta.url),'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/202610070001_robot_skins.sql', import.meta.url),'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/202610070002_fix_skin_unlock_validation.sql', import.meta.url),'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/20261012195945_sequence_levels_progress.sql', import.meta.url),'utf8'));
     await db.exec(`grant delete on public.bloco_teams to authenticated;
       create policy teacher_delete_team on public.bloco_teams for delete to authenticated using (public.is_bloco_teacher(classroom_id));`);
     const generatedCode = (await db.query('select public.generate_bloco_join_code() as code')).rows[0].code;
@@ -42,9 +43,10 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
     await assert.rejects(db.query("insert into public.team_stickers(team_id,type) values('team-a','logic')"),/row-level security/);
     await db.query(`update public.bloco_teams set progress='{"1-1":{"stars":3}}' where id='team-a'`);
     await db.query(`update public.bloco_teams set progress='{"6-1":{"stars":3},"7-40":{"stars":2}}', last_level='7-40' where id='team-a'`);
+    await db.query(`update public.bloco_teams set progress='{"8-1":{"stars":3},"9-40":{"stars":2}}', last_level='9-40' where id='team-a'`);
     await db.query(`update public.bloco_teams set progress='{"6-1":{"stars":3},"7-40":{"stars":2},"1-1":{"stars":3},"1-2":{"stars":2},"1-3":{"stars":3}}', avatar=5 where id='team-a'`);
     await assert.rejects(db.query('update public.bloco_teams set avatar=6 where id=\'team-a\''),/skin ainda não foi desbloqueada/i);
-    await assert.rejects(db.query(`update public.bloco_teams set progress='{"8-1":{"stars":3}}', avatar=4 where id='team-a'`),/Progresso inválido/);
+    await assert.rejects(db.query(`update public.bloco_teams set progress='{"10-1":{"stars":3}}', avatar=4 where id='team-a'`),/Progresso inválido/);
     await assert.rejects(db.query(`update public.bloco_teams set progress='{"1-1":{"stars":999}}', avatar=4 where id='team-a'`),/Progresso inválido/);
     await assert.rejects(db.query(`update public.bloco_teams set owner_id='${deviceB}' where id='team-a'`),/identidade/);
     assert.equal((await rows(`update public.bloco_teams set name='Equipe A' where id='team-a' returning id`)).length,1,'a pupil can update their own team');

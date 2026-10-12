@@ -32,6 +32,8 @@ export const WORLDS = [
   ...WORLDS_BASE.map((w, i) => ({ ...w, name: i === 2 ? 'Vale dos padrões' : w.name, topic: topics[i], description: descriptions[i], skill: guidance[i], teacher: guidance[i], trails: makeTrails(trails[i], discussions[i]) })),
   { id: 6, name: 'Labirinto das setas', short: 'Labirinto', topic: 'Rotas, obstáculos e caminho mínimo', description: 'Leia o mapa, contorne paredes e encontre a menor rota.', color: '#397c86', soft: '#e1f2f1', type: 'maze-arrows', icon: 'grid', skill: 'Planejar rotas em uma grade, evitar paredes e comparar o tamanho dos caminhos. As setas aparecem primeiro; repetir é liberado nas trilhas finais.', teacher: 'Conversem sobre caminhos possíveis e contem os passos. Nas trilhas 3 e 4, os blocos repetir ajudam a representar trechos iguais. O objetivo é alcançar a bandeira pelo menor caminho.', trails: makeTrails(['Ler o mapa', 'Contornar paredes', 'Rotas mais curtas', 'Mestre do labirinto'], ['Que caminho vocês imaginaram antes de montar as setas?', 'Qual parede obrigou Bip a mudar de direção?', 'Como sabemos que a rota tem menos passos?', 'Onde uma repetição economiza blocos?']) },
   { id: 7, name: 'Labirinto dos padrões', short: 'Padrões', topic: 'Repetições, decomposição e funções', description: 'Use padrões para atravessar mapas cheios de paredes.', color: '#765c99', soft: '#eee7f6', type: 'maze-loops', icon: 'blocks', skill: 'Representar rotas mínimas com laços, decompor um trajeto e reutilizar trechos em funções.', teacher: 'Os desafios começam usando repetir. Nas últimas trilhas, Meu bloco permite guardar um trecho do caminho e chamá-lo no programa principal. Incentive a equipe a conferir o menor número de passos.', trails: makeTrails(['Primeiros padrões', 'Repetições no mapa', 'Peças reutilizáveis', 'Funções no labirinto'], ['Que trecho do caminho se repete?', 'Como representar o mesmo padrão com menos blocos?', 'Que parte da rota poderia virar Meu bloco?', 'A função ajudou a organizar o caminho?']) },
+  { id: 8, name: 'Histórias em sequência', short: 'Figuras', topic: 'Sequência lógica e algoritmos do cotidiano', description: 'Organize figuras para mostrar como uma tarefa acontece.', color: '#cf8752', soft: '#faeee1', type: 'sequence-symbols', icon: 'sequence', skill: 'Observar pistas visuais, decompor tarefas em etapas e organizar ações numa sequência que faça sentido.', teacher: 'Os cartões não têm palavras: peça que a equipe descreva as imagens e justifique a ordem antes de conferir. Há tarefas cotidianas com diferentes quantidades de passos.', trails: makeTrails(['O que vem primeiro?', 'Pequenas rotinas', 'Atenção aos detalhes', 'Histórias completas'], ['Que pista mostra por onde começar?', 'O que precisa acontecer antes dessa ação?', 'Duas etapas poderiam trocar de lugar?', 'Como vocês explicam a ordem sem mostrar as cartas?']) },
+  { id: 9, name: 'Algoritmos do dia a dia', short: 'Algoritmos', topic: 'Algoritmos, decomposição e depuração', description: 'Coloque instruções simples na ordem certa e teste sua lógica.', color: '#508a72', soft: '#e4f2e9', type: 'sequence-words', icon: 'sequence', skill: 'Ler instruções, decompor uma rotina, comparar dependências entre etapas e corrigir sequências.', teacher: 'Antes de mover os cartões, leiam as ações e expliquem quais dependem umas das outras. Compare ordens alternativas e procure uma sequência válida.', trails: makeTrails(['Instruções em ordem', 'Rotinas e dependências', 'Corrija a sequência', 'Desafios de lógica'], ['Qual instrução precisa vir primeiro?', 'Que etapa depende do que veio antes?', 'Qual cartão está fora do lugar? Por quê?', 'Existe mais de uma ordem que funciona?']) },
 ];
 const seq = text => [...text].map(move);
 const dirs = ['R', 'U', 'L', 'D'];
@@ -154,13 +156,68 @@ for (const grade of [6, 7]) {
   }
 }
 
-export const LEVELS = [...ORIGINAL, ...extra].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
+// Sequencing challenges: symbol-only cards support emerging readers; text cards
+// build the same algorithmic reasoning with short, concrete instructions.
+export const SEQUENCE_TASKS = [
+  { title:'Lavar as mãos', icon:'Droplets', steps:[['Droplets','Abrir a torneira'],['Hand','Molhar as mãos'],['Sparkles','Passar sabonete'],['Waves','Enxaguar'],['Wind','Secar as mãos']] },
+  { title:'Preparar a mochila', icon:'Backpack', steps:[['BookOpen','Escolher o material'],['FolderOpen','Guardar os cadernos'],['Pencil','Colocar lápis e borracha'],['ListChecks','Conferir a lista'],['Backpack','Fechar a mochila']] },
+  { title:'Escovar os dentes', icon:'Smile', steps:[['CupSoda','Pegar a escova'],['Droplets','Molhar as cerdas'],['Sparkles','Colocar pasta'],['Brush','Escovar os dentes'],['Waves','Enxaguar a boca']] },
+  { title:'Fazer um desenho', icon:'Palette', steps:[['Lightbulb','Escolher uma ideia'],['Pencil','Desenhar o contorno'],['Paintbrush','Colorir o desenho'],['Eye','Observar o resultado']] },
+  { title:'Cuidar de uma planta', icon:'Sprout', steps:[['Eye','Observar a planta'],['Droplets','Regar a terra'],['Sun','Colocar perto da luz'],['Heart','Acompanhar o crescimento']] },
+  { title:'Fazer um sanduíche', icon:'Sandwich', steps:[['Sandwich','Separar o pão'],['Sandwich','Escolher o recheio'],['Layers','Montar o sanduíche'],['Utensils','Comer com cuidado'],['Trash2','Guardar a embalagem']] },
+  { title:'Entrar na sala', icon:'DoorOpen', steps:[['Footprints','Chegar à porta'],['Hand','Bater ou pedir licença'],['DoorOpen','Abrir a porta'],['Footprints','Entrar com cuidado'],['Armchair','Organizar o material']] },
+  { title:'Preparar-se para dormir', icon:'Moon', steps:[['BookOpen','Guardar os brinquedos'],['Brush','Escovar os dentes'],['Shirt','Colocar o pijama'],['BookOpen','Ler uma história'],['Bed','Deitar para dormir']] },
+  { title:'Fazer uma atividade', icon:'BookOpen', steps:[['Eye','Ler ou ouvir a tarefa'],['Pencil','Separar o material'],['Brain','Pensar numa estratégia'],['Pencil','Resolver a atividade'],['Check','Conferir a resposta']] },
+  { title:'Organizar a mesa', icon:'Table', steps:[['Trash2','Retirar o que não será usado'],['Waves','Limpar a mesa'],['BookOpen','Separar os cadernos'],['Pencil','Organizar os lápis'],['Check','Conferir se está pronta']] },
+  { title:'Fazer um avião de papel', icon:'Plane', steps:[['File','Pegar uma folha'],['FoldHorizontal','Dobrar ao meio'],['FoldVertical','Dobrar as pontas'],['Plane','Abrir as asas'],['Send','Testar o voo']] },
+  { title:'Escolher um livro', icon:'Library', steps:[['Eye','Observar os livros'],['Hand','Escolher um livro'],['BookOpen','Abrir na primeira página'],['BookOpen','Ler a história'],['Bookmark','Guardar o marcador']] },
+  { title:'Separar o lixo', icon:'Recycle', steps:[['Trash2','Juntar os materiais'],['Eye','Observar o material'],['Recycle','Separar recicláveis'],['Trash2','Descartar cada parte']] },
+  { title:'Preparar-se para sair', icon:'Sun', steps:[['Eye','Ver como está o tempo'],['Shirt','Escolher a roupa'],['Footprints','Calçar os sapatos'],['Backpack','Pegar o que precisa'],['DoorOpen','Sair com um adulto']] },
+  { title:'Montar um brinquedo', icon:'Puzzle', steps:[['Package','Abrir a caixa'],['Eye','Observar as peças'],['ListChecks','Ler ou ver o passo a passo'],['Puzzle','Montar as partes'],['Check','Testar o brinquedo']] },
+  { title:'Fazer pipoca', icon:'Popcorn', steps:[['Bowl','Separar os ingredientes'],['CookingPot','Colocar na panela'],['Flame','Aquecer com um adulto'],['Ear','Esperar os estouros pararem'],['Popcorn','Servir com cuidado']] },
+  { title:'Atravessar com segurança', icon:'TrafficCone', steps:[['Footprints','Parar na calçada'],['Eye','Olhar para os dois lados'],['Ear','Ouvir o trânsito'],['Hand','Esperar um adulto'],['Footprints','Atravessar na faixa']] },
+  { title:'Fazer um cartão', icon:'Mail', steps:[['File','Pegar papel e lápis'],['FoldHorizontal','Dobrar o papel'],['Pencil','Escrever uma mensagem'],['Heart','Fazer um desenho'],['Mail','Entregar o cartão']] },
+  { title:'Arrumar os brinquedos', icon:'ToyBrick', steps:[['Blocks','Juntar os brinquedos'],['Shapes','Separar por tipo'],['Package','Guardar cada grupo'],['Check','Conferir o chão']] },
+  { title:'Cuidar de um machucado', icon:'HeartPulse', steps:[['Hand','Chamar um adulto'],['Waves','Lavar com cuidado'],['Bandage','Colocar um curativo'],['Heart','Descansar e avisar se doer']] },
+  { title:'Montar uma torre', icon:'Blocks', steps:[['Blocks','Separar os blocos'],['Shapes','Escolher uma base larga'],['Blocks','Empilhar com cuidado'],['Eye','Observar se está firme'],['Check','Contar os andares']] },
+  { title:'Plantar uma semente', icon:'Sprout', steps:[['Shovel','Preparar a terra'],['CircleDot','Colocar a semente'],['Shovel','Cobrir com terra'],['Droplets','Regar um pouco'],['Sun','Deixar num lugar iluminado']] },
+  { title:'Fazer uma ligação', icon:'Phone', steps:[['Phone','Pegar o telefone'],['Contact','Escolher o contato'],['PhoneCall','Iniciar a chamada'],['MessageCircle','Falar com a pessoa'],['PhoneOff','Encerrar a chamada']] },
+  { title:'Preparar uma fruta', icon:'Apple', steps:[['Apple','Escolher a fruta'],['Waves','Lavar a fruta'],['Hand','Pedir ajuda para cortar'],['Utensils','Comer a fruta'],['Trash2','Descartar o que sobrou']] },
+  { title:'Ir à biblioteca', icon:'Library', steps:[['Footprints','Chegar à biblioteca'],['VolumeX','Falar baixinho'],['BookOpen','Escolher um livro'],['Contact','Registrar o empréstimo'],['BookOpen','Levar para ler']] },
+  { title:'Fazer uma experiência de papel', icon:'FlaskConical', steps:[['Lightbulb','Fazer uma pergunta'],['File','Separar os materiais'],['Brain','Imaginar o que pode acontecer'],['FlaskConical','Testar com cuidado'],['NotebookPen','Anotar o resultado']] },
+  { title:'Enviar um desenho', icon:'Mail', steps:[['Pencil','Fazer o desenho'],['Eye','Conferir o desenho'],['File','Escrever para quem é'],['Mail','Colocar no envelope'],['Send','Entregar ao destinatário']] },
+  { title:'Preparar a lancheira', icon:'ShoppingBag', steps:[['Hand','Lavar as mãos'],['Apple','Escolher a fruta'],['Sandwich','Separar o lanche'],['CupSoda','Encher a garrafinha'],['ShoppingBag','Guardar tudo na lancheira']] },
+  { title:'Construir uma ponte de papel', icon:'Construction', steps:[['File','Separar folhas'],['Ruler','Medir o espaço'],['FoldHorizontal','Dobrar o papel'],['Construction','Montar a ponte'],['Scale','Testar com objetos leves']] },
+  { title:'Observar o céu', icon:'CloudSun', steps:[['Eye','Olhar o céu com um adulto'],['CloudSun','Observar as nuvens'],['Sun','Ver onde está o sol'],['NotebookPen','Desenhar o que viu']] },
+  { title:'Resolver um problema', icon:'CircleHelp', steps:[['CircleHelp','Entender o que aconteceu'],['Brain','Pensar em possibilidades'],['ListChecks','Escolher um plano'],['Play','Testar o plano'],['RefreshCw','Mudar algo se não funcionar']] },
+  { title:'Fazer um marcador', icon:'Bookmark', steps:[['File','Escolher um papel'],['Scissors','Recortar com ajuda'],['Palette','Decorar o marcador'],['Bookmark','Colocar no livro']] },
+  { title:'Arrumar a sala', icon:'House', steps:[['Blocks','Reunir os brinquedos'],['Shapes','Separar os materiais'],['Package','Guardar nos lugares'],['Sparkles','Conferir e limpar o espaço']] },
+  { title:'Criar uma brincadeira', icon:'Gamepad2', steps:[['Lightbulb','Imaginar uma brincadeira'],['Users','Combinar as regras'],['ListChecks','Separar o que será usado'],['Play','Brincar juntos'],['MessageCircle','Conversar sobre como foi']] },
+  { title:'Preparar salada de frutas', icon:'Salad', steps:[['Apple','Escolher as frutas'],['Waves','Lavar as frutas'],['Hand','Pedir ajuda para cortar'],['CookingPot','Misturar numa tigela'],['Utensils','Servir em porções']] },
+  { title:'Fazer uma dobradura', icon:'Origami', steps:[['File','Escolher uma folha'],['FoldHorizontal','Dobrar uma ponta'],['FoldVertical','Juntar as bordas'],['Origami','Repetir as dobras'],['Eye','Abrir e observar a forma']] },
+  { title:'Cuidar dos livros', icon:'BookOpen', steps:[['BookOpen','Reunir os livros'],['Eye','Conferir se estão inteiros'],['Waves','Limpar as capas com cuidado'],['Library','Guardar na estante']] },
+  { title:'Escolher um caminho', icon:'Map', steps:[['Map','Observar o mapa'],['Flag','Localizar o destino'],['Eye','Comparar os caminhos'],['Brain','Escolher uma rota segura'],['Footprints','Seguir com um adulto']] },
+  { title:'Montar uma cabana', icon:'House', steps:[['Users','Combinar com a equipe'],['Armchair','Separar almofadas'],['House','Montar uma base estável'],['Eye','Conferir se está segura'],['Play','Brincar com cuidado']] },
+  { title:'Contar uma história', icon:'BookOpen', steps:[['Users','Escolher quem começa'],['Lightbulb','Imaginar um personagem'],['MessageCircle','Contar o começo'],['MessageCircle','Inventar o que acontece depois'],['Check','Criar um final']] },
+
+];
+
+const sequenceLevels = [8, 9].flatMap(grade => SEQUENCE_TASKS.slice(0, MISSIONS_PER_LEVEL).map((task, index) => ({
+  id: `${grade}-${index + 1}`, grade, number: index + 1, title: task.title,
+  concept: grade === 8 ? 'Sequências, observação e decomposição' : 'Algoritmos, leitura e depuração',
+  instruction: grade === 8 ? 'Observe as figuras e coloque as etapas na ordem em que a tarefa acontece.' : 'Leia as instruções e coloque cada etapa na ordem correta.',
+  hint: 'Pense no que precisa acontecer antes e no que só pode acontecer depois.',
+  kind: 'sequence', sequenceMode: grade === 8 ? 'symbols' : 'words', steps: task.steps,
+  solution: task.steps.map((_, i) => i), allowed: [], maxBlocks: task.steps.length,
+})));
+
+export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
   const allowed = l.allowed || ['move'];
   if (!l.allowed && (l.grade >= 3 || (l.grade === 2 && l.number >= 21))) allowed.push('repeat');
   if (!l.allowed && (l.grade >= 4 || (l.grade === 3 && l.number >= 21))) allowed.push('if');
   if (!l.allowed && (l.grade === 5 || (l.grade === 4 && l.number >= 31))) allowed.push('call');
   const trail = Math.floor((l.number - 1) / 10) + 1;
-  return { ...l, kind: l.kind || (l.starter ? 'debug' : l.boards.length > 1 ? 'adapt' : 'build'), allowed, trail, discussion: WORLDS[l.grade - 1].trails[trail - 1].discussion };
+  return { ...l, kind: l.kind || (l.starter ? 'debug' : l.boards?.length > 1 ? 'adapt' : 'build'), allowed, trail, discussion: WORLDS[l.grade - 1]?.trails[trail - 1]?.discussion || 'Que pistas ajudaram sua equipe a resolver este desafio?' };
 });
 export const TOTAL_MISSIONS = LEVELS.length;
 export const levelsFor = difficulty => LEVELS.filter(l => l.grade === difficulty);

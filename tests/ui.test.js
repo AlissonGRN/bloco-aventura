@@ -14,8 +14,8 @@ const { act, createElement } = await import('react');
 const { createRoot } = await import('react-dom/client');
 const dir = path.resolve('.test-build');
 await mkdir(dir, { recursive: true });
-await build({ stdin: { contents: `export { default as App } from './src/App.jsx'; export { default as Game } from './src/components/Game.jsx'; export { StickerNotification } from './src/components/ClassroomExtras.jsx'; export { validateSave, STORAGE_KEY } from './src/hooks/useClassroom.js'; export { getLevel } from './src/data/curriculum.js';`, resolveDir: process.cwd(), loader: 'jsx' }, outfile: path.join(dir, 'ui.mjs'), bundle: true, format: 'esm', platform: 'node', packages: 'external', jsx: 'automatic', logLevel: 'silent' });
-const { App, Game, StickerNotification, validateSave, STORAGE_KEY, getLevel } = await import(pathToFileURL(path.join(dir, 'ui.mjs')));
+await build({ stdin: { contents: `export { default as App } from './src/App.jsx'; export { default as Game } from './src/components/Game.jsx'; export { default as SequenceGame } from './src/components/SequenceGame.jsx'; export { StickerNotification } from './src/components/ClassroomExtras.jsx'; export { validateSave, STORAGE_KEY } from './src/hooks/useClassroom.js'; export { getLevel } from './src/data/curriculum.js';`, resolveDir: process.cwd(), loader: 'jsx' }, outfile: path.join(dir, 'ui.mjs'), bundle: true, format: 'esm', platform: 'node', packages: 'external', jsx: 'automatic', logLevel: 'silent' });
+const { App, Game, SequenceGame, StickerNotification, validateSave, STORAGE_KEY, getLevel } = await import(pathToFileURL(path.join(dir, 'ui.mjs')));
 let root;
 async function mount(element) {
   if (root) await act(async () => root.unmount());
@@ -187,3 +187,25 @@ test('A sticker notification tells the team what the teacher sent and can be dis
 });
 
 after(async () => { if (root) await act(async () => root.unmount()); dom.window.close(); await rm(dir, { recursive: true, force: true }); });
+
+test('Sequence challenges display symbol-only cards or reading cards and save completed progress', async () => {
+  const visualTeam = team('seq-visual', 'Equipe Figura');
+  let result;
+  await mount(createElement(SequenceGame, { level: getLevel('8-1'), team: visualTeam, onAttempt: () => {}, onComplete: (...args) => { result = args; } }));
+  assert.ok(document.querySelector('.sequence-board.symbol-mode'));
+  assert.equal(document.querySelectorAll('.sequence-card .sequence-step-text').length, 0, 'non-reading mode has no visible action text');
+  for (let position = 0; position < getLevel('8-1').steps.length; position++) {
+    let cards = [...document.querySelectorAll('.sequence-card')];
+    let current = cards.findIndex(el => el.querySelector('.sr-only').textContent === getLevel('8-1').steps[position][1]);
+    while (current > position) {
+      await click(cards[current].querySelectorAll('.sequence-controls button')[0]);
+      cards = [...document.querySelectorAll('.sequence-card')]; current--;
+    }
+  }
+  await click(button('Conferir sequência'));
+  assert.equal(result[0], '8-1'); assert.equal(result[1], 3);
+  assert.ok(document.querySelector('.win-modal'));
+  await mount(createElement(SequenceGame, { level: getLevel('9-1'), team: team('seq-words', 'Equipe Leitura'), onComplete: () => {} }));
+  assert.ok(document.querySelector('.sequence-board.word-mode'));
+  assert.ok(document.querySelectorAll('.sequence-step-text').length > 0, 'reading mode includes written actions');
+});
