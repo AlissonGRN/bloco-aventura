@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Apple, Armchair, Backpack, Bandage, Bed, Blocks, BookOpen, Bookmark, Brain, Brush, Check, Circle, CircleDot, CircleHelp, CloudSun, Construction, Contact, CookingPot, CupSoda, DoorOpen, Droplets, Ear, Eye, File, Flag, Flame, FlaskConical, FoldHorizontal, FoldVertical, FolderOpen, Footprints, Hand, Heart, House, Layers, Library, Lightbulb, ListChecks, Mail, Map, MessageCircle, NotebookPen, Origami, Package, Paintbrush, Palette, Pencil, Phone, PhoneCall, PhoneOff, Plane, Play, Popcorn, Puzzle, Recycle, RefreshCw, Ruler, Sandwich, Scale, Scissors, Send, Shapes, Shirt, ShoppingBag, Shovel, Sparkles, Sun, Trash2, Users, Utensils, VolumeX, Waves, Wind, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
 import { WORLDS, getLevel } from '../data/curriculum';
 import { Modal, Stars } from './UI';
@@ -18,7 +18,6 @@ export default function SequenceGame({ level, team, onBack, onNext, onWorld, onC
   const [win, setWin] = useState(null);
   const [tries, setTries] = useState(0);
   const completed = Boolean(team.progress[level.id]);
-  const labelMode = level.sequenceMode === 'symbols' ? 'Figuras' : 'Leitura';
   const swap = (index, delta) => {
     setOrder(current => {
       const next = [...current], target = index + delta;
@@ -45,15 +44,15 @@ export default function SequenceGame({ level, team, onBack, onNext, onWorld, onC
 
   return <div className="sequence-game" style={{ '--world': world.color, '--world-soft': world.soft }}>
     <div className="game-breadcrumb"><button className="text-back" onClick={onBack}><ArrowLeft size={18}/><span>{world.short}</span></button><span>Desafio {level.number} de 40</span><span className="game-grade-badge">Nível {level.grade}</span><Stars count={team.progress[level.id]?.stars || 0}/></div>
-    <header className="sequence-heading"><div><span className="eyebrow">{labelMode.toUpperCase()} · ALGORITMOS DO COTIDIANO</span><h1>{level.sequenceMode === 'symbols' ? 'Organize as figuras' : 'Coloque na ordem'}</h1><p>{level.instruction}</p></div><div className="sequence-scene" aria-hidden="true">{icon(task[0].icon, 30)}<span>{task[0].title}</span></div></header>
-    <section className={`sequence-board ${level.sequenceMode === 'symbols' ? 'symbol-mode' : 'word-mode'}`} aria-label={`Etapas de ${task[0].title}`}>
+    <header className="sequence-heading"><div><span className="eyebrow">ALGORITMOS DO COTIDIANO</span><h1>Coloque na ordem</h1><p>{level.instruction}</p></div><div className="sequence-scene" aria-hidden="true">{icon(task[0].icon, 30)}<span>{task[0].title}</span></div></header>
+    <section className="sequence-board word-mode" aria-label={`Etapas de ${task[0].title}`}>
       <div className="sequence-board-title"><strong>O que acontece primeiro?</strong><span>{order.length} etapas</span></div>
       <ol className="sequence-cards">{order.map((stepIndex, position) => {
         const [symbol, text] = task[stepIndex];
         return <li className="sequence-card" key={stepIndex}>
           <span className="sequence-position" aria-label={`Posição ${position + 1}`}>{position + 1}</span>
-          <span className="sequence-symbol">{icon(symbol, level.sequenceMode === 'symbols' ? 39 : 27)}</span>
-          {level.sequenceMode === 'words' && <span className="sequence-step-text">{text}</span>}
+          <span className="sequence-symbol">{icon(symbol, 27)}</span>
+          <span className="sequence-step-text">{text}</span>
           <span className="sr-only">{text}</span>
           <div className="sequence-controls"><button className="icon-btn" disabled={position === 0} aria-label={`Mover ${text} para cima`} onClick={() => swap(position, -1)}><ChevronUp size={20}/></button><button className="icon-btn" disabled={position === order.length - 1} aria-label={`Mover ${text} para baixo`} onClick={() => swap(position, 1)}><ChevronDown size={20}/></button></div>
         </li>;

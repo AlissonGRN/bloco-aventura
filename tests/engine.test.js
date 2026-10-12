@@ -9,7 +9,7 @@ test('360 unique missions, 40 per level', () => {
   for (let grade = 1; grade <= 9; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
   assert.equal(WORLDS.length, 9);
 });
-for (const l of LEVELS.filter(l => l.kind !== 'sequence')) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
+for (const l of LEVELS.filter(l => !['sequence','circuit'].includes(l.kind))) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
   const result = evaluateAll(l, withIds(l.solution), withIds(l.definition));
   assert.equal(result.success, true, result.results.map(r => r.failure).join(' / '));
   assert.equal(result.stars, 3);
@@ -19,14 +19,19 @@ for (const l of LEVELS.filter(l => l.kind !== 'sequence')) test(`All scenarios s
     assert.equal(new Set(b.cells.map(p => `${p.x},${p.y}`)).size, b.cells.length);
   }
 });
-test('Daily-life sequence levels have 40 visual and 40 reading challenges with valid ordered solutions', () => {
+test('Arduino circuit and reading sequence levels each have 40 progressively designed challenges', () => {
   assert.equal(SEQUENCE_TASKS.length, 40);
-  const visual = LEVELS.filter(l => l.grade === 8), reading = LEVELS.filter(l => l.grade === 9);
-  assert.equal(visual.length, 40); assert.equal(reading.length, 40);
-  assert.ok(visual.every(l => l.sequenceMode === 'symbols' && l.steps.length >= 4));
+  const circuits = LEVELS.filter(l => l.grade === 8), reading = LEVELS.filter(l => l.grade === 9);
+  assert.equal(circuits.length, 40); assert.equal(reading.length, 40);
+  assert.ok(circuits.every(l => l.kind === 'circuit' && l.parts.length >= 3 && l.connections.length >= 3));
   assert.ok(reading.every(l => l.sequenceMode === 'words' && l.steps.length >= 4));
-  assert.deepEqual(visual.map(l => l.steps.map(s => s[1])), reading.map(l => l.steps.map(s => s[1])));
-  for (const l of [...visual, ...reading]) assert.deepEqual(l.solution, l.steps.map((_, i) => i));
+  for (const l of reading) assert.deepEqual(l.solution, l.steps.map((_, i) => i));
+  assert.ok(circuits[0].connections.length < circuits[10].connections.length);
+  assert.ok(circuits[20].connections.length < circuits[30].connections.length);
+  for (const l of circuits) {
+    const ports = new Set(l.parts.flatMap(part => part.ports.map(port => port.id)));
+    assert.ok(l.connections.flat().every(port => ports.has(port)), l.id);
+  }
 });
 test('Reject empty program, walls, unfinished paths and missed crystals', () => {
   assert.equal(simulate(LEVELS[0], []).success, false);
@@ -67,7 +72,7 @@ test('Concepts mix progressively instead of restricting each level to one block'
   for (let difficulty=1; difficulty<=5; difficulty++) {
     const missions=LEVELS.filter(l=>l.grade===difficulty);
     for(let trail=1; trail<=4; trail++) assert.equal(missions.filter(l=>l.trail===trail).length,10);
-    assert.ok(new Set(missions.map(l=>l.kind)).size>=2);
+    if (difficulty<=5) assert.ok(new Set(missions.map(l=>l.kind)).size>=2);
   }
 });
 test('Optimization budgets are enforced even when the path is solved', () => {
@@ -91,7 +96,7 @@ test('Maze walls block movement and the goal only counts when reached by a short
 });
 test('Debugging starters contain an observable problem and all prescribed blocks are available', () => {
   for (const l of LEVELS) {
-    if (l.kind==='sequence') continue;
+    if (['sequence','circuit'].includes(l.kind)) continue;
     if (l.kind==='debug') assert.equal(evaluateAll(l,l.starter||[],l.starterDefinition||[]).success,false,l.id);
     const collect = bs=>bs.flatMap(b=>[b.type,...collect(b.body||[]),...collect(b.elseBody||[])]);
     assert.ok([...collect(l.solution),...collect(l.definition)].every(t=>l.allowed.includes(t)),l.id);

@@ -1,9 +1,9 @@
 import { useId } from 'react';
-import { ArrowUp, ArrowRight, ArrowDown, ArrowLeft, Sprout, Compass, Repeat2, GitFork, Rocket, Grid2X2, Blocks, ListOrdered } from 'lucide-react';
+import { ArrowUp, ArrowRight, ArrowDown, ArrowLeft, Sprout, Compass, Repeat2, GitFork, Rocket, Grid2X2, Blocks, ListOrdered, Cpu } from 'lucide-react';
 import { ROBOT_SKINS } from '../data/classroom.js';
 
 export const directionIcon = { R: ArrowRight, L: ArrowLeft, U: ArrowUp, D: ArrowDown };
-export const worldIcon = { sprout: Sprout, compass: Compass, repeat: Repeat2, split: GitFork, rocket: Rocket, grid: Grid2X2, blocks: Blocks, sequence: ListOrdered };
+export const worldIcon = { sprout: Sprout, compass: Compass, repeat: Repeat2, split: GitFork, rocket: Rocket, grid: Grid2X2, blocks: Blocks, sequence: ListOrdered, circuit: Cpu };
 
 export function Robot({ className = '', happy = false, color, skin = 0 }) {
   const skinIndex = Math.max(0, Math.min(ROBOT_SKINS.length - 1, Number(skin) || 0));
@@ -44,6 +44,7 @@ function Tree({ x, y, scale = 1, color = '#5d9466', pine = false }) {
 
 export function WorldArt({ type = 'garden', className = '', hero = false }) {
   const id = useId().replaceAll(':', '');
+  if (type === 'circuit') return <svg viewBox="0 0 440 270" className={className} fill="none" aria-hidden="true"><rect x="30" y="28" width="380" height="214" rx="28" fill="#dff0e9"/><path d="M75 189h58v-42h64v-44h79v43h76" stroke="#cf8050" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/><path d="M75 217h104v-42h71v-48h100" stroke="#427c76" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/><rect x="57" y="105" width="76" height="103" rx="13" fill="#326b62"/><rect x="68" y="117" width="54" height="42" rx="5" fill="#d5ebe2"/><circle cx="95" cy="183" r="8" fill="#f1c45e"/><rect x="185" y="82" width="38" height="25" rx="5" fill="#e8bd66" stroke="#8b7139" strokeWidth="3"/><path d="M193 82V72m22 10V72" stroke="#8b7139" strokeWidth="4"/><path d="M266 125v34m20-34v34" stroke="#6d5041" strokeWidth="5"/><circle cx="276" cy="111" r="18" fill="#79c878" stroke="#50855b" strokeWidth="4"/><circle cx="276" cy="111" r="29" fill="#91da7d" opacity=".16"/><rect x="333" y="123" width="38" height="34" rx="6" fill="#f1dfb8" stroke="#876c48" strokeWidth="3"/><path d="M342 123v-9m20 9v-9" stroke="#876c48" strokeWidth="4"/><circle cx="75" cy="189" r="7" fill="#fff"/><circle cx="359" cy="146" r="7" fill="#fff"/><text x="53" y="96" fill="#42655e" fontSize="13" fontWeight="700">ARDUINO</text></svg>;
   const island = type === 'island', forest = type === 'forest', station = type === 'station', valley = type === 'valley', maze = type.startsWith('maze-'), mazeLoops = type === 'maze-loops';
   const top = maze ? mazeLoops ? '#d1c4e2' : '#b7d8d7' : island ? '#a8d6cc' : forest ? '#b8c6ae' : station ? '#edcdb4' : valley ? '#ead99f' : '#b9d7a0';
   const treeColor = forest ? '#75876a' : valley ? '#b2a064' : '#66966b';

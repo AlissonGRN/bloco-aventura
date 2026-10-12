@@ -32,7 +32,7 @@ export const WORLDS = [
   ...WORLDS_BASE.map((w, i) => ({ ...w, name: i === 2 ? 'Vale dos padrões' : w.name, topic: topics[i], description: descriptions[i], skill: guidance[i], teacher: guidance[i], trails: makeTrails(trails[i], discussions[i]) })),
   { id: 6, name: 'Labirinto das setas', short: 'Labirinto', topic: 'Rotas, obstáculos e caminho mínimo', description: 'Leia o mapa, contorne paredes e encontre a menor rota.', color: '#397c86', soft: '#e1f2f1', type: 'maze-arrows', icon: 'grid', skill: 'Planejar rotas em uma grade, evitar paredes e comparar o tamanho dos caminhos. As setas aparecem primeiro; repetir é liberado nas trilhas finais.', teacher: 'Conversem sobre caminhos possíveis e contem os passos. Nas trilhas 3 e 4, os blocos repetir ajudam a representar trechos iguais. O objetivo é alcançar a bandeira pelo menor caminho.', trails: makeTrails(['Ler o mapa', 'Contornar paredes', 'Rotas mais curtas', 'Mestre do labirinto'], ['Que caminho vocês imaginaram antes de montar as setas?', 'Qual parede obrigou Bip a mudar de direção?', 'Como sabemos que a rota tem menos passos?', 'Onde uma repetição economiza blocos?']) },
   { id: 7, name: 'Labirinto dos padrões', short: 'Padrões', topic: 'Repetições, decomposição e funções', description: 'Use padrões para atravessar mapas cheios de paredes.', color: '#765c99', soft: '#eee7f6', type: 'maze-loops', icon: 'blocks', skill: 'Representar rotas mínimas com laços, decompor um trajeto e reutilizar trechos em funções.', teacher: 'Os desafios começam usando repetir. Nas últimas trilhas, Meu bloco permite guardar um trecho do caminho e chamá-lo no programa principal. Incentive a equipe a conferir o menor número de passos.', trails: makeTrails(['Primeiros padrões', 'Repetições no mapa', 'Peças reutilizáveis', 'Funções no labirinto'], ['Que trecho do caminho se repete?', 'Como representar o mesmo padrão com menos blocos?', 'Que parte da rota poderia virar Meu bloco?', 'A função ajudou a organizar o caminho?']) },
-  { id: 8, name: 'Histórias em sequência', short: 'Figuras', topic: 'Sequência lógica e algoritmos do cotidiano', description: 'Organize figuras para mostrar como uma tarefa acontece.', color: '#cf8752', soft: '#faeee1', type: 'sequence-symbols', icon: 'sequence', skill: 'Observar pistas visuais, decompor tarefas em etapas e organizar ações numa sequência que faça sentido.', teacher: 'Os cartões não têm palavras: peça que a equipe descreva as imagens e justifique a ordem antes de conferir. Há tarefas cotidianas com diferentes quantidades de passos.', trails: makeTrails(['O que vem primeiro?', 'Pequenas rotinas', 'Atenção aos detalhes', 'Histórias completas'], ['Que pista mostra por onde começar?', 'O que precisa acontecer antes dessa ação?', 'Duas etapas poderiam trocar de lugar?', 'Como vocês explicam a ordem sem mostrar as cartas?']) },
+  { id: 8, name: 'Oficina de circuitos', short: 'Circuitos', topic: 'Eletricidade básica e Arduino', description: 'Conecte os componentes, feche circuitos e descubra como o Arduino controla as luzes.', color: '#397c86', soft: '#e1f2f1', type: 'circuit', icon: 'circuit', skill: 'Reconhecer pinos digitais, resistores, LEDs, GND e entradas de botão montando circuitos seguros.', teacher: 'A equipe conecta os terminais para fechar circuitos. As trilhas começam com LED e resistor, adicionam botão com INPUT_PULLUP e terminam com duas luzes e depuração. Reforce que o resistor protege o LED e GND fecha o caminho da corrente.', trails: makeTrails(['Acenda o LED', 'Botões e entradas', 'Duas luzes', 'Conserte o circuito'], ['Por que o LED precisa de um resistor?', 'O que muda quando pressionamos o botão?', 'Como o GND fecha o caminho da corrente?', 'Qual fio está impedindo o circuito de funcionar?']) },
   { id: 9, name: 'Algoritmos do dia a dia', short: 'Algoritmos', topic: 'Algoritmos, decomposição e depuração', description: 'Coloque instruções simples na ordem certa e teste sua lógica.', color: '#508a72', soft: '#e4f2e9', type: 'sequence-words', icon: 'sequence', skill: 'Ler instruções, decompor uma rotina, comparar dependências entre etapas e corrigir sequências.', teacher: 'Antes de mover os cartões, leiam as ações e expliquem quais dependem umas das outras. Compare ordens alternativas e procure uma sequência válida.', trails: makeTrails(['Instruções em ordem', 'Rotinas e dependências', 'Corrija a sequência', 'Desafios de lógica'], ['Qual instrução precisa vir primeiro?', 'Que etapa depende do que veio antes?', 'Qual cartão está fora do lugar? Por quê?', 'Existe mais de uma ordem que funciona?']) },
 ];
 const seq = text => [...text].map(move);
@@ -202,16 +202,64 @@ export const SEQUENCE_TASKS = [
 
 ];
 
-const sequenceLevels = [8, 9].flatMap(grade => SEQUENCE_TASKS.slice(0, MISSIONS_PER_LEVEL).map((task, index) => ({
-  id: `${grade}-${index + 1}`, grade, number: index + 1, title: task.title,
-  concept: grade === 8 ? 'Sequências, observação e decomposição' : 'Algoritmos, leitura e depuração',
-  instruction: grade === 8 ? 'Observe as figuras e coloque as etapas na ordem em que a tarefa acontece.' : 'Leia as instruções e coloque cada etapa na ordem correta.',
+const sequenceLevels = SEQUENCE_TASKS.slice(0, MISSIONS_PER_LEVEL).map((task, index) => ({
+  id: `9-${index + 1}`, grade: 9, number: index + 1, title: task.title,
+  concept: 'Algoritmos, leitura e depuração',
+  instruction: 'Leia as instruções e coloque cada etapa na ordem correta.',
   hint: 'Pense no que precisa acontecer antes e no que só pode acontecer depois.',
-  kind: 'sequence', sequenceMode: grade === 8 ? 'symbols' : 'words', steps: task.steps,
+  kind: 'sequence', sequenceMode: 'words', steps: task.steps,
   solution: task.steps.map((_, i) => i), allowed: [], maxBlocks: task.steps.length,
-})));
+}));
 
-export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
+const circuitParts = {
+  led: (pin, color) => [
+    { name:'Arduino', note:`Pino de saída ${pin} e terra`, ports:[{id:pin,label:pin},{id:'GND',label:'GND'}] },
+    { name:'Resistor 220 Ω', note:'Protege o LED', ports:[{id:'R1A',label:'A'},{id:'R1B',label:'B'}] },
+    { name:`LED ${color}`, note:'Perninha longa: + · curta: −', ports:[{id:'L1+',label:'+'},{id:'L1−',label:'−'}] },
+  ],
+  button: pin => [
+    { ...circuitParts.led(pin,'verde')[0],ports:[{id:pin,label:pin},{id:'D2',label:'D2'},{id:'GND',label:'GND'}] },
+    ...circuitParts.led(pin,'verde').slice(1),
+    { name:'Botão', note:'Entrada digital D2', ports:[{id:'B1',label:'lado 1'},{id:'B2',label:'lado 2'}] },
+  ],
+  pair: (pin1, pin2) => [
+    { name:'Arduino', note:'Duas saídas digitais e terra', ports:[{id:pin1,label:pin1},{id:pin2,label:pin2},{id:'GND',label:'GND'}] },
+    { name:'Resistor 1 · 220 Ω', note:'Protege o LED vermelho', ports:[{id:'R1A',label:'A'},{id:'R1B',label:'B'}] },
+    { name:'LED vermelho', note:'Perninha longa: + · curta: −', ports:[{id:'L1+',label:'+'},{id:'L1−',label:'−'}] },
+    { name:'Resistor 2 · 220 Ω', note:'Protege o LED azul', ports:[{id:'R2A',label:'A'},{id:'R2B',label:'B'}] },
+    { name:'LED azul', note:'Perninha longa: + · curta: −', ports:[{id:'L2+',label:'+'},{id:'L2−',label:'−'}] },
+  ],
+};
+const ledTitles = ['A primeira luz','Pino digital 13','O caminho da corrente','Resistor protetor','Perninha positiva','Terra do Arduino','LED amarelo','Mude o pino','Um fio de cada vez','Pequena lanterna'];
+const buttonTitles = ['O botão de Bip','Entrada digital','Pressione para acender','INPUT_PULLUP','Um sinal de entrada','Botão e GND','Conserte o botão','Leia o pino D2','Teste o circuito','Mestre dos botões'];
+const pairTitles = ['Duas cores','Farol da oficina','Luzes alternadas','Vermelho e azul','Sinal luminoso','Dois caminhos','LEDs independentes','Pinos diferentes','Duas luzes, uma terra','Pequeno semáforo'];
+const circuitLevels = [];
+function addCircuitLevel(number, title, parts, connections, concept, options={}) {
+  const broken = options.broken ? [options.broken] : [];
+  circuitLevels.push({ id:`8-${number}`,grade:8,number,title,kind:'circuit',parts,connections,starter:broken,concept,instruction:options.instruction||'Ligue os terminais para montar um circuito fechado que funciona.',hint:options.hint||'Conversem sobre o caminho da energia: saída, resistor, LED e GND.',allowed:[],maxBlocks:connections.length });
+}
+const outputPins=['D13','D12','D11','D10','D9','D8','D7','D6','D5','D4'];
+outputPins.forEach((pin,i)=>{
+  const connections=[[pin,'R1A'],['R1B','L1+'],['L1−','GND']];
+  addCircuitLevel(i+1,ledTitles[i],circuitParts.led(pin,['verde','vermelho','amarelo'][i%3]),connections,'Circuito em série: pino digital, resistor, LED e GND',{broken:i%3===2?['L1+','GND']:null,hint:i<4?'A saída do Arduino precisa chegar ao + do LED passando pelo resistor. A perninha − vai ao GND.':'Siga o caminho completo: pino '+pin+' → resistor → + do LED → − do LED → GND.'});
+});
+outputPins.slice(0,10).forEach((pin,i)=>{
+  const connections=[[pin,'R1A'],['R1B','L1+'],['L1−','GND'],['B1','GND'],['B2','D2']];
+  addCircuitLevel(11+i,buttonTitles[i],circuitParts.button(pin),connections,'Saída para o LED e entrada digital com botão',{broken:i%2===0?['B1','D2']:null,instruction:'Conecte o LED e o botão ao Arduino. O botão usa INPUT_PULLUP no pino D2.',hint:'Um lado do botão vai ao GND; o outro vai ao pino de entrada D2. O LED precisa do resistor.'});
+});
+const pinPairs=[['D13','D12'],['D13','D11'],['D12','D10'],['D11','D9'],['D10','D8'],['D9','D7'],['D8','D6'],['D7','D5'],['D6','D4'],['D5','D3']];
+pinPairs.forEach(([pin1,pin2],i)=>{
+  const connections=[[pin1,'R1A'],['R1B','L1+'],['L1−','GND'],[pin2,'R2A'],['R2B','L2+'],['L2−','GND']];
+  addCircuitLevel(21+i,pairTitles[i],circuitParts.pair(pin1,pin2),connections,'Dois circuitos LED independentes',{broken:i%2===1?['R2B','L2−']:null,instruction:'Monte dois caminhos independentes. Cada LED precisa do próprio resistor e os dois retornam ao GND.',hint:'Não junte os pinos das luzes: cada caminho começa em uma saída e termina no GND.'});
+});
+pinPairs.forEach(([pin1,pin2],i)=>{
+  const pairParts=circuitParts.pair(pin1,pin2);
+  const parts=[{...pairParts[0],ports:[...pairParts[0].ports,{id:'D2',label:'D2'}]},...pairParts.slice(1),{name:'Botão',note:'Entrada D2 com INPUT_PULLUP',ports:[{id:'B1',label:'lado 1'},{id:'B2',label:'lado 2'}]}];
+  const connections=[[pin1,'R1A'],['R1B','L1+'],['L1−','GND'],[pin2,'R2A'],['R2B','L2+'],['L2−','GND'],['B1','GND'],['B2','D2']];
+  addCircuitLevel(31+i,['Botão mestre','Conserte uma conexão','Duas luzes e uma entrada','O caminho completo','Desafio das três partes','Confira os resistores','Um sinal para o Arduino','Circuito organizado','Detetive do GND','Projeto da oficina'][i],parts,connections,'Saídas digitais, entrada D2 e GND compartilhado',{broken:i%2===0?['B1','D2']:null,instruction:'Conecte as duas luzes e o botão. Confira cada resistor, polaridade e retorno ao GND.',hint:'Revise os três caminhos separadamente: LED vermelho, LED azul e botão D2.'});
+});
+
+export const LEVELS = [...ORIGINAL, ...extra, ...circuitLevels, ...sequenceLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
   const allowed = l.allowed || ['move'];
   if (!l.allowed && (l.grade >= 3 || (l.grade === 2 && l.number >= 21))) allowed.push('repeat');
   if (!l.allowed && (l.grade >= 4 || (l.grade === 3 && l.number >= 21))) allowed.push('if');
