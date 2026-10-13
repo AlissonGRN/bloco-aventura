@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Compass, Trophy, Users, BookOpen, ChevronDown, ArrowRight, Plus, Check } from 'lucide-react';
+import { Compass, Trophy, Users, BookOpen, ChevronDown, ArrowRight, Plus, Check, CircleHelp } from 'lucide-react';
 import { useClassroom } from './hooks/useClassroom';
 import { WORLDS, getLevel } from './data/curriculum';
 import { Brand, Modal } from './components/UI';
@@ -28,7 +28,7 @@ export default function App() {
   return <div className={`app-shell ${route.page === 'game' ? 'playing' : ''}`}>
     <a href="#main-content" className="skip-link">Ir para o conteúdo</a>
     <aside className="sidebar"><Brand onClick={() => navigate('explore')}/><span className="sidebar-label">SUA JORNADA</span><nav aria-label="Menu principal">{nav.map(item => <button className={`nav-item ${(item.page === 'explore' ? isExploring : route.page === item.page) ? 'active' : ''}`} key={item.page} onClick={() => navigate(item.page)} title={item.label}><item.icon size={21}/><span>{item.label}</span>{item.page === 'explore' && <i/>}</button>)}</nav><div className="sidebar-bip"><Robot happy/><strong>Uma ideia de cada vez.</strong><p>Você tem tudo para<br/>ir muito longe!</p><span>✦</span></div><div className="sidebar-bottom"><button className={`nav-item teacher-nav ${route.page === 'teacher' ? 'active' : ''}`} onClick={() => navigate('teacher')} title="Espaço do professor"><BookOpen size={20}/><span>Espaço do professor</span></button><div className="sidebar-footer"><span className="status-dot"/>{route.page === 'game' ? 'Feito com ❤️ por Alisson Nascimento' : 'Feito para mentes curiosas'}</div></div></aside>
-    <div className="app-main"><header className="topbar"><div className="topbar-context"><span className="mini-logo"><Robot/></span><span>{route.page === 'teacher' ? 'Aprender juntos vai mais longe.' : 'Pensar. Criar. Descobrir.'}</span></div><div className="topbar-actions"><CloudStatus classroom={classroom} compact/>{team && route.page !== 'teacher' && <button className="btn secondary small end-session" onClick={() => { if (route.page === 'game') openWorld(getLevel(route.levelId).grade); setModal({ type: 'feedback' }); }}><Check size={17}/>Encerrar sessão</button>}{route.page !== 'teacher' && (team ? <button className="team-switcher" onClick={() => setModal({ type: 'switch' })}><TeamAvatar team={team}/><span><strong>{team.name}</strong><small>Trocar equipe</small></span><ChevronDown size={17}/></button> : <button className="btn primary small" onClick={() => navigate('explore')}>Criar equipe<ArrowRight size={17}/></button>)}</div></header>
+    <div className="app-main"><header className="topbar"><div className="topbar-context"><span className="mini-logo"><Robot/></span><span>{route.page === 'teacher' ? 'Aprender juntos vai mais longe.' : 'Pensar. Criar. Descobrir.'}</span></div><div className="topbar-actions"><CloudStatus classroom={classroom} compact/>{team && route.page === 'game' && <HelpRequestButton team={team} classroom={classroom}/>}{team && route.page !== 'teacher' && <button className="btn secondary small end-session" onClick={() => { if (route.page === 'game') openWorld(getLevel(route.levelId).grade); setModal({ type: 'feedback' }); }}><Check size={17}/>Encerrar sessão</button>}{route.page !== 'teacher' && (team ? <button className="team-switcher" onClick={() => setModal({ type: 'switch' })}><TeamAvatar team={team}/><span><strong>{team.name}</strong><small>Trocar equipe</small></span><ChevronDown size={17}/></button> : <button className="btn primary small" onClick={() => navigate('explore')}>Criar equipe<ArrowRight size={17}/></button>)}</div></header>
       <main id="main-content" className="main-content">{classroom.error && <div className="storage-warning inline" role="alert">{classroom.error}</div>}
         {route.page === 'explore' && team && <Dashboard team={team} onWorld={openWorld} onLevel={openLevel}/>}
         {route.page === 'world' && team && <WorldMap world={WORLDS[route.grade - 1]} team={team} key={route.grade} onBack={() => navigate('explore')} onLevel={openLevel}/>}
@@ -43,4 +43,31 @@ export default function App() {
     {modal && modal.type !== 'feedback' && <Modal title={modal.type === 'switch' ? 'Trocar equipe' : 'Criar equipe'} onClose={() => setModal(null)} className="teams-modal"><span className="eyebrow">JUNTOS NA AVENTURA</span><h2>{modal.type === 'switch' ? 'Quem vai explorar agora?' : 'Uma nova equipe, novas ideias.'}</h2>{modal.type === 'switch' ? <><p>Escolha uma equipe para continuar de onde parou.</p><div className="switch-team-list">{classroom.data.teams.map(t => <button className={`team-row ${team?.id === t.id ? 'selected' : ''}`} key={t.id} onClick={() => selectTeam(t.id)}><TeamAvatar team={t}/><span><strong>{t.name}</strong><small>{t.members.join(', ')}</small></span>{team?.id === t.id ? <Check size={20}/> : <ArrowRight size={19}/>}</button>)}</div><button className="btn secondary full" onClick={() => setModal({ type: 'new' })}><Plus size={18}/>Criar nova equipe</button></> : <TeamForm classes={classroom.data.classes} initial={modal.team} onSave={saveTeam} onCancel={() => setModal(null)}/>}</Modal>}
 
   </div>;
+}
+
+
+function HelpRequestButton({ team, classroom }) {
+  const [status, setStatus] = useState('checking');
+  const [message, setMessage] = useState('');
+  useEffect(() => {
+    let mounted = true, unsubscribe;
+    setStatus('checking'); setMessage('');
+    Promise.resolve(classroom.watchHelp(team.id, next => {
+      if (mounted) setStatus(next === true ? 'pending' : next === 'offline' ? 'offline' : 'idle');
+    })).then(cleanup => {
+      if (mounted) unsubscribe = cleanup;
+      else cleanup?.();
+    }).catch(error => {
+      if (mounted) { setStatus('error'); setMessage(error.message || 'Não foi possível conectar o aviso.'); }
+    });
+    return () => { mounted = false; unsubscribe?.(); };
+  }, [classroom.watchHelp, team.id]);
+  async function requestHelp() {
+    setStatus('sending'); setMessage('');
+    try { await classroom.requestHelp(team.id); setStatus('pending'); }
+    catch (error) { setStatus('error'); setMessage(error.message || 'O pedido não foi enviado. Tentem novamente.'); }
+  }
+  const disabled = ['checking', 'sending', 'pending', 'offline'].includes(status);
+  const label = status === 'pending' ? 'Ajuda solicitada' : status === 'sending' ? 'Enviando pedido…' : status === 'offline' ? 'Conecte à sala do professor' : 'Pedir ajuda ao professor';
+  return <span className="help-request-control"><button className={`btn secondary small help-request-button ${status === 'pending' ? 'requested' : ''}`} type="button" disabled={disabled} onClick={requestHelp} aria-label={label} title={label}><CircleHelp size={17}/>{label}</button>{status === 'pending' && <span role="status" className="help-request-status">Pedido enviado ao professor.</span>}{message && <span role="alert" className="help-request-error">{message}</span>}</span>;
 }

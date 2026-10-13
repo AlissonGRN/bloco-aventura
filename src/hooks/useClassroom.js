@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { nextLevel } from '../data/curriculum.js';
 import { STORAGE_KEY, emptySave, validateSave, mergeSave, mergeTeams, uid, newSession, STICKERS } from '../data/classroom.js';
-import { CLOUD_ENABLED, joinRoom, joinTeam, studentSnapshot, saveStudentTeams, subscribeToTeamStickers } from '../services/cloud.js';
+import { CLOUD_ENABLED, joinRoom, joinTeam, studentSnapshot, saveStudentTeams, subscribeToTeamStickers, requestTeacherHelp, subscribeToTeamHelp } from '../services/cloud.js';
 export { STORAGE_KEY, validateSave } from '../data/classroom.js';
 const now = () => new Date().toISOString();
 const unique = values => [...new Set(values)];
@@ -117,6 +117,17 @@ export function useClassroom() {
     if (!STICKERS.some(s => s.id === type)) return;
     setData(d => ({ ...d, teams: d.teams.map(t => t.id === teamId ? { ...t, stickers: [...t.stickers, { id: uid(), type, note: note.slice(0, 160), awardedAt: now() }].slice(-100) } : t) }));
   }
+  const requestHelp = useCallback(async teamId => {
+    if (!CLOUD_ENABLED) throw new Error('Este computador ainda não está conectado à sala do professor.');
+    const team = latest.current.teams.find(t => t.id === teamId);
+    const classroomId = latest.current.classes.find(c => c.id === team?.classId)?.classroomId;
+    if (!team || !classroomId) throw new Error('Conecte a equipe à sala do professor antes de pedir ajuda.');
+    return requestTeacherHelp(teamId, classroomId);
+  }, []);
+  const watchHelp = useCallback((teamId, onStatus) => {
+    if (!CLOUD_ENABLED) { onStatus('offline'); return () => {}; }
+    return subscribeToTeamHelp(teamId, onStatus);
+  }, []);
   return { data, active: activeTeam, error, saveTeam, select, complete, attempt, endSession, updateTeam, deleteTeam, award, stickerNotices,
     dismissStickerNotice: id => setStickerNotices(current => current.filter(n => n.id !== id)),
     remember: level => updateActive(t => ({ ...t, lastLevel: level.id })),
@@ -124,5 +135,6 @@ export function useClassroom() {
     importSave: v => setData(d => mergeSave(d, v)), sync, cloudEnabled: CLOUD_ENABLED, syncNow,
     join: async code => { await joinRoom(code); lastSent.current = ''; await syncNow(); },
     joinTeam: async code => { const id = await joinTeam(code); lastSent.current = ''; await syncNow(); setStickerNotices([]); setData(d => ({ ...d, activeId: id })); return id; },
+    requestHelp, watchHelp,
   };
 }

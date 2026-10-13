@@ -191,6 +191,23 @@ test('A sticker notification tells the team what the teacher sent and can be dis
   assert.equal(dismissed,'award-1');
 });
 
+after(async () => { if (root) await act(async () => root.unmount()); dom.window.close(); await rm(dir, { recursive: true, force: true }); });
+
+test('The daily-life sequence level remains available with written actions', async () => {
+  let result;
+  const sequence=getLevel('8-1');
+  await mount(createElement(SequenceGame,{level:sequence,team:team('sequence-team','Equipe Leitura'),onAttempt:()=>{},onComplete:(...args)=>{result=args;}}));
+  assert.ok(document.querySelectorAll('.sequence-step-text').length>0,'sequence cards show written actions');
+  for(let position=0;position<sequence.steps.length;position++){
+    let cards=[...document.querySelectorAll('.sequence-card')];
+    let current=cards.findIndex(card=>card.querySelector('.sr-only').textContent===sequence.steps[position][1]);
+    while(current>position){await click(cards[current].querySelectorAll('.sequence-controls button')[0]);cards=[...document.querySelectorAll('.sequence-card')];current--;}
+  }
+  await click(button('Conferir sequência'));
+  assert.deepEqual(result,['8-1',3]);
+  assert.ok(document.querySelector('.win-modal'));
+});
+
 test('Action challenges show tools and let Bip pick an item on the board', async () => {
   let completed = 0;
   const level = getLevel('9-1');
@@ -206,19 +223,12 @@ test('Action challenges show tools and let Bip pick an item on the board', async
   assert.ok(button('Adicionar Pular'), 'the jump command is available');
 });
 
-after(async () => { if (root) await act(async () => root.unmount()); dom.window.close(); await rm(dir, { recursive: true, force: true }); });
-
-test('The daily-life sequence level displays written actions and completes in order', async () => {
-  let result;
-  const sequence=getLevel('8-1');
-  await mount(createElement(SequenceGame,{level:sequence,team:team('seq-words','Equipe Leitura'),onAttempt:()=>{},onComplete:(...args)=>{result=args;}}));
-  assert.ok(document.querySelectorAll('.sequence-step-text').length>0,'reading sequence cards show their written actions');
-  for(let position=0;position<sequence.steps.length;position++){
-    let cards=[...document.querySelectorAll('.sequence-card')];
-    let current=cards.findIndex(card=>card.querySelector('.sr-only').textContent===sequence.steps[position][1]);
-    while(current>position){await click(cards[current].querySelectorAll('.sequence-controls button')[0]);cards=[...document.querySelectorAll('.sequence-card')];current--;}
-  }
-  await click(button('Conferir sequência'));
-  assert.deepEqual(result,['8-1',3]);
-  assert.ok(document.querySelector('.win-modal'));
+test('Game speed choice is remembered when opening another level', async () => {
+  localStorage.removeItem('bloco.game.speed.v1');
+  const props = { team: team('speed-team', 'Equipe Velocidade'), onBack() {}, onNext() {}, onWorld() {} };
+  await mount(createElement(Game, { ...props, level: getLevel('1-1') }));
+  await click(button('Mudar para velocidade rápida'));
+  assert.equal(localStorage.getItem('bloco.game.speed.v1'), 'fast');
+  await mount(createElement(Game, { ...props, level: getLevel('1-2') }));
+  assert.ok(button('Mudar para velocidade lenta'), 'The next level keeps the selected fast speed');
 });

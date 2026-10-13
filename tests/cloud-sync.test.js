@@ -18,6 +18,8 @@ export async function joinRoom(){}
 export async function joinTeam(){return 'team-a';}
 export async function studentSnapshot(){return structuredClone(globalThis.__cloudState.remote);}
 export async function subscribeToTeamStickers(id,handler){const s=globalThis.__cloudState;s.stickerHandler=handler;return()=>{s.stickerHandler=null;};}
+export async function requestTeacherHelp(){}
+export async function subscribeToTeamHelp(id,handler){handler(false);return()=>{};}
 export async function saveStudentTeams(teams,classes){const s=globalThis.__cloudState;if(s.failure)throw new Error(s.failure);const valid=teams.filter(t=>classes.some(c=>c.id===t.classId&&c.classroomId));s.saves.push(structuredClone(valid));s.remote.teams=valid.map(t=>({...t,currentSession:null,cloudOwner:'device',stickers:s.remote.teams.find(r=>r.id===t.id)?.stickers||[]}));return{ownerId:'device',ids:valid.map(t=>t.id)};}` }));}}]});
 const {useClassroom,getLevel}=await import(pathToFileURL(path.join(tmp,'hook.mjs')));
 let hook, root;

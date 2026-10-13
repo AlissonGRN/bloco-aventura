@@ -51,6 +51,30 @@ export async function subscribeToTeamStickers(teamId, onSticker) {
     .subscribe();
   return () => { void studentClient.removeChannel(channel); };
 }
+export async function requestTeacherHelp(teamId, classroomId) {
+  await studentIdentity();
+  const result = await studentClient.from('teacher_help_requests').insert({ team_id: teamId, classroom_id: classroomId }).select().single();
+  if (result.error?.code === '23505') {
+    return unwrap(await studentClient.from('teacher_help_requests').select('*').eq('team_id', teamId).is('resolved_at', null).single());
+  }
+  return unwrap(result);
+}
+export async function subscribeToTeamHelp(teamId, onStatus) {
+  if (!CLOUD_ENABLED || !teamId || typeof onStatus !== 'function') return () => {};
+  await studentIdentity();
+  let active = true;
+  const channel = studentClient.channel(`team-help:${teamId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'teacher_help_requests', filter: `team_id=eq.${teamId}` }, payload => {
+      const row = payload.new || payload.old;
+      if (row?.id) onStatus(payload.eventType !== 'DELETE' && !row.resolved_at);
+    })
+    .subscribe(status => {
+      if (status !== 'SUBSCRIBED') return;
+      void studentClient.from('teacher_help_requests').select('id').eq('team_id', teamId).is('resolved_at', null).maybeSingle()
+        .then(result => { if (active && !result.error) onStatus(!!result.data); });
+    });
+  return () => { active = false; void studentClient.removeChannel(channel); };
+}
 export async function saveStudentTeams(teams, classes) {
   const user = await studentIdentity();
   const records = teams.filter(t => classes.some(c => c.id === t.classId && c.classroomId) && (!t.cloudOwner || t.cloudOwner === user.id || t.sharedAccess)).map(t => ({ id: t.id, owner_id: t.cloudOwner || user.id, classroom_id: classes.find(c => c.id === t.classId).classroomId, class_id: t.classId, name: t.name, members: t.members, avatar: t.avatar, progress: t.progress, attempts: t.attempts, sessions: t.sessions, last_level: t.lastLevel }));
@@ -91,9 +115,20 @@ export async function teacherSnapshot() {
   const currentIds = new Set(current.map(c => c.id));
   const missing = expected.filter(c => !currentIds.has(c.id)).map(c => ({ id: c.id, classroom_id: rooms[0].id, name: c.name, grade: c.grade, section: c.section, active: true }));
   if (missing.length) unwrap(await teacherClient.from('class_groups').insert(missing));
-  const [classes, teams, stickers] = await Promise.all([teacherClient.from('class_groups').select('*').eq('classroom_id', rooms[0].id).order('grade').order('section'), teacherClient.from('bloco_teams').select('*').eq('classroom_id', rooms[0].id).order('name'), teacherClient.from('team_stickers').select('*')]);
+  const [classes, teams, stickers, helpRequests] = await Promise.all([teacherClient.from('class_groups').select('*').eq('classroom_id', rooms[0].id).order('grade').order('section'), teacherClient.from('bloco_teams').select('*').eq('classroom_id', rooms[0].id).order('name'), teacherClient.from('team_stickers').select('*'), teacherClient.from('teacher_help_requests').select('*').eq('classroom_id', rooms[0].id).is('resolved_at', null).order('created_at')]);
   const awards = unwrap(stickers);
-  return { room: rooms[0], ...validateSave({ version: 2, classes: unwrap(classes).map(classFromRow), teams: unwrap(teams).map(t => teamFromRow(t, awards)) }) };
+  return { room: rooms[0], helpRequests: unwrap(helpRequests), ...validateSave({ version: 2, classes: unwrap(classes).map(classFromRow), teams: unwrap(teams).map(t => teamFromRow(t, awards)) }) };
+}
+export function subscribeToTeacherHelp(classroomId, onChange) {
+  if (!CLOUD_ENABLED || !classroomId || typeof onChange !== 'function') return () => {};
+  const channel = teacherClient.channel(`teacher-help:${classroomId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'teacher_help_requests', filter: `classroom_id=eq.${classroomId}` }, payload => onChange({ eventType: payload.eventType, row: payload.new || payload.old }))
+    .subscribe();
+  return () => { void teacherClient.removeChannel(channel); };
+}
+export async function resolveTeacherHelp(id) {
+  const rows = unwrap(await teacherClient.from('teacher_help_requests').update({ resolved_at: new Date().toISOString() }).eq('id', id).is('resolved_at', null).select('id'));
+  if (!rows?.length) throw new Error('Este pedido já foi atendido ou não está disponível.');
 }
 export async function updateCloudTeam(teamId, values) { return unwrap(await teacherClient.from('bloco_teams').update({ name: values.name, members: values.members, avatar: values.avatar, class_id: values.classId }).eq('id', teamId).select()); }
 export async function cloudAward(teamId, type, note) { return unwrap(await teacherClient.from('team_stickers').insert({ team_id: teamId, type, note }).select()); }
