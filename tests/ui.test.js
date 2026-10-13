@@ -156,7 +156,12 @@ test('Teacher password gate, class filter, reward and logout persist correctly',
   await change(document.querySelector('[aria-label="Filtrar por turma"]'),'a');
   assert.match(document.querySelector('.team-progress-table').textContent,/Equipe Lua/);
   assert.doesNotMatch(document.querySelector('.team-progress-table').textContent,/Equipe Sol/);
-  await click(button('Ver progresso de Equipe Lua')); await click(button('Stickers'));
+  await click(button('Ver progresso de Equipe Lua'));
+  await click(button('Editar cadastro da equipe'));
+  await change(document.querySelector('.team-detail-modal input'), 'Ana Editada');
+  await submit(document.querySelector('.team-detail-modal .team-form'));
+  assert.equal(readSave().teams[0].members[0], 'Ana Editada');
+  await click(button('Stickers'));
   await click(document.querySelectorAll('.sticker-picker button')[1]); await submit(document.querySelector('.team-detail-modal form'));
   assert.equal(readSave().teams[0].stickers[0].type,'persistence');
   await click(button('Fechar')); await click(button('Sair do painel'));
