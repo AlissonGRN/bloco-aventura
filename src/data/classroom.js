@@ -23,19 +23,19 @@ export const STICKERS = [
   { id: 'celebration', name: 'Torcida amiga', icon: 'party-popper', color: '#a16e9b', description: 'Comemoraram as conquistas dos colegas com alegria e respeito.' },
 ];
 export const ROBOT_SKINS = [
-  { name: 'Sol', color: '#f2c75c', unlockAt: 0 },
-  { name: 'Mar', color: '#9cbad5', unlockAt: 0 },
-  { name: 'Folha', color: '#b3bd8c', unlockAt: 0 },
-  { name: 'Lilás', color: '#c2a6d4', unlockAt: 0 },
-  { name: 'Coral', color: '#e5a18b', unlockAt: 0 },
-  { name: 'Cosmos', color: '#8871c8', unlockAt: 5 },
-  { name: 'Gelo', color: '#68c6d1', unlockAt: 15 },
-  { name: 'Vulcão', color: '#e66f52', unlockAt: 30 },
-  { name: 'Ninja', color: '#596b82', unlockAt: 50 },
-  { name: 'Floresta', color: '#5f9c69', unlockAt: 80 },
-  { name: 'Dourado', color: '#d5a92f', unlockAt: 120 },
-  { name: 'Neon', color: '#dc70ad', unlockAt: 180 },
-  { name: 'Arco-íris', color: '#8875bc', unlockAt: 240 },
+  { name: 'Sol', color: '#f2c75c', accent: '#d98a35', material: 'gloss', unlockAt: 0 },
+  { name: 'Mar', color: '#9cbad5', accent: '#4387a4', material: 'gloss', unlockAt: 0 },
+  { name: 'Folha', color: '#b3bd8c', accent: '#547d4e', material: 'gloss', unlockAt: 0 },
+  { name: 'Lilás', color: '#c2a6d4', accent: '#795ba7', material: 'gloss', unlockAt: 0 },
+  { name: 'Coral', color: '#e5a18b', accent: '#b75f62', material: 'gloss', unlockAt: 0 },
+  { name: 'Cosmos', color: '#8871c8', accent: '#e3c9ff', material: 'cosmos', unlockAt: 5 },
+  { name: 'Gelo', color: '#68c6d1', accent: '#e2fcff', material: 'ice', unlockAt: 15 },
+  { name: 'Vulcão', color: '#e66f52', accent: '#ffd16d', material: 'lava', unlockAt: 30 },
+  { name: 'Ninja', color: '#596b82', accent: '#eb5c65', material: 'ninja', unlockAt: 50 },
+  { name: 'Floresta', color: '#5f9c69', accent: '#b6d674', material: 'wood', unlockAt: 80 },
+  { name: 'Dourado', color: '#d5a92f', accent: '#fff1a0', material: 'royal', unlockAt: 120 },
+  { name: 'Neon', color: '#dc70ad', accent: '#70fff2', material: 'neon', unlockAt: 180 },
+  { name: 'Arco-íris', color: '#8875bc', accent: '#f1b5d5', material: 'rainbow', unlockAt: 240 },
 ];
 export const unlockedRobotSkins = progress => {
   const completed = Object.keys(progress || {}).length;
@@ -76,7 +76,8 @@ export function validateSave(value) {
     }
     const sessions = (Array.isArray(t.sessions) ? t.sessions : []).slice(-100).map(s => cleanSession(s)).filter(Boolean);
     const stickers = (Array.isArray(t.stickers) ? t.stickers : []).filter(s => s && typeof s.id === 'string' && STICKERS.some(b => b.id === s.type)).slice(-100).map(s => ({ id: s.id, type: s.type, awardedAt: date(s.awardedAt), note: typeof s.note === 'string' ? s.note.slice(0, 160) : '' }));
-    return { id: t.id, name: typeof t.name === 'string' && t.name.trim() ? t.name.trim().slice(0, 40) : t.members.join(' e '), members: t.members.map(n => n.trim()), classId: classes.some(c => c.id === t.classId) ? t.classId : null, avatar: Math.max(0, Math.min(unlockedRobotSkins(progress) - 1, Math.floor(Number(t.avatar) || 0))), progress, attempts, sessions, stickers, currentSession: cleanSession(t.currentSession, false), lastLevel: known.has(t.lastLevel) ? t.lastLevel : '1-1', updatedAt: date(t.updatedAt), ...(typeof t.cloudOwner === 'string' ? { cloudOwner: t.cloudOwner } : {}), ...(t.sharedAccess === true ? { sharedAccess: true } : {}) };
+    const avatar = Math.max(0, Math.min(unlockedRobotSkins(progress) - 1, Math.floor(Number(t.avatar) || 0)));
+    return { id: t.id, name: typeof t.name === 'string' && t.name.trim() ? t.name.trim().slice(0, 40) : t.members.join(' e '), members: t.members.map(n => n.trim()), classId: classes.some(c => c.id === t.classId) ? t.classId : null, avatar, progress, attempts, sessions, stickers, currentSession: cleanSession(t.currentSession, false), lastLevel: known.has(t.lastLevel) ? t.lastLevel : '1-1', updatedAt: date(t.updatedAt), ...(typeof t.cloudOwner === 'string' ? { cloudOwner: t.cloudOwner } : {}), ...(t.sharedAccess === true ? { sharedAccess: true } : {}) };
   });
   return { version: 2, teams, classes, activeId: teams.some(t => t.id === value.activeId) ? value.activeId : null };
 }
@@ -95,3 +96,4 @@ export function mergeSave(current, incoming) {
   for (const t of valid.teams) map.set(t.id, map.has(t.id) ? mergeTeams(map.get(t.id), t) : t);
   return { ...current, classes, teams: [...map.values()] };
 }
+
