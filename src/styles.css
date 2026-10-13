@@ -5012,19 +5012,23 @@ textarea:focus-visible { outline: 3px solid #b1d3b6; outline-offset: 2px; }
 @media (max-width: 700px) { .teacher-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; } .teacher-filters { grid-template-columns: 1fr; } .teacher-login { padding: 26px 20px; margin-top: 10px; } .teacher-login h1 { font-size: 25px; } .planning-grid { grid-template-columns: 1fr; } .teacher-tabs { width: 100%; } .teacher-tabs > button { flex: 1; font-size: 11px; padding: 11px; } .room-code { align-items: start; flex-direction: column; } .topbar .sync-label { display: none; } .end-session { font-size: 10px; padding: 8px 10px; } .end-session svg { display: none; } .mission-progress > div { grid-template-columns: repeat(10, minmax(0, 1fr)); } .teacher-top-actions { margin-top: 12px; } .sticker-picker { gap: 6px; } .sticker.small strong { font-size: 9px; } .team-detail-modal { padding: 25px 18px; } .session-list article > div { flex-direction: column; } .trail-tabs > button { padding: 12px 9px; gap: 8px; } .trail-tabs > button > span:first-of-type { font-size: 11px; } .feedback-modal { padding: 28px 20px; } .feedback-modal h2 { font-size: 25px; } }
 .skin-collection { margin: 32px 0; padding: 24px; border: 1px solid #e5e7d9; border-radius: 18px; background: linear-gradient(145deg, #fffdf7, #f6f8f0); }
 .skin-collection > .section-heading { margin-bottom: 14px; }
-.skin-showcase { width: 58px; height: 72px; }
+.skin-showcase { width: 76px; height: 88px; filter: drop-shadow(0 5px 2px #35583b1c); }
 .skin-selector { width: 100%; }
 .skin-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .skin-heading > .field-label { margin: 0; }
 .skin-heading > span { display: flex; align-items: center; gap: 5px; color: #74835e; font-size: 11px; }
 .skin-selector > p { margin: 7px 0 16px; color: #7f8774; font-size: 12px; line-height: 1.5; }
 .skin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 9px; }
-.skin-option { position: relative; display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 4px; padding: 8px 5px 7px; border: 1px solid #e5e8dc; border-radius: 12px; background: #fffefa; transition: transform .16s ease, border-color .16s ease, background .16s ease; }
+.skin-option { position: relative; display: flex; min-width: 0; min-height: 104px; flex-direction: column; align-items: center; gap: 4px; padding: 8px 5px 7px; border: 1px solid #e5e8dc; border-radius: 12px; background: #fffefa; transition: transform .16s ease, border-color .16s ease, background .16s ease; }
 .skin-option:not(:disabled):hover { transform: translateY(-2px); border-color: #a9c09b; }
 .skin-option.selected { border-color: #79a16c; background: #eef5e9; box-shadow: 0 0 0 2px #79a16c22; }
 .skin-option.locked { cursor: not-allowed; background: #f2f2ed; color: #969b8f; }
-.skin-preview { position: relative; display: grid; width: 48px; height: 52px; place-items: center; }
-.skin-preview > svg { width: 42px; height: 50px; }
+.skin-preview { position: relative; display: grid; width: 58px; height: 62px; place-items: center; overflow: visible; }
+.skin-preview > svg { position: relative; z-index: 1; width: 54px; height: 62px; overflow: visible; filter: drop-shadow(0 2px 2px #34453622); }
+.skin-preview-glow { position: absolute; inset: 10px 4px 1px; border-radius: 18px; background: var(--skin-accent); opacity: .09; }
+.skin-option:hover:not(:disabled) .skin-preview > svg, .skin-option.selected .skin-preview > svg { transform: translateY(-2px) scale(1.04); transition: transform .18s ease; }
+.skin-option.locked .skin-preview > svg { filter: grayscale(.8) drop-shadow(0 2px 2px #34453622); }
+.skin-collection .skin-heading > span { font-weight: 700; }
 .skin-lock { position: absolute; right: -4px; bottom: 1px; display: grid; width: 22px; height: 22px; place-items: center; border: 2px solid #fff; border-radius: 50%; background: #727d72; color: #fff; }
 .skin-option > strong { max-width: 100%; overflow: hidden; color: #56654f; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .skin-option > small { color: #89917e; font-size: 9px; line-height: 1.25; text-align: center; }

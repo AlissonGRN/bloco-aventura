@@ -12,17 +12,15 @@ export function Robot({ className = '', happy = false, color, skin = 0 }) {
   const accent = skinData.accent || '#50886b';
   const wood = skinData.material === 'wood';
   const metal = ['cosmos', 'ice', 'lava', 'ninja', 'royal', 'neon', 'rainbow'].includes(skinData.material);
-  const body = `url(#bip-body-${skinIndex})`;
+  const uid = useId().replaceAll(':', '');
+  const body = `url(#bip-body-${uid})`;
   return <svg viewBox="0 0 120 140" fill="none" className={`bip-robot ${className} bip-skin-${skinIndex}`} aria-hidden="true">
     <defs>
-      <linearGradient id={`bip-body-${skinIndex}`} x1="18" y1="25" x2="101" y2="119" gradientUnits="userSpaceOnUse"><stop stopColor={wood ? '#d0a36c' : robotColor}/><stop offset="1" stopColor={wood ? '#815537' : robotColor} stopOpacity={wood ? '.97' : '.82'}/></linearGradient>
-      <linearGradient id={`bip-panel-${skinIndex}`} x1="30" y1="35" x2="90" y2="70" gradientUnits="userSpaceOnUse"><stop stopColor="#fffefa"/><stop offset="1" stopColor={wood ? '#f5dfb8' : '#fffaf0'}/></linearGradient>
-      <filter id={`bip-glow-${skinIndex}`} x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <linearGradient id={`bip-body-${uid}`} x1="18" y1="25" x2="101" y2="119" gradientUnits="userSpaceOnUse"><stop stopColor={wood ? '#d0a36c' : robotColor}/><stop offset="1" stopColor={wood ? '#815537' : robotColor} stopOpacity={wood ? '.97' : '.82'}/></linearGradient>
+      <linearGradient id={`bip-panel-${uid}`} x1="30" y1="35" x2="90" y2="70" gradientUnits="userSpaceOnUse"><stop stopColor="#fffefa"/><stop offset="1" stopColor={wood ? '#f5dfb8' : '#fffaf0'}/></linearGradient>
+      <filter id={`bip-glow-${uid}`} x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     </defs>
     <ellipse cx="60" cy="130" rx="30" ry="7" fill="#24473c" opacity=".12" />
-    {skinData.material === 'cosmos' && <g stroke={accent} strokeWidth="2" opacity=".9"><ellipse cx="60" cy="72" rx="53" ry="16" transform="rotate(-24 60 72)"/><circle cx="104" cy="50" r="4" fill="#ffe994" stroke="none"/></g>}
-    {wood && <g stroke="#527447" strokeWidth="3" strokeLinecap="round" opacity=".95"><path d="M25 101q-12-11-5-22m75 28q13-9 8-20"/><path d="M20 80q-9-9-13 0 7 8 13 0Zm85 4q9-9 13 0-7 8-13 0Z" fill="#9dc66f"/></g>}
-    {skinData.material === 'rainbow' && <g fill="none" strokeLinecap="round"><path d="M22 27a38 26 0 0 1 76 0" stroke="#f27c72" strokeWidth="5"/><path d="M27 26a33 22 0 0 1 66 0" stroke="#f4c94f" strokeWidth="4"/><path d="M32 25a28 18 0 0 1 56 0" stroke="#68c99c" strokeWidth="4"/></g>}
     <path d="M43 112v13m34-13v13" stroke={metal ? '#344b68' : '#294e43'} strokeWidth="11" strokeLinecap="round" />
     <path d={happy ? 'M26 83 12 66m82 17 14-17' : 'M28 85 17 96m75-11 11 11'} stroke={robotColor} strokeWidth="12" strokeLinecap="round" />
     <rect x="29" y="71" width="62" height="46" rx="16" fill={body} stroke={wood ? '#68462f' : metal ? accent : 'none'} strokeWidth={wood || metal ? '2' : '0'} />
@@ -34,22 +32,25 @@ export function Robot({ className = '', happy = false, color, skin = 0 }) {
     <rect x="12" y="40" width="12" height="24" rx="6" fill={body} /><rect x="96" y="40" width="12" height="24" rx="6" fill={body} />
     <rect x="20" y="26" width="80" height="53" rx="18" fill={body} stroke={wood ? '#68462f' : metal ? accent : 'none'} strokeWidth={wood || metal ? '2' : '0'} />
     {wood && <g stroke="#704b31" strokeWidth="2" opacity=".82"><path d="M25 41q8-4 16 0m-13 8q6-4 12 0m53-5q-6 5-12 2M31 67q7-4 14 0"/><circle cx="87" cy="66" r="2" fill="#704b31"/></g>}
-    {skinData.material === 'cosmos' && <g filter={`url(#bip-glow-${skinIndex})`}><path d="m87 27 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" fill="#fff0a7" stroke="#8162be" strokeWidth="2"/><circle cx="29" cy="32" r="2" fill="#fff"/><circle cx="93" cy="62" r="2" fill="#fff"/></g>}
-    {skinData.material === 'ice' && <g stroke="#eaffff" strokeWidth="3" strokeLinecap="round"><path d="m60 14 5 7-5 7-5-7z" fill="#e7ffff" stroke="#46aab8" strokeWidth="2"/><path d="M23 55h-6m80 0h6M25 61l-4 4m74-4 4 4"/></g>}
-    {skinData.material === 'lava' && <g><path d="M60 13c8 8 7 13 0 18-7-5-8-10 0-18Z" fill="#ffcd70" stroke="#d2573c" strokeWidth="2"/><path d="M25 61q13-9 25 0t25 0 20 0v8q-14 8-25 0t-25 0-20 0z" fill="#ffb347"/></g>}
-    {skinData.material === 'ninja' && <g><path d="M24 47q36 10 72 0v11q-36 14-72 0z" fill="#263246"/><path d="m82 52 28-8-3 8 4 8-29-5z" fill="#e65c65"/><path d="M29 62q32 10 62 0v7q-30 12-62 0z" fill="#344152" opacity=".9"/></g>}
-    {wood && <g><path d="M24 36q7-17 18-14l10 7-6 10-15-2m45-5q10-18 23-9l6 8-7 8-14-6" fill="#527447" stroke="#3f643d" strokeWidth="2"/><path d="m55 29 5-9 5 9" fill="#9ecb67"/></g>}
-    {skinData.material === 'royal' && <g><path d="m41 29 4-10 9 7 6-12 6 12 9-7 4 10z" fill="#ffe995" stroke="#b58520" strokeWidth="2"/><path d="M38 35h44" stroke="#fff1a0" strokeWidth="3"/><circle cx="60" cy="24" r="2" fill="#dc5b70"/></g>}
-    {skinData.material === 'neon' && <g filter={`url(#bip-glow-${skinIndex})`} stroke="#70fff2" strokeWidth="3" fill="none"><circle cx="43" cy="49" r="10"/><circle cx="77" cy="49" r="10"/><path d="M53 49h14m-34-3-6-3m46 6h6"/></g>}
-    {wood && <path d="M25 58q7-5 12 0m49 0q7-5 12 0" stroke="#8a5639" strokeWidth="3" strokeLinecap="round"/>}
-    {skinData.material === 'ice' && <path d="M60 28 50 39h10l-5 10 17-17H61l7-4z" fill="#fff" opacity=".85"/>}
-    {skinData.material === 'rainbow' && <path d="M25 62h70" stroke="#65c7a2" strokeWidth="4" strokeDasharray="8 4"/>}
     {skinData.material === 'gloss' && <path d="M28 39q9-10 25-8" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity=".45"/>}
     {skinData.material === 'royal' && <path d="M25 61q35 12 70 0v8q-35 14-70 0z" fill="#4469a0" stroke="#f3d879" strokeWidth="2"/>}
-    <rect x="28" y="35" width="64" height="35" rx="12" fill={`url(#bip-panel-${skinIndex})`} stroke={wood ? '#9d7046' : 'none'} strokeWidth="1.5" />
+    {skinData.material === 'ninja' && <g><path d="M24 43q36 12 72 0v10q-36 15-72 0z" fill="#263246"/><path d="m82 48 28-8-3 8 4 8-29-5z" fill="#e65c65"/></g>}
+    {skinData.material === 'neon' && <g stroke="#70fff2" strokeWidth="3" fill="none" filter={`url(#bip-glow-${uid})`}><rect x="36" y="42" width="14" height="16" rx="5"/><rect x="70" y="42" width="14" height="16" rx="5"/><path d="M51 50h18"/></g>}
+    {skinData.material === 'cosmos' && <g fill="#fff0a7" stroke="#8162be" strokeWidth="2"><path d="m86 37 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/><circle cx="34" cy="61" r="2" fill="#fff" stroke="none"/></g>}
+    {skinData.material === 'ice' && <g stroke="#46aab8" strokeWidth="2"><path d="m60 39 7 8-7 8-7-8z" fill="#d9fbff"/><path d="m37 63 3-5 3 5m34 0 3-5 3 5" stroke="#8de8ef"/></g>}
+    {skinData.material === 'lava' && <g><path d="M24 61q13-9 25 0t25 0 22 0v8q-14 8-25 0t-25 0-22 0z" fill="#ffb347"/><circle cx="39" cy="65" r="3" fill="#fff09d"/><circle cx="78" cy="65" r="3" fill="#fff09d"/></g>}
+    {wood && <g><path d="M24 36q7-17 18-14l10 7-6 10-15-2m45-5q10-18 23-9l6 8-7 8-14-6" fill="#527447" stroke="#3f643d" strokeWidth="2"/><path d="m55 29 5-9 5 9" fill="#9ecb67"/><path d="M25 58q7-5 12 0m49 0q7-5 12 0" stroke="#8a5639" strokeWidth="3" strokeLinecap="round"/></g>}
+    {skinData.material === 'rainbow' && <g fill="none" strokeLinecap="round"><path d="M22 27a38 26 0 0 1 76 0" stroke="#f27c72" strokeWidth="5"/><path d="M27 26a33 22 0 0 1 66 0" stroke="#f4c94f" strokeWidth="4"/><path d="M32 25a28 18 0 0 1 56 0" stroke="#68c99c" strokeWidth="4"/></g>}
+    <rect x="28" y="35" width="64" height="35" rx="12" fill={`url(#bip-panel-${uid})`} stroke={wood ? '#9d7046' : 'none'} strokeWidth="1.5" />
     {happy ? <g stroke="#284c41" strokeWidth="5" strokeLinecap="round"><path d="m39 50 4-4 4 4m26 0 4-4 4 4" /></g> : <g fill="#284c41"><rect x="39" y="44" width="8" height="12" rx="4" /><rect x="73" y="44" width="8" height="12" rx="4" /></g>}
     <path d="M54 57q6 7 12 0" stroke="#284c41" strokeWidth="3" strokeLinecap="round" />
     <circle cx="35" cy="59" r="3" fill="#e49f7b" opacity=".6" /><circle cx="85" cy="59" r="3" fill="#e49f7b" opacity=".6" />
+    {skinData.material === 'cosmos' && <g fill="#fff0a7" stroke="#8162be" strokeWidth="2"><path d="m86 27 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/><circle cx="32" cy="66" r="2" fill="#fff" stroke="none"/></g>}
+    {skinData.material === 'ice' && <g stroke="#46aab8" strokeWidth="2"><path d="m60 9 8 10-8 10-8-10z" fill="#d9fbff"/><path d="m34 65 3-6 4 6m42 0 4-6 3 6" stroke="#8de8ef"/></g>}
+    {skinData.material === 'lava' && <g><path d="M60 7c10 10 8 16 0 21-8-5-10-11 0-21Z" fill="#ffcd70" stroke="#d2573c" strokeWidth="2"/><path d="M29 64q10-6 18 0m26 0q10-6 18 0" stroke="#ffb347" strokeWidth="4" strokeLinecap="round"/></g>}
+    {wood && <g><path d="M22 38q4-18 17-22l14 9-8 12-14-4m47 0q8-20 23-14l8 9-8 10-14-8" fill="#527447" stroke="#3f643d" strokeWidth="2.5"/><path d="m53 29 7-14 7 14" fill="#9ecb67" stroke="#3f643d" strokeWidth="2"/><path d="M22 39q-8-8-12 1 7 8 12-1Zm76 0q8-8 12 1-7 8-12-1Z" fill="#b6d674" stroke="#527447" strokeWidth="2"/></g>}
+    {skinData.material === 'royal' && <g><path d="m39 29 5-15 10 10 6-17 7 17 10-10 5 15z" fill="#ffe995" stroke="#b58520" strokeWidth="2.5"/><path d="M39 30h42" stroke="#fff1a0" strokeWidth="4"/><circle cx="60" cy="20" r="3" fill="#dc5b70"/></g>}
+    {skinData.material === 'rainbow' && <g fill="none" strokeLinecap="round"><path d="M20 33a40 31 0 0 1 80 0" stroke="#f27c72" strokeWidth="5"/><path d="M26 31a34 25 0 0 1 68 0" stroke="#f4c94f" strokeWidth="4"/><path d="M32 29a28 19 0 0 1 56 0" stroke="#68c99c" strokeWidth="4"/></g>}
   </svg>;
 }
 
