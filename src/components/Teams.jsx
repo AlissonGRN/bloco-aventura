@@ -5,17 +5,19 @@ import { Robot, WorldArt } from './Art';
 import { CloudStatus } from './ClassroomExtras';
 import { WORLDS, LEVELS } from '../data/curriculum';
 import { visibleClassOptions } from '../data/classrooms';
-import { ROBOT_SKINS, unlockedRobotSkins } from '../data/classroom';
+import { ROBOT_SKINS, unlockedRobotSkins, skinUnlocked } from '../data/classroom';
 
 export function TeamAvatar({ team, size = 'normal' }) {
   const skin = ROBOT_SKINS[team?.avatar || 0] || ROBOT_SKINS[0];
   return <span className={`team-avatar ${size}`} style={{ background: `${skin.color}35` }}><Robot skin={team?.avatar || 0}/></span>;
 }
-export function SkinSelector({ progress = {}, avatar = 0, onChange }) {
-  const unlocked = unlockedRobotSkins(progress), completed = Object.keys(progress).length;
-  return <section className="skin-selector"><div className="skin-heading"><span className="field-label">Skins do Bip</span><span><Sparkles size={14}/>{unlocked} de {ROBOT_SKINS.length} liberadas</span></div><p>Concluam desafios para desbloquear novos visuais. Cada equipe tem sua própria coleção.</p><div className="skin-grid" role="group" aria-label="Escolher skin do Bip">{ROBOT_SKINS.map((skin, index) => {
-    const locked = index >= unlocked;
-    return <button key={skin.name} type="button" className={`skin-option ${avatar === index ? 'selected' : ''} ${locked ? 'locked' : ''}`} aria-label={locked ? `${skin.name}, bloqueada. Desbloqueia ao concluir ${skin.unlockAt} desafios` : `Skin ${skin.name}${avatar === index ? ', selecionada' : ''}`} aria-pressed={!locked && avatar === index} title={locked ? `Concluam ${skin.unlockAt - completed} desafio(s) para desbloquear ${skin.name}` : skin.name} disabled={locked} onClick={() => onChange(index)}><span className="skin-preview"><span className="skin-preview-glow" style={{ '--skin-accent': skin.accent }}/><Robot skin={index}/>{locked && <span className="skin-lock"><LockKeyhole size={15}/></span>}</span><strong>{skin.name}</strong><small>{locked ? `${skin.unlockAt} desafios` : avatar === index ? 'Selecionada' : 'Liberada'}</small></button>;
+export function SkinSelector({ progress = {}, stickers = [], avatar = 0, onChange }) {
+  const unlocked = unlockedRobotSkins(progress, stickers), completed = Object.keys(progress).length, received = stickers?.length || 0;
+  return <section className="skin-selector"><div className="skin-heading"><span className="field-label">Skins do Bip</span><span><Sparkles size={14}/>{unlocked} de {ROBOT_SKINS.length} liberadas</span></div><p>Concluam desafios e recebam stickers do professor para descobrir novos visuais. Cada equipe tem sua própria coleção.</p><div className="skin-grid" role="group" aria-label="Escolher skin do Bip">{ROBOT_SKINS.map((skin, index) => {
+    const locked = !skinUnlocked(index, progress, stickers);
+    const requirement = skin.stickerUnlockAt ? `${skin.stickerUnlockAt} stickers do professor` : `${skin.unlockAt} desafios`;
+    const remaining = skin.stickerUnlockAt ? skin.stickerUnlockAt - received : skin.unlockAt - completed;
+    return <button key={skin.name} type="button" className={`skin-option ${avatar === index ? 'selected' : ''} ${locked ? 'locked' : ''}`} aria-label={locked ? `${skin.name}, bloqueada. Requer ${requirement}` : `Skin ${skin.name}${avatar === index ? ', selecionada' : ''}`} aria-pressed={!locked && avatar === index} title={locked ? `Recebam mais ${remaining} sticker(s) do professor para liberar ${skin.name}` : skin.name} disabled={locked} onClick={() => onChange(index)}><span className="skin-preview"><span className="skin-preview-glow" style={{ '--skin-accent': skin.accent }}/><Robot skin={index}/>{locked && <span className="skin-lock"><LockKeyhole size={15}/></span>}</span><strong>{skin.name}</strong><small>{locked ? skin.stickerUnlockAt ? `${received}/${skin.stickerUnlockAt} stickers` : `${skin.unlockAt} desafios` : avatar === index ? 'Selecionada' : 'Liberada'}</small></button>;
   })}</div></section>;
 }
 export function TeamForm({ initial, onSave, onCancel, classes = [] }) {
@@ -40,7 +42,7 @@ export function TeamForm({ initial, onSave, onCancel, classes = [] }) {
     <div className="team-sizes" role="group" aria-label="Quantidade de alunos">{[1, 2, 3, 4].map(n => <button type="button" key={n} className={size === n ? 'selected' : ''} aria-pressed={size === n} onClick={() => setSize(n)}><span className="size-people">{Array.from({ length: n }, (_, i) => <UserRound key={i} size={16}/>)}</span><span>{['Individual', 'Dupla', 'Trio', 'Quarteto'][n - 1]}</span></button>)}</div>
     <div className="name-fields">{Array.from({ length: size }, (_, i) => <label key={i}><span className="field-label">{size === 1 ? 'Como você se chama?' : `Explorador ${i + 1}`}</span><input autoComplete="off" maxLength={40} required value={names[i]} onChange={e => setNames(ns => ns.map((n, j) => j === i ? e.target.value : n))} placeholder="Primeiro nome"/></label>)}</div>
     {size > 1 && <label><span className="field-label">Nome da equipe <span className="optional">(opcional)</span></span><input value={name} onChange={e => setName(e.target.value)} maxLength={40} placeholder="Ex.: Exploradores do futuro"/></label>}
-    <SkinSelector progress={initial?.progress || {}} avatar={avatar} onChange={setAvatar}/>
+    <SkinSelector progress={initial?.progress || {}} stickers={initial?.stickers || []} avatar={avatar} onChange={setAvatar}/>
     {error && <p className="form-error" role="alert">{error}</p>}
     <div className="form-actions">{onCancel && <button type="button" className="btn secondary" onClick={onCancel}>Voltar</button>}<button type="submit" className="btn primary grow">{initial ? 'Salvar equipe' : 'Vamos explorar'}<ArrowRight size={19}/></button></div>
   </form>;

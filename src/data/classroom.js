@@ -36,10 +36,26 @@ export const ROBOT_SKINS = [
   { name: 'Dourado', color: '#d5a92f', accent: '#fff1a0', material: 'royal', unlockAt: 120 },
   { name: 'Neon', color: '#dc70ad', accent: '#70fff2', material: 'neon', unlockAt: 180 },
   { name: 'Arco-íris', color: '#8875bc', accent: '#f1b5d5', material: 'rainbow', unlockAt: 240 },
+  { name: 'Dragão das nuvens', color: '#df705c', accent: '#ffd36a', material: 'dragon', unlockAt: 0, stickerUnlockAt: 3 },
+  { name: 'Submarino Coral', color: '#4d9dac', accent: '#f3ca68', material: 'submarine', unlockAt: 0, stickerUnlockAt: 6 },
+  { name: 'Nave Estelar', color: '#6473b7', accent: '#a7f3e8', material: 'spaceship', unlockAt: 0, stickerUnlockAt: 10 },
+  { name: 'Guardião Cogumelo', color: '#b96954', accent: '#d9e895', material: 'mushroom', unlockAt: 0, stickerUnlockAt: 15 },
+  { name: 'Foguete Pinguim', color: '#657f9d', accent: '#f4bd69', material: 'penguin', unlockAt: 0, stickerUnlockAt: 20 },
+  { name: 'Caranguejo Inventor', color: '#d97854', accent: '#f1d46f', material: 'crab', unlockAt: 0, stickerUnlockAt: 25 },
+  { name: 'Abelha Mensageira', color: '#edbd4d', accent: '#754f3f', material: 'bee', unlockAt: 0, stickerUnlockAt: 30 },
+  { name: 'Fada das Engrenagens', color: '#9278bb', accent: '#e9b8d8', material: 'fairy', unlockAt: 0, stickerUnlockAt: 40 },
 ];
-export const unlockedRobotSkins = progress => {
+export const unlockedRobotSkins = (progress, stickers = []) => {
   const completed = Object.keys(progress || {}).length;
-  return ROBOT_SKINS.filter(skin => skin.unlockAt <= completed).length;
+  const received = Array.isArray(stickers) ? stickers.length : nonNegative(stickers);
+  const progressUnlocked = ROBOT_SKINS.filter(skin => !skin.stickerUnlockAt && skin.unlockAt <= completed).length;
+  const stickerUnlocked = ROBOT_SKINS.filter(skin => skin.stickerUnlockAt && received >= skin.stickerUnlockAt).length;
+  return progressUnlocked + stickerUnlocked;
+};
+export const skinUnlocked = (index, progress = {}, stickers = []) => {
+  const skin = ROBOT_SKINS[index];
+  if (!skin) return false;
+  return skin.stickerUnlockAt ? (stickers?.length || 0) >= skin.stickerUnlockAt : Object.keys(progress || {}).length >= skin.unlockAt;
 };
 export function uid() {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
@@ -76,7 +92,9 @@ export function validateSave(value) {
     }
     const sessions = (Array.isArray(t.sessions) ? t.sessions : []).slice(-100).map(s => cleanSession(s)).filter(Boolean);
     const stickers = (Array.isArray(t.stickers) ? t.stickers : []).filter(s => s && typeof s.id === 'string' && STICKERS.some(b => b.id === s.type)).slice(-100).map(s => ({ id: s.id, type: s.type, awardedAt: date(s.awardedAt), note: typeof s.note === 'string' ? s.note.slice(0, 160) : '' }));
-    const avatar = Math.max(0, Math.min(unlockedRobotSkins(progress) - 1, Math.floor(Number(t.avatar) || 0)));
+    const requestedAvatar = Math.floor(Number(t.avatar) || 0);
+    const fallbackAvatar = ROBOT_SKINS.reduce((last, skin, index) => skinUnlocked(index, progress, stickers) ? index : last, 0);
+    const avatar = skinUnlocked(requestedAvatar, progress, stickers) ? requestedAvatar : fallbackAvatar;
     return { id: t.id, name: typeof t.name === 'string' && t.name.trim() ? t.name.trim().slice(0, 40) : t.members.join(' e '), members: t.members.map(n => n.trim()), classId: classes.some(c => c.id === t.classId) ? t.classId : null, avatar, progress, attempts, sessions, stickers, currentSession: cleanSession(t.currentSession, false), lastLevel: known.has(t.lastLevel) ? t.lastLevel : '1-1', updatedAt: date(t.updatedAt), ...(typeof t.cloudOwner === 'string' ? { cloudOwner: t.cloudOwner } : {}), ...(t.sharedAccess === true ? { sharedAccess: true } : {}) };
   });
   return { version: 2, teams, classes, activeId: teams.some(t => t.id === value.activeId) ? value.activeId : null };

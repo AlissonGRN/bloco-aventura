@@ -19,6 +19,7 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
     await db.exec(await readFile(new URL('../supabase/migrations/202610070002_fix_skin_unlock_validation.sql', import.meta.url),'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/20261012195945_sequence_levels_progress.sql', import.meta.url),'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/20261014104733_expand_teacher_sticker_types.sql', import.meta.url),'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/20261014130000_teacher_sticker_skins.sql', import.meta.url),'utf8'));
     await db.exec(`grant delete on public.bloco_teams to authenticated;
       create policy teacher_delete_team on public.bloco_teams for delete to authenticated using (public.is_bloco_teacher(classroom_id));`);
     const generatedCode = (await db.query('select public.generate_bloco_join_code() as code')).rows[0].code;
@@ -63,6 +64,11 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
       await db.query('insert into public.team_stickers(id,team_id,type,note) values($1,$2,$3,$4)', [`award-${index}`, 'team-a', type, 'Reconhecimento da equipe']);
     }
     assert.equal((await rows("select * from public.team_stickers where team_id='team-a'")).length, stickerTypes.length + 1, 'Every sticker displayed in the teacher panel can be saved');
+    await as(deviceA);
+    assert.equal((await rows("update public.bloco_teams set avatar=13 where id='team-a' returning id")).length,1,'3+ teacher stickers unlock the first special skin in the database');
+    await assert.rejects(db.query("update public.bloco_teams set avatar=20 where id='team-a'"),/skin ainda não foi desbloqueada/i);
+    await db.query("update public.bloco_teams set avatar=5 where id='team-a'");
+    await as(teacher);
     await db.query("delete from public.team_stickers where id like 'award-%'");
     assert.equal((await rows("update public.bloco_teams set name='Cadastro corrigido' where id='team-a' returning id")).length,1,'the teacher can edit team profile');
     assert.equal((await rows("update public.bloco_teams set progress='{}' where id='team-a' returning id")).length,0,'Teacher reads progress without overwriting it');

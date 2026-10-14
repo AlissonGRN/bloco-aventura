@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateSave, mergeSave, emptySave, STICKERS, ROBOT_SKINS, unlockedRobotSkins } from '../src/data/classroom.js';
+import { validateSave, mergeSave, emptySave, STICKERS, ROBOT_SKINS, unlockedRobotSkins, skinUnlocked } from '../src/data/classroom.js';
 import { createLock, verifyPassword, LOCK_KEY } from '../src/services/teacherLock.js';
 const original = { id: 'a', name: 'Equipe A', members: ['Ana'], progress: { '1-1': { stars: 3, completedAt:'2026-10-05T10:00:00Z' } } };
 test('V1 migration preserves progress and gives existing teams an unassigned class',()=>{
@@ -21,12 +21,20 @@ test('classroom stickers include positive behavior, respect, care, participation
   assert.equal(data.teams[0].stickers.length,additions.length);
 });
 test('Bip skins unlock from completed challenges and saved teams cannot select locked skins',()=>{
-  assert.equal(ROBOT_SKINS.length,13);
+  assert.equal(ROBOT_SKINS.length,21);
   assert.equal(unlockedRobotSkins({}),5);
   assert.equal(unlockedRobotSkins(Object.fromEntries(Array.from({length:15},(_,i)=>[`1-${i+1}`,{stars:2}]))),7);
   const progress=Object.fromEntries(Array.from({length:4},(_,i)=>[`1-${i+1}`,{stars:2}]));
   const team=validateSave({version:2,teams:[{...original,progress,avatar:8}] }).teams[0];
   assert.equal(team.avatar,4,'a locked appearance is clamped to the highest unlocked skin');
+  const earned=Array.from({length:25},(_,i)=>({id:`sticker-${i}`,type:'logic'}));
+  assert.equal(unlockedRobotSkins({},earned),11,'5 base skins plus 6 sticker rewards are available at 25 stickers');
+  assert.equal(skinUnlocked(13,{},earned),true);
+  assert.equal(skinUnlocked(19,{},earned),false);
+  const awarded=validateSave({version:2,teams:[{...original,stickers:earned,avatar:13}]}).teams[0];
+  assert.equal(awarded.avatar,13,'the team can equip a skin earned from teacher stickers');
+  const locked=validateSave({version:2,teams:[{...original,stickers:earned.slice(0,2),avatar:13}]}).teams[0];
+  assert.equal(locked.avatar,4,'a sticker skin cannot be equipped before its reward threshold');
 });
 test('Backup merge preserves best stars and unions history without duplicating teams',()=>{
   const first=validateSave({version:1,teams:[original]});
