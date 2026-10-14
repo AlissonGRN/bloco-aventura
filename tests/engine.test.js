@@ -40,6 +40,7 @@ test('The surprise world progresses from arrows to switches, conditions, loops, 
   const levels = LEVELS.filter(l => l.grade === 10);
   assert.equal(levels.length, 40);
   assert.deepEqual(levels[0].allowed, ['move']);
+  assert.equal(levels[0].boards[0].crystals.length, 0);
   assert.ok(levels[10].allowed.includes('press') && levels[10].required.includes('press'));
   assert.ok(levels[26].required.includes('if') && levels[26].required.includes('repeat'));
   assert.ok(levels[30].required.includes('call'));

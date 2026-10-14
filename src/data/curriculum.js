@@ -377,11 +377,11 @@ const switchTitles = ['Botão da ponte', 'Ponte levadiça', 'Acenda a passagem',
 const eventTitles = ['Uma mudança no caminho', 'O corredor surpresa', 'A ponte se moveu', 'Caminho de duas escolhas', 'A passagem inesperada', 'Repetir depois da surpresa', 'O plano que se adapta', 'Mudança no meio da rota', 'Atalho ou desvio?', 'Detetives do imprevisto'];
 const advancedTitles = ['Guarde sua ideia', 'Meu plano reutilizável', 'Função que se adapta', 'A trilha dos botões', 'Repetir e decidir', 'Uma função, duas rotas', 'A ponte surpresa', 'Plano de exploradores', 'A última mudança', 'Mestres dos imprevistos'];
 const openingLevels = openingRoutes.map((path, index) => {
-  const board = boardFromPath(path);
+  const board = boardFromPath(path, false);
   return { id: `10-${index + 1}`, grade: 10, number: index + 1, title: openingTitles[index], concept: 'Direções e sequências', instruction: 'Observe o mapa, organize as setas e leve Bip até a bandeira.', hint: 'Cada seta faz Bip andar uma casa. Antes de executar, acompanhe o caminho com o dedo.', kind: 'build', boards: [board], solution: [...path].map(move), definition: [], allowed: ['move'], required: [], maxBlocks: 24 };
 });
 const switchLevels = openingRoutes.map((path, index) => {
-  const baseBoard = boardFromPath(path);
+  const baseBoard = boardFromPath(path, false);
   const points = eventRoute(path, baseBoard.start), gateIndex = Math.min(3, points.length - 2), gate = points[gateIndex];
   const before = points[gateIndex - 1], next = points[gateIndex + 1];
   const routeCells = new Set(points.map(p => `${p.x},${p.y}`));
