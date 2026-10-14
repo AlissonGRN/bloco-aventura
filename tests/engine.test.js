@@ -3,13 +3,12 @@ import assert from 'node:assert/strict';
 import { LEVELS, WORLDS, SEQUENCE_TASKS, move, repeat, branch, call, actionBlock, countBlocks, getLevel } from '../src/data/curriculum.js';
 import { simulate, evaluateAll, withIds, editList } from '../src/game/engine.js';
 
-test('400 unique missions, 40 per level', () => {
-  assert.equal(LEVELS.length, 400);
-  assert.equal(new Set(LEVELS.map(l => l.id)).size, 400);
-  for (let grade = 1; grade <= 10; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
-  assert.equal(WORLDS.length, 10);
-});
-for (const l of LEVELS.filter(l => !['sequence','circuit'].includes(l.kind))) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
+test('440 unique missions, 40 per level', () => {
+  assert.equal(LEVELS.length, 440);
+  assert.equal(new Set(LEVELS.map(l => l.id)).size, 440);
+  for (let grade = 1; grade <= 11; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
+  assert.equal(WORLDS.length, 11);
+});for (const l of LEVELS.filter(l => !['sequence','circuit'].includes(l.kind))) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
   const result = evaluateAll(l, withIds(l.solution), withIds(l.definition));
   assert.equal(result.success, true, result.results.map(r => r.failure).join(' / '));
   assert.equal(result.stars, 3);
@@ -36,23 +35,33 @@ test('The action world teaches collecting, jumping, fighting, opening, loops, an
   assert.ok(actions.slice(30).every(l => l.allowed.includes('call') && l.solution.some(b => b.type === 'call')));
   for (const level of actions) assert.equal(evaluateAll(level, withIds(level.solution), withIds(level.definition)).success, true, level.id);
 });
-test('The surprise world progresses from arrows to switches, conditions, loops, and functions', () => {
+test('The action world starts with new actions and progresses from arrows to loops', () => {
   const levels = LEVELS.filter(l => l.grade === 10);
   assert.equal(levels.length, 40);
-  assert.deepEqual(levels[0].allowed, ['move']);
-  assert.equal(levels[0].boards[0].crystals.length, 0);
-  assert.ok(levels[10].allowed.includes('press') && levels[10].required.includes('press'));
-  assert.ok(levels[26].required.includes('if') && levels[26].required.includes('repeat'));
-  assert.ok(levels[30].required.includes('call'));
-  assert.ok(WORLDS[9].trails[0].focus.includes('visual'));
-  assert.ok(WORLDS[9].trails[3].focus.includes('Funções'));
+  assert.equal(levels[0].kind, 'actions');
+  assert.ok(levels[0].allowed.includes('press') && levels[0].required.includes('press'));
+  assert.ok(levels.slice(0, 20).every(l => !l.allowed.includes('if') && !l.allowed.includes('call')));
+  assert.ok(levels[10].required.includes('repeat'));
+  assert.ok(levels[20].required.includes('repeat'));
+  assert.ok(WORLDS[9].trails[0].focus.includes('Ações'));
+  assert.ok(WORLDS[9].trails[2].focus.toLowerCase().includes('repetir'));
 });
+test('The second new world starts with arrows and loops, then teaches decisions and functions', () => {
+  const levels = LEVELS.filter(l => l.grade === 11);
+  assert.equal(levels.length, 40);
+  assert.ok(levels.slice(0, 10).every(l => l.kind === 'maze' && l.required.includes('repeat')));
+  assert.ok(levels.slice(10, 30).every(l => l.required.includes('if') && l.required.includes('repeat')));
+  assert.ok(levels.slice(30).every(l => l.required.includes('call') && l.required.includes('if')));
+  assert.ok(WORLDS[10].trails[0].focus.includes('repetir'));
+  assert.ok(WORLDS[10].trails[3].focus.includes('Funções'));
+});
+
 test('Switch actions open the bridge and surprise events change routes during execution', () => {
   const switchLevel = getLevel('10-11');
   const switchRun = simulate(switchLevel, withIds(switchLevel.solution));
   assert.equal(switchRun.success, true);
   assert.equal(switchRun.activatedSwitches.length, 1);
-  const surpriseLevel = getLevel('10-21');
+  const surpriseLevel = getLevel('11-11');
   const runs = evaluateAll(surpriseLevel, withIds(surpriseLevel.solution)).results;
   assert.ok(runs.every(run => run.success));
   assert.ok(runs.every(run => run.timeline.some(frame => frame.kind === 'surprise')));
