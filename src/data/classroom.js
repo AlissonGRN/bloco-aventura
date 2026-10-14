@@ -45,16 +45,18 @@ export const ROBOT_SKINS = [
   { name: 'Abelha Mensageira', color: '#edbd4d', accent: '#754f3f', material: 'bee', unlockAt: 0, stickerUnlockAt: 30 },
   { name: 'Fada das Engrenagens', color: '#9278bb', accent: '#e9b8d8', material: 'fairy', unlockAt: 0, stickerUnlockAt: 40 },
 ];
-export const unlockedRobotSkins = (progress, stickers = []) => {
+export const unlockedRobotSkins = (progress, stickers = [], bonusSkins = []) => {
   const completed = Object.keys(progress || {}).length;
   const received = Array.isArray(stickers) ? stickers.length : nonNegative(stickers);
   const progressUnlocked = ROBOT_SKINS.filter(skin => !skin.stickerUnlockAt && skin.unlockAt <= completed).length;
   const stickerUnlocked = ROBOT_SKINS.filter(skin => skin.stickerUnlockAt && received >= skin.stickerUnlockAt).length;
-  return progressUnlocked + stickerUnlocked;
+  const manualUnlocked = Array.isArray(bonusSkins) ? bonusSkins.filter(index => Number.isInteger(index) && index >= 0 && index < ROBOT_SKINS.length && !skinUnlocked(index, progress, stickers)).length : 0;
+  return progressUnlocked + stickerUnlocked + manualUnlocked;
 };
-export const skinUnlocked = (index, progress = {}, stickers = []) => {
+export const skinUnlocked = (index, progress = {}, stickers = [], bonusSkins = []) => {
   const skin = ROBOT_SKINS[index];
   if (!skin) return false;
+  if (Array.isArray(bonusSkins) && bonusSkins.includes(index)) return true;
   return skin.stickerUnlockAt ? (stickers?.length || 0) >= skin.stickerUnlockAt : Object.keys(progress || {}).length >= skin.unlockAt;
 };
 export function uid() {
@@ -92,10 +94,11 @@ export function validateSave(value) {
     }
     const sessions = (Array.isArray(t.sessions) ? t.sessions : []).slice(-100).map(s => cleanSession(s)).filter(Boolean);
     const stickers = (Array.isArray(t.stickers) ? t.stickers : []).filter(s => s && typeof s.id === 'string' && STICKERS.some(b => b.id === s.type)).slice(-100).map(s => ({ id: s.id, type: s.type, awardedAt: date(s.awardedAt), note: typeof s.note === 'string' ? s.note.slice(0, 160) : '' }));
+    const bonusSkins = [...new Set((Array.isArray(t.bonusSkins) ? t.bonusSkins : []).filter(index => Number.isInteger(index) && index >= 0 && index < ROBOT_SKINS.length))];
     const requestedAvatar = Math.floor(Number(t.avatar) || 0);
-    const fallbackAvatar = ROBOT_SKINS.reduce((last, skin, index) => skinUnlocked(index, progress, stickers) ? index : last, 0);
-    const avatar = skinUnlocked(requestedAvatar, progress, stickers) ? requestedAvatar : fallbackAvatar;
-    return { id: t.id, name: typeof t.name === 'string' && t.name.trim() ? t.name.trim().slice(0, 40) : t.members.join(' e '), members: t.members.map(n => n.trim()), classId: classes.some(c => c.id === t.classId) ? t.classId : null, avatar, progress, attempts, sessions, stickers, currentSession: cleanSession(t.currentSession, false), lastLevel: known.has(t.lastLevel) ? t.lastLevel : '1-1', updatedAt: date(t.updatedAt), ...(typeof t.cloudOwner === 'string' ? { cloudOwner: t.cloudOwner } : {}), ...(t.sharedAccess === true ? { sharedAccess: true } : {}) };
+    const fallbackAvatar = ROBOT_SKINS.reduce((last, skin, index) => skinUnlocked(index, progress, stickers, bonusSkins) ? index : last, 0);
+    const avatar = skinUnlocked(requestedAvatar, progress, stickers, bonusSkins) ? requestedAvatar : fallbackAvatar;
+    return { id: t.id, name: typeof t.name === 'string' && t.name.trim() ? t.name.trim().slice(0, 40) : t.members.join(' e '), members: t.members.map(n => n.trim()), classId: classes.some(c => c.id === t.classId) ? t.classId : null, avatar, progress, attempts, sessions, stickers, bonusSkins, currentSession: cleanSession(t.currentSession, false), lastLevel: known.has(t.lastLevel) ? t.lastLevel : '1-1', updatedAt: date(t.updatedAt), ...(typeof t.cloudOwner === 'string' ? { cloudOwner: t.cloudOwner } : {}), ...(t.sharedAccess === true ? { sharedAccess: true } : {}) };
   });
   return { version: 2, teams, classes, activeId: teams.some(t => t.id === value.activeId) ? value.activeId : null };
 }
@@ -105,7 +108,7 @@ export function mergeTeams(old, fresh) {
   const attempts = { ...old.attempts };
   for (const [id, a] of Object.entries(fresh.attempts || {})) if (!attempts[id] || a.count > attempts[id].count) attempts[id] = a;
   const recent = Date.parse(fresh.updatedAt || 0) > Date.parse(old.updatedAt || 0) ? fresh : old;
-  return { ...old, ...recent, progress, attempts, sessions: [...new Map([...(old.sessions || []), ...(fresh.sessions || [])].map(s => [s.id, s])).values()].sort((a, b) => Date.parse(a.startedAt) - Date.parse(b.startedAt)).slice(-100), stickers: [...new Map([...(old.stickers || []), ...(fresh.stickers || [])].map(s => [s.id, s])).values()].slice(-100) };
+  return { ...old, ...recent, progress, attempts, sessions: [...new Map([...(old.sessions || []), ...(fresh.sessions || [])].map(s => [s.id, s])).values()].sort((a, b) => Date.parse(a.startedAt) - Date.parse(b.startedAt)).slice(-100), stickers: [...new Map([...(old.stickers || []), ...(fresh.stickers || [])].map(s => [s.id, s])).values()].slice(-100), bonusSkins: [...new Set([...(old.bonusSkins || []), ...(fresh.bonusSkins || [])])] };
 }
 export function mergeSave(current, incoming) {
   const valid = validateSave(incoming);

@@ -45,7 +45,7 @@ export function useClassroom() {
         for (const t of remote.teams) {
           const local = map.get(t.id);
           // Keep the local editing/session state; the server owns rewards.
-          map.set(t.id, local ? { ...mergeTeams(local, t), ...local, progress: mergeTeams(local, t).progress, sessions: mergeTeams(local, t).sessions, attempts: mergeTeams(local, t).attempts, stickers: t.stickers, cloudOwner: t.cloudOwner, sharedAccess: t.sharedAccess } : t);
+          map.set(t.id, local ? { ...mergeTeams(local, t), ...local, progress: mergeTeams(local, t).progress, sessions: mergeTeams(local, t).sessions, attempts: mergeTeams(local, t).attempts, stickers: t.stickers, bonusSkins: t.bonusSkins, cloudOwner: t.cloudOwner, sharedAccess: t.sharedAccess } : t);
         }
         return { ...d, classes, teams: [...map.values()] };
       });

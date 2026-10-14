@@ -33,6 +33,11 @@ test('Bip skins unlock from completed challenges and saved teams cannot select l
   assert.equal(skinUnlocked(19,{},earned),false);
   const awarded=validateSave({version:2,teams:[{...original,stickers:earned,avatar:13}]}).teams[0];
   assert.equal(awarded.avatar,13,'the team can equip a skin earned from teacher stickers');
+  const teacherGift=validateSave({version:2,teams:[{...original,avatar:20,bonusSkins:[20,20,-1,22]}]}).teams[0];
+  assert.deepEqual(teacherGift.bonusSkins,[20],'specific teacher unlocks are kept and invalid indices are discarded');
+  assert.equal(teacherGift.avatar,20,'a teacher-granted skin can be equipped without earning its sticker threshold');
+  assert.equal(unlockedRobotSkins({},[],[20]),6,'a manual unlock counts once');
+  assert.equal(skinUnlocked(20,{},[],[20]),true);
   const locked=validateSave({version:2,teams:[{...original,stickers:earned.slice(0,2),avatar:13}]}).teams[0];
   assert.equal(locked.avatar,4,'a sticker skin cannot be equipped before its reward threshold');
 });
@@ -42,6 +47,8 @@ test('Backup merge preserves best stars and unions history without duplicating t
   const result=mergeSave(mergeSave(first,next),next);
   assert.equal(result.teams.length,1); assert.equal(result.teams[0].progress['1-1'].stars,3); assert.equal(result.teams[0].progress['1-2'].stars,3);
   assert.equal(result.teams[0].sessions.length,1); assert.equal(result.teams[0].stickers.length,1);
+  const granted=mergeSave(validateSave({version:2,teams:[{...original,bonusSkins:[19]}]}),validateSave({version:2,teams:[{...original,bonusSkins:[20]}]}));
+  assert.deepEqual(granted.teams[0].bonusSkins,[19,20],'backup merges retain granted skins');
   assert.equal(result.teams[0].sessions[0].note,'Gostei!');
 });
 test('Teacher password is salted, wrong passwords fail and corrupt locks fail closed',async()=>{

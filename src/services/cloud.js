@@ -29,7 +29,7 @@ export async function joinTeam(code) {
 }
 const classFromRow = c => ({ id: c.id, name: c.name, grade: c.grade, section: c.section, archived: !c.active, classroomId: c.classroom_id });
 export function teamFromRow(t, stickers = []) {
-  return { id: t.id, name: t.name, members: t.members, avatar: t.avatar, classId: t.class_id, cloudOwner: t.owner_id, progress: t.progress || {}, attempts: t.attempts || {}, sessions: t.sessions || [], stickers: stickers.filter(s => s.team_id === t.id).map(s => ({ id: s.id, type: s.type, note: s.note, awardedAt: s.created_at })), currentSession: null, lastLevel: t.last_level, updatedAt: t.updated_at };
+  return { id: t.id, name: t.name, members: t.members, avatar: t.avatar, classId: t.class_id, cloudOwner: t.owner_id, progress: t.progress || {}, attempts: t.attempts || {}, sessions: t.sessions || [], stickers: stickers.filter(s => s.team_id === t.id).map(s => ({ id: s.id, type: s.type, note: s.note, awardedAt: s.created_at })), bonusSkins: t.bonus_skins || [], currentSession: null, lastLevel: t.last_level, updatedAt: t.updated_at };
 }
 export async function studentSnapshot() {
   const user = await studentIdentity();
@@ -77,6 +77,7 @@ export async function subscribeToTeamHelp(teamId, onStatus) {
 }
 export async function saveStudentTeams(teams, classes) {
   const user = await studentIdentity();
+  // Teacher-granted skins are server-owned. Student sync never writes this field.
   const records = teams.filter(t => classes.some(c => c.id === t.classId && c.classroomId) && (!t.cloudOwner || t.cloudOwner === user.id || t.sharedAccess)).map(t => ({ id: t.id, owner_id: t.cloudOwner || user.id, classroom_id: classes.find(c => c.id === t.classId).classroomId, class_id: t.classId, name: t.name, members: t.members, avatar: t.avatar, progress: t.progress, attempts: t.attempts, sessions: t.sessions, last_level: t.lastLevel }));
   const owned = records.filter(t => t.owner_id === user.id);
   const shared = records.filter(t => t.owner_id !== user.id);
@@ -131,6 +132,12 @@ export async function resolveTeacherHelp(id) {
   if (!rows?.length) throw new Error('Este pedido já foi atendido ou não está disponível.');
 }
 export async function updateCloudTeam(teamId, values) { return unwrap(await teacherClient.from('bloco_teams').update({ name: values.name, members: values.members, avatar: values.avatar, class_id: values.classId }).eq('id', teamId).select()); }
+export async function grantCloudSkin(teamId, skinIndex, currentlyGranted = []) {
+  if (!Number.isInteger(skinIndex) || skinIndex < 0 || skinIndex > 20) throw new Error('Skin inválida.');
+  const bonusSkins = [...new Set([...currentlyGranted, skinIndex])].sort((a, b) => a - b);
+  const rows = unwrap(await teacherClient.from('bloco_teams').update({ bonus_skins: bonusSkins }).eq('id', teamId).select('id'));
+  if (!rows?.length) throw new Error('Equipe não encontrada ou sem permissão para liberar esta skin.');
+}
 export async function cloudAward(teamId, type, note) { return unwrap(await teacherClient.from('team_stickers').insert({ team_id: teamId, type, note }).select()); }
 export async function cloudRemoveAward(id) { unwrap(await teacherClient.from('team_stickers').delete().eq('id', id)); }
 export async function cloudDeleteTeam(id) {
