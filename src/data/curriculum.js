@@ -35,7 +35,8 @@ export const WORLDS = [
   { id: 7, name: 'Labirinto dos padrões', short: 'Padrões', topic: 'Repetições, decomposição e funções', description: 'Use padrões para atravessar mapas cheios de paredes.', color: '#765c99', soft: '#eee7f6', type: 'maze-loops', icon: 'blocks', skill: 'Representar rotas mínimas com laços, decompor um trajeto e reutilizar trechos em funções.', teacher: 'Os desafios começam usando repetir. Nas últimas trilhas, Meu bloco permite guardar um trecho do caminho e chamá-lo no programa principal. Incentive a equipe a conferir o menor número de passos.', trails: makeTrails(['Primeiros padrões', 'Repetições no mapa', 'Peças reutilizáveis', 'Funções no labirinto'], ['Que trecho do caminho se repete?', 'Como representar o mesmo padrão com menos blocos?', 'Que parte da rota poderia virar Meu bloco?', 'A função ajudou a organizar o caminho?']) },
   { id: 8, name: 'Algoritmos do dia a dia', short: 'Algoritmos', topic: 'Algoritmos, decomposição e depuração', description: 'Coloque instruções simples na ordem certa e teste sua lógica.', color: '#508a72', soft: '#e4f2e9', type: 'sequence-words', icon: 'sequence', skill: 'Ler instruções, decompor uma rotina, comparar dependências entre etapas e corrigir sequências.', teacher: 'Antes de mover os cartões, leiam as ações e expliquem quais dependem umas das outras. Compare ordens alternativas e procure uma sequência válida.', trails: makeTrails(['Instruções em ordem', 'Rotinas e dependências', 'Corrija a sequência', 'Desafios de lógica'], ['Qual instrução precisa vir primeiro?', 'Que etapa depende do que veio antes?', 'Qual cartão está fora do lugar? Por quê?', 'Existe mais de uma ordem que funciona?']) },
   { id: 9, name: 'Expedição das ações', short: 'Expedição', topic: 'Sequências, ações e interação', description: 'Além de andar, ensine Bip a pegar itens, saltar buracos, afastar criaturas e abrir portas.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Planejar ações no momento certo, combinar comandos com deslocamentos e reutilizar sequências.', teacher: 'Neste mundo, algumas casas têm itens, criaturas, portas e buracos. Pegar, atacar/afastar e abrir agem na casa indicada; pular atravessa exatamente um buraco. Peça que a equipe preveja o resultado de cada comando.', trails: makeTrails(['Pegar e levar', 'Pular com cuidado', 'Abrir passagem', 'Combinar as ações'], ['Quando Bip precisa pegar o item: antes ou depois de andar até ele?', 'Qual casa está faltando no caminho e como Bip pode atravessá-la?', 'O que precisa acontecer antes de a porta deixar Bip passar?', 'Como dividir e testar uma sequência maior?']) },
-  { id: 10, name: 'Mundo dos imprevistos', short: 'Imprevistos', topic: 'Ações, eventos surpresa e estratégias', description: 'Ative botões, atravesse cenários que mudam e ensine Bip a reagir com código.', color: '#8265a7', soft: '#eee8f6', type: 'maze-surprise', icon: 'grid', skill: 'Este mundo está aberto para todas as equipes. A trilha 1 é mais visual e introdutória; a 2 trabalha ações e repetições; a 3 ensina se/senão com imprevistos; a 4 integra funções e estratégias. O professor pode recomendar por onde cada turma começa.', teacher: 'Todos podem jogar este mundo. Indique a trilha 1 para equipes que estão começando com sequências e direções; a trilha 2 para quem já organiza ações e padrões; a trilha 3 para equipes prontas para decisões; e a trilha 4 para integrar funções. Nas missões surpresa, o cenário muda durante a execução: peça que observem a mudança e expliquem como o código reagiu.', trails: makeTrails(['Começar pelas setas', 'Ações e padrões', 'Reagir à surpresa', 'Inventar estratégias'], ['Que seta levou Bip até o botão?', 'O que mudou depois de ativar o botão?', 'Qual pista mostrou que o caminho mudou?', 'Como o mesmo programa pode funcionar em cenários diferentes?']).map((trail, index) => ({ ...trail, focus: ['Mais visual · introdutória', 'Ações · intermediária', 'Se/senão · avançada', 'Funções · integração'][index] })) },
+  { id: 10, name: 'Oficina das ações', short: 'Ações', topic: 'Ações, setas e repetições', description: 'Ative botões, abra passagens e descubra como simplificar seus planos.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Este mundo começa com ações novas e avança das setas para repetir. O professor pode recomendar esta trilha para equipes que ainda estão conhecendo os comandos.', teacher: 'As missões já começam com botões e passagens que precisam ser ativadas: não é necessário repetir o tutorial de andar até a bandeira. Nas primeiras etapas, use setas e ativar; depois, identifique trechos repetidos para escrever o plano com menos blocos.', trails: makeTrails(['Ativar e avançar', 'Botões pelo caminho', 'Repetir para planejar', 'Oficina de soluções'], ['Qual botão libera a passagem?', 'Quando Bip precisa ativar o botão?', 'Que trecho do plano se repete?', 'Como as repetições deixam o programa menor?']).map((trail, index) => ({ ...trail, focus: ['Ações + setas · introdutória', 'Ações · intermediária', 'Repetir · intermediária', 'Ações + repetir · avançada'][index] })) },
+  { id: 11, name: 'Trilha dos imprevistos', short: 'Imprevistos', topic: 'Setas, repetir, decisões e funções', description: 'Planeje com repetir desde o começo e prepare Bip para caminhos que mudam.', color: '#8265a7', soft: '#eee8f6', type: 'maze-surprise', icon: 'grid', skill: 'Esta trilha começa combinando setas e repetir; depois introduz se/senão e Meu bloco. Pode ser recomendada para equipes que já conhecem as repetições.', teacher: 'As primeiras missões já exigem organizar as setas dentro de repetir, sem reapresentar o básico. Mais adiante, o cenário muda e o mesmo programa precisa decidir entre caminhos; no final, Meu bloco ajuda a reutilizar estratégias. Indique esta trilha para equipes que já dominam setas e repetir.', trails: makeTrails(['Setas e repetir', 'Caminhos que mudam', 'Decidir e repetir', 'Funções no imprevisto'], ['Que sequência de setas se repete no mapa?', 'O que mudou no cenário e como perceberam?', 'Como combinar a decisão com repetir?', 'Que estratégia vale a pena guardar em Meu bloco?']).map((trail, index) => ({ ...trail, focus: ['Setas + repetir · intermediária', 'Se/senão · avançada', 'Decisão + repetir · avançada', 'Funções · integração'][index] })) },
 ];
 const seq = text => [...text].map(move);
 const dirs = ['R', 'U', 'L', 'D'];
@@ -372,18 +373,14 @@ function compressEventBlocks(blocks) {
   return result;
 }
 const openingRoutes = ['RRRR', 'RRRRR', 'RRRRRR', 'RRRRRRR', 'RRURRRD', 'RRDRRRU', 'RRUURRDD', 'RRDDRRUU', 'RURRRDRR', 'RDRRRURR'];
-const openingTitles = ['Siga as pegadas', 'Mais uma casa', 'A curva do Bip', 'Chegue à bandeira', 'Desvio no jardim', 'Caminho pela ponte', 'Suba e atravesse', 'Desça e retorne', 'O caminho escondido', 'A primeira expedição'];
+const openingTitles = ['O botão da ponte', 'Ative para seguir', 'Uma porta no mapa', 'O botão escondido', 'Abra a passagem', 'Bip e o interruptor', 'Repetir para ativar', 'Uma rota mais curta', 'Mais de um botão', 'Mestre das ações'];
 const switchTitles = ['Botão da ponte', 'Ponte levadiça', 'Acenda a passagem', 'O botão secreto', 'Porta no corredor', 'Ative antes de seguir', 'Atalho acionado', 'Ponte de madeira', 'A passagem certa', 'Mestre dos botões'];
-const eventTitles = ['Uma mudança no caminho', 'O corredor surpresa', 'A ponte se moveu', 'Caminho de duas escolhas', 'A passagem inesperada', 'Repetir depois da surpresa', 'O plano que se adapta', 'Mudança no meio da rota', 'Atalho ou desvio?', 'Detetives do imprevisto'];
-const advancedTitles = ['Guarde sua ideia', 'Meu plano reutilizável', 'Função que se adapta', 'A trilha dos botões', 'Repetir e decidir', 'Uma função, duas rotas', 'A ponte surpresa', 'Plano de exploradores', 'A última mudança', 'Mestres dos imprevistos'];
-const openingLevels = openingRoutes.map((path, index) => {
-  const board = boardFromPath(path, false);
-  return { id: `10-${index + 1}`, grade: 10, number: index + 1, title: openingTitles[index], concept: 'Direções e sequências', instruction: 'Observe o mapa, organize as setas e leve Bip até a bandeira.', hint: 'Cada seta faz Bip andar uma casa. Antes de executar, acompanhe o caminho com o dedo.', kind: 'build', boards: [board], solution: [...path].map(move), definition: [], allowed: ['move'], required: [], maxBlocks: 24 };
-});
-const switchLevels = openingRoutes.map((path, index) => {
+const eventTitles = ['A ponte mudou', 'Dois caminhos possíveis', 'Siga a pista', 'A passagem surpresa', 'O atalho aparece', 'Repita depois da mudança', 'Uma rota que se adapta', 'Caminho em movimento', 'Contorne o imprevisto', 'Detetives do caminho'];
+const advancedTitles = ['Guarde sua estratégia', 'Meu plano reutilizável', 'Função que se adapta', 'A trilha surpresa', 'Repetir e decidir', 'Uma função, duas rotas', 'A ponte que muda', 'Plano dos exploradores', 'A última mudança', 'Mestres dos imprevistos'];
+const actionOpeningLevels = openingRoutes.map((path, index) => {
   const baseBoard = boardFromPath(path, false);
   const points = eventRoute(path, baseBoard.start), gateIndex = Math.min(3, points.length - 2), gate = points[gateIndex];
-  const before = points[gateIndex - 1], next = points[gateIndex + 1];
+  const before = points[gateIndex - 1];
   const routeCells = new Set(points.map(p => `${p.x},${p.y}`));
   const candidates = [['R', 1, 0], ['D', 0, 1], ['L', -1, 0], ['U', 0, -1]];
   const adjacent = candidates.find(([, dx, dy]) => {
@@ -398,37 +395,68 @@ const switchLevels = openingRoutes.map((path, index) => {
     if (step === gateIndex - 1) operations.push(actionBlock('press', switchDirection));
     operations.push(move(path[step]));
   }
-  const solution = index >= 6 ? compressEventBlocks(operations) : operations;
-  return { id: `10-${index + 11}`, grade: 10, number: index + 11, title: switchTitles[index], concept: index < 6 ? 'Ações e sequências' : 'Ações e repetições', instruction: 'Encontre o botão, ative-o e atravesse a ponte que se abriu.', hint: 'O botão fica ao lado de Bip. Use “ativar” na direção do botão; isso libera a casa da ponte.', kind: 'actions', boards: [board], solution, definition: [], allowed: index >= 6 ? ['move', 'press', 'repeat'] : ['move', 'press'], required: index >= 6 ? ['press', 'repeat'] : ['press'], maxBlocks: 30 };
+  const useLoops = index >= 6, solution = useLoops ? compressEventBlocks(operations) : operations;
+  return { id: `10-${index + 1}`, grade: 10, number: index + 1, title: openingTitles[index], concept: useLoops ? 'Ações e repetições' : 'Ações e direções', instruction: 'Encontre o botão, ative-o e atravesse a passagem que se abriu.', hint: 'O botão fica ao lado de Bip. Use “ativar” na direção do botão para liberar a passagem.', kind: 'actions', boards: [board], solution, definition: [], allowed: useLoops ? ['move', 'press', 'repeat'] : ['move', 'press'], required: useLoops ? ['press', 'repeat'] : ['press'], maxBlocks: 30 };
 });
-const surpriseBoards = () => [false, true].map(openDetour => ({
+const switchLevels = openingRoutes.map((path, index) => {
+  const baseBoard = boardFromPath(path, false);
+  const points = eventRoute(path, baseBoard.start), gateIndex = Math.min(3, points.length - 2), gate = points[gateIndex];
+  const before = points[gateIndex - 1];
+  const routeCells = new Set(points.map(p => `${p.x},${p.y}`));
+  const candidates = [['R', 1, 0], ['D', 0, 1], ['L', -1, 0], ['U', 0, -1]];
+  const adjacent = candidates.find(([, dx, dy]) => {
+    const p = { x: before.x + dx, y: before.y + dy };
+    return p.x >= 0 && p.x < baseBoard.cols && p.y >= 0 && p.y < baseBoard.rows && !routeCells.has(`${p.x},${p.y}`);
+  });
+  const [switchDirection, sx, sy] = adjacent;
+  const switchCell = { x: before.x + sx, y: before.y + sy };
+  const board = { ...baseBoard, cells: [...baseBoard.cells, switchCell], walls: [gate], switches: [{ ...switchCell, opens: [gate] }], items: [], enemies: [], doors: [], gaps: [], surprises: [] };
+  const operations = [];
+  for (let step = 0; step < path.length; step++) {
+    if (step === gateIndex - 1) operations.push(actionBlock('press', switchDirection));
+    operations.push(move(path[step]));
+  }
+  const solution = compressEventBlocks(operations);
+  return { id: `10-${index + 11}`, grade: 10, number: index + 11, title: switchTitles[index], concept: 'Ações e repetições', instruction: 'Ative o botão correto, atravesse a ponte e use repetir para organizar as setas.', hint: 'O botão libera a casa com a parede. Agrupe movimentos iguais em repetir.', kind: 'actions', boards: [board], solution, definition: [], allowed: ['move', 'press', 'repeat'], required: ['press', 'repeat'], maxBlocks: 30 };
+});
+const surpriseBoardsAt = triggerX => [false, true].map(openDetour => ({
   cols: 8, rows: 7, start: { x: 0, y: 2 }, goal: { x: 7, y: 2 },
-  cells: [
-    ...Array.from({ length: 8 }, (_, x) => ({ x, y: 2 })),
-    ...[2, 3, 4].map(x => ({ x, y: 3 })),
-  ],
-  walls: [{ x: 3, y: 2 }, { x: 2, y: 3 }],
+  cells: [...Array.from({ length: 8 }, (_, x) => ({ x, y: 2 })), ...[triggerX, triggerX + 1, triggerX + 2].filter(x => x < 8).map(x => ({ x, y: 3 }))],
+  walls: [{ x: triggerX + 1, y: 2 }, { x: triggerX, y: 3 }],
   crystals: [], items: [], enemies: [], doors: [], gaps: [],
-  surprises: [{
-    id: 'ponte-surpresa', at: { x: 2, y: 2 },
-    open: [openDetour ? { x: 2, y: 3 } : { x: 3, y: 2 }],
-    close: [openDetour ? { x: 3, y: 2 } : { x: 2, y: 3 }],
-    label: 'A ponte mudou!', message: 'Surpresa! A ponte mudou de lugar. Observem qual caminho ficou livre.',
-  }],
+  surprises: [{ id: `surpresa-${triggerX}`, at: { x: triggerX, y: 2 }, open: [openDetour ? { x: triggerX, y: 3 } : { x: triggerX + 1, y: 2 }], close: [openDetour ? { x: triggerX + 1, y: 2 } : { x: triggerX, y: 3 }], label: 'O caminho mudou!', message: 'Surpresa! Observem qual caminho ficou livre.' }],
 }));
-const straightBranch = () => branch('R', [...Array.from({ length: 5 }, () => move('R'))], [move('D'), move('R'), move('R'), move('U'), move('R'), move('R'), move('R')]);
-const loopBranch = () => branch('R', [repeat(5, [move('R')])], [move('D'), repeat(2, [move('R')]), move('U'), repeat(3, [move('R')])]);
-const surpriseLevels = Array.from({ length: 10 }, (_, index) => {
-  const number = index + 21, useLoops = index >= 5, branchBlock = useLoops ? loopBranch() : straightBranch();
-  const solution = [move('R'), move('R'), branchBlock];
-  return { id: `10-${number}`, grade: 10, number, title: eventTitles[index], concept: useLoops ? 'Eventos, decisões e repetições' : 'Eventos surpresa e se/senão', instruction: 'O mesmo programa precisa funcionar nos dois cenários. A ponte muda quando Bip passa pelo símbolo surpresa.', hint: 'Depois do símbolo, o bloco se/senão pode verificar se há caminho à direita. Se não houver, use o caminho de baixo.', kind: 'adapt', boards: surpriseBoards(), solution, definition: [], allowed: useLoops ? ['move', 'if', 'repeat'] : ['move', 'if'], required: useLoops ? ['if', 'repeat'] : ['if'], maxBlocks: 36 };
+function eventBranch(triggerX, useLoops, withFunction) {
+  const mainCount = 7 - triggerX, detourCount = 5 - triggerX;
+  const run = count => useLoops && count > 1 ? [repeat(count, [move('R')])] : Array.from({ length: count }, () => move('R'));
+  const detour = [move('D'), ...run(2), move('U'), ...run(detourCount)];
+  const decision = branch('R', run(mainCount), detour);
+  const prefix = useLoops && triggerX > 1 ? [repeat(triggerX, [move('R')])] : Array.from({ length: triggerX }, () => move('R'));
+  return { boards: surpriseBoardsAt(triggerX), definition: withFunction ? [...prefix, decision] : [], solution: withFunction ? [call()] : [...prefix, decision] };
+}
+const intermediateLevels = Array.from({ length: 10 }, (_, index) => {
+  const number = index + 21, useLoops = index >= 5, triggerX = index % 5 + 1;
+  const event = eventBranch(triggerX, useLoops, false);
+  return { id: `10-${number}`, grade: 10, number, title: eventTitles[index], concept: useLoops ? 'Ações, eventos e repetições' : 'Ações e repetições', instruction: 'Acione o botão no mapa e atravesse a passagem que se abriu. Organize os movimentos com repetir.', hint: 'Observe o símbolo do botão e a parede. Use ativar antes de chegar à ponte; repetir ajuda a escrever menos setas.', kind: 'actions', boards: [switchLevels[index].boards[0]], solution: switchLevels[index].solution, definition: [], allowed: ['move', 'press', 'repeat'], required: ['press', 'repeat'], maxBlocks: 36 };
+});
+const mazePatternLevels = Array.from({ length: 10 }, (_, index) => {
+  const number = index + 1, board = mazeBoard(index), solution = compressPath(board.solutionPath);
+  return { id: `11-${number}`, grade: 11, number, title: ['O primeiro padrão', 'Corredor que se repete', 'Duas curvas iguais', 'Desvio organizado', 'Repita para chegar', 'Mapa de repetições', 'Paredes no caminho', 'A rota econômica', 'Zigue-zague programado', 'Mestres das setas'][index], concept: 'Setas e repetições', instruction: 'Encontre a rota mais curta e represente os passos repetidos usando repetir.', hint: 'Procure uma sequência de setas iguais e coloque-a dentro do bloco repetir.', kind: 'maze', boards: [board], solution, definition: [], allowed: ['move', 'repeat'], required: ['repeat'], maxBlocks: 40, shortestPath: true };
+});
+const decisionLevels = Array.from({ length: 20 }, (_, index) => {
+  const number = index + 11, triggerX = index % 5 + 1, event = eventBranch(triggerX, true, false);
+  return { id: `11-${number}`, grade: 11, number, title: eventTitles[index % 10], concept: number <= 20 ? 'Repetições, se/senão e imprevistos' : 'Decisões e estratégias reutilizáveis', instruction: 'O cenário muda durante o desafio. Use se/senão para escolher o caminho e repetir para organizar os passos.', hint: 'Depois que o caminho mudar, se/senão verifica se há passagem à direita ou se é preciso desviar.', kind: 'adapt', boards: event.boards, solution: event.solution, definition: [], allowed: ['move', 'repeat', 'if'], required: ['repeat', 'if'], maxBlocks: 40 };
 });
 const advancedLevels = Array.from({ length: 10 }, (_, index) => {
-  const number = index + 31, definition = [move('R'), move('R'), loopBranch()];
-  const solution = [call()];
-  return { id: `10-${number}`, grade: 10, number, title: advancedTitles[index], concept: 'Funções, decisões e eventos', instruction: 'Guarde seu plano em Meu bloco e use-o para resolver os dois cenários surpresa.', hint: 'Coloque as duas setas e a decisão dentro de Meu bloco. Depois chame F no programa principal.', kind: 'compose', boards: surpriseBoards(), solution, definition, allowed: ['move', 'if', 'repeat', 'call'], required: ['call', 'if', 'repeat'], maxBlocks: 36 };
+  const number = index + 31, triggerX = index % 5 + 1, event = eventBranch(triggerX, true, true);
+  return { id: `11-${number}`, grade: 11, number, title: advancedTitles[index], concept: 'Funções, decisões e eventos', instruction: 'Guarde seu plano em Meu bloco e use-o para resolver os dois cenários surpresa.', hint: 'Coloque as setas e a decisão dentro de Meu bloco. Depois chame F no programa principal.', kind: 'compose', boards: event.boards, solution: event.solution, definition: event.definition, allowed: ['move', 'if', 'repeat', 'call'], required: ['call', 'if', 'repeat'], maxBlocks: 40 };
 });
-const eventLevels = [...openingLevels, ...switchLevels, ...surpriseLevels, ...advancedLevels];
+const lateActionLevels = Array.from({ length: 10 }, (_, index) => {
+  const source = switchLevels[index];
+  return { ...source, id: `10-${index + 31}`, number: index + 31, title: advancedTitles[index], concept: 'Ações e repetições: desafios de integração', instruction: 'Planeje quando ativar o botão e agrupe os movimentos repetidos em um programa enxuto.', hint: 'A ativação libera a ponte. Organize as setas repetidas em um bloco amarelo.', solution: compressEventBlocks(source.solution), allowed: ['move', 'press', 'repeat'], required: ['press', 'repeat'], maxBlocks: 36 };
+});
+const eventLevels = [...actionOpeningLevels, ...switchLevels, ...intermediateLevels, ...lateActionLevels, ...mazePatternLevels, ...decisionLevels, ...advancedLevels];
+
 
 export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels, ...eventLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
   const allowed = l.allowed || ['move'];
