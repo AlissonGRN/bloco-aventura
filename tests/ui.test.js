@@ -173,6 +173,9 @@ test('Teacher password gate, class filter, reward and logout persist correctly',
   await click(button('Fechar')); await click(button('Sair do painel'));
   assert.equal(document.querySelector('.team-progress-table'),null);
   await click(button('Conquistas')); assert.match(document.querySelector('.sticker-album').textContent,/Não desistiu/);
+  const giftedSkin=document.querySelector('[aria-label="Skin Fada das Engrenagens"]');
+  assert.ok(giftedSkin && !giftedSkin.disabled,'the selected team can equip a skin granted by the teacher');
+  await click(giftedSkin); assert.equal(readSave().teams[0].avatar,20);
   await click(button('Espaço do professor'));
   for(const el of document.querySelectorAll('.teacher-login input')) await change(el,'professor-test-42');
   await act(async()=>{ document.querySelector('.teacher-login form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true})); await new Promise(resolve=>setTimeout(resolve,2500)); });
