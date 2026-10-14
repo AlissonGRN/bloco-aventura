@@ -18,6 +18,10 @@ export function simulate(level, program, definition = [], scenario = 0) {
   const enemies = new Set((board.enemies || []).map(key));
   const doors = new Map((board.doors || []).map(door => [key(door), door]));
   const gaps = new Set((board.gaps || []).map(key));
+  const dynamicWalls = new Set((board.walls || []).map(key));
+  const switches = new Map((board.switches || []).map(item => [key(item), item]));
+  const activatedSwitches = new Set();
+  const triggeredEvents = new Set();
   let position = { ...board.start };
   const collected = new Set();
   const pickedItems = new Set();
@@ -30,13 +34,23 @@ export function simulate(level, program, definition = [], scenario = 0) {
   let moves = 0;
   const usedTypes = new Set();
   function snapshot(block, extra = {}) {
-    timeline.push({ position: { ...position }, collected: [...collected], itemsPicked: [...pickedItems], defeated: [...defeated], opened: [...opened], keys, blockId: block.id, moves, ...extra });
+    timeline.push({ position: { ...position }, collected: [...collected], itemsPicked: [...pickedItems], defeated: [...defeated], opened: [...opened], activatedSwitches: [...activatedSwitches], blockedCells: [...dynamicWalls], keys, blockId: block.id, moves, ...extra });
   }
   function canMove(direction) {
     const d = DIRS[direction];
     if (!d) return false;
     const target = `${position.x + d[0]},${position.y + d[1]}`;
-    return cells.has(target) && !gaps.has(target) && (!enemies.has(target) || defeated.has(target)) && (!doors.has(target) || opened.has(target));
+    return cells.has(target) && !dynamicWalls.has(target) && !gaps.has(target) && (!enemies.has(target) || defeated.has(target)) && (!doors.has(target) || opened.has(target));
+  }
+  function triggerSurprises(block) {
+    for (const [index, event] of (board.surprises || []).entries()) {
+      const eventKey = String(event.id ?? index);
+      if (triggeredEvents.has(eventKey) || !same(position, event.at)) continue;
+      triggeredEvents.add(eventKey);
+      (event.close || []).forEach(cell => dynamicWalls.add(key(cell)));
+      (event.open || []).forEach(cell => dynamicWalls.delete(key(cell)));
+      snapshot(block, { kind: 'surprise', surpriseMessage: event.message || 'O cenário mudou! Observem as novas passagens.', surpriseLabel: event.label || 'Imprevisto!' });
+    }
   }
   function execute(blocks, inFunction = false, depth = 0) {
     if (depth > 12) { failure = 'Este programa tem blocos demais dentro de outros blocos. Vamos simplificar?'; return; }
@@ -55,7 +69,8 @@ export function simulate(level, program, definition = [], scenario = 0) {
         moves++;
         if (crystals.has(key(position))) collected.add(key(position));
         snapshot(b, { kind: 'move', direction: b.direction });
-      } else if (['pick', 'jump', 'attack', 'open'].includes(b.type)) {
+        triggerSurprises(b);
+      } else if (['pick', 'jump', 'attack', 'open', 'press'].includes(b.type)) {
         const d = DIRS[b.direction];
         if (!d) { failure = 'Escolha uma direção para esta ação.'; snapshot(b, { kind: 'blocked', action: b.type }); return; }
         const target = { x: position.x + d[0], y: position.y + d[1] };
@@ -81,6 +96,13 @@ export function simulate(level, program, definition = [], scenario = 0) {
           if (!enemies.has(targetKey) || defeated.has(targetKey)) { failure = 'Não há criatura ao lado de Bip nessa direção para atacar.'; snapshot(b, { kind: 'blocked', action: b.type, direction: b.direction }); return; }
           defeated.add(targetKey);
           snapshot(b, { kind: 'attack', action: b.type, direction: b.direction });
+        } else if (b.type === 'press') {
+          const button = switches.get(targetKey);
+          if (!button || activatedSwitches.has(targetKey)) { failure = 'Não há botão ao lado de Bip nessa direção para ativar.'; snapshot(b, { kind: 'blocked', action: b.type, direction: b.direction }); return; }
+          activatedSwitches.add(targetKey);
+          (button.opens || []).forEach(cell => dynamicWalls.delete(key(cell)));
+          (button.closes || []).forEach(cell => dynamicWalls.add(key(cell)));
+          snapshot(b, { kind: 'press', action: b.type, direction: b.direction });
         } else {
           const door = doors.get(targetKey);
           if (!door || opened.has(targetKey)) { failure = 'Não há porta fechada ao lado de Bip nessa direção para abrir.'; snapshot(b, { kind: 'blocked', action: b.type, direction: b.direction }); return; }
@@ -118,14 +140,15 @@ export function simulate(level, program, definition = [], scenario = 0) {
   if (!failure && board.shortestMoves && moves > board.shortestMoves) failure = `Bip chegou, mas deu ${moves} passos. Tente encontrar o menor caminho: ${board.shortestMoves} passos.`;
   if (!failure && collected.size < crystals.size) failure = 'Faltou pegar um cristal. Passe por todos antes de terminar.';
   if (!failure && pickedItems.size < items.size) failure = 'Ainda há um item no caminho. Usem o bloco “pegar” antes de chegar à bandeira.';
+  if (!failure && activatedSwitches.size < switches.size) failure = 'Ainda falta ativar um botão para mudar o cenário.';
   if (!failure && defeated.size < enemies.size) failure = 'A criatura ainda está protegendo o caminho. Usem o bloco “atacar”.';
   if (!failure && opened.size < doors.size) failure = 'A porta continua fechada. Peguem a chave e usem o bloco “abrir”.';
   if (!failure && level.required.some(t => !usedTypes.has(t))) {
-    const names = { repeat: 'repetir', if: 'se/senão', call: 'F (Meu bloco)', pick: 'pegar', jump: 'pular', attack: 'atacar', open: 'abrir' };
+    const names = { repeat: 'repetir', if: 'se/senão', call: 'F (Meu bloco)', pick: 'pegar', jump: 'pular', attack: 'atacar', open: 'abrir', press: 'ativar' };
     failure = `Você encontrou o caminho! Agora resolva usando ${level.required.filter(t => !usedTypes.has(t)).map(t => names[t]).join(' e ')}, a ideia desta missão.`;
   }
   if (!failure && level.budget && countBlocks(program) + countBlocks(definition) > level.budget) failure = `Caminho resolvido! Agora simplifique o plano para usar até ${level.budget} blocos.`;
-  return { success: !failure, failure, timeline, position, collected: [...collected], itemsPicked: [...pickedItems], defeated: [...defeated], opened: [...opened], keys, moves, scenario, stars: failure ? 0 : (countBlocks(program) + countBlocks(definition) <= referenceCount(level) ? 3 : 2) };
+  return { success: !failure, failure, timeline, position, collected: [...collected], itemsPicked: [...pickedItems], defeated: [...defeated], opened: [...opened], activatedSwitches: [...activatedSwitches], blockedCells: [...dynamicWalls], keys, moves, scenario, stars: failure ? 0 : (countBlocks(program) + countBlocks(definition) <= referenceCount(level) ? 3 : 2) };
 }
 
 export function evaluateAll(level, program, definition = []) {

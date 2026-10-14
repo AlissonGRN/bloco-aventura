@@ -232,6 +232,13 @@ test('Action challenges show tools and let Bip pick an item on the board', async
   assert.ok(button('Adicionar Pular'), 'the jump command is available');
 });
 
+test('Surprise trail presents the new activate action to the team', async () => {
+  await mount(createElement(Game, { level: getLevel('10-11'), team: team('a', 'Equipe'), onComplete() {}, onBack() {}, onNext() {}, onWorld() {} }));
+  assert.ok(button('Adicionar Ativar'));
+  assert.match(document.body.textContent, /ative-o e atravesse a ponte/i);
+  assert.ok(document.querySelector('.switch-object'));
+});
+
 test('Game speed choice is remembered when opening another level', async () => {
   localStorage.removeItem('bloco.game.speed.v1');
   const props = { team: team('speed-team', 'Equipe Velocidade'), onBack() {}, onNext() {}, onWorld() {} };

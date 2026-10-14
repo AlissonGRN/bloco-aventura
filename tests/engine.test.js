@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { LEVELS, WORLDS, SEQUENCE_TASKS, move, repeat, branch, call, actionBlock, countBlocks, getLevel } from '../src/data/curriculum.js';
 import { simulate, evaluateAll, withIds, editList } from '../src/game/engine.js';
 
-test('360 unique missions, 40 per level', () => {
-  assert.equal(LEVELS.length, 360);
-  assert.equal(new Set(LEVELS.map(l => l.id)).size, 360);
-  for (let grade = 1; grade <= 9; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
-  assert.equal(WORLDS.length, 9);
+test('400 unique missions, 40 per level', () => {
+  assert.equal(LEVELS.length, 400);
+  assert.equal(new Set(LEVELS.map(l => l.id)).size, 400);
+  for (let grade = 1; grade <= 10; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
+  assert.equal(WORLDS.length, 10);
 });
 for (const l of LEVELS.filter(l => !['sequence','circuit'].includes(l.kind))) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
   const result = evaluateAll(l, withIds(l.solution), withIds(l.definition));
@@ -35,6 +35,27 @@ test('The action world teaches collecting, jumping, fighting, opening, loops, an
   assert.ok(actions.slice(25, 30).every(l => l.allowed.includes('open') && l.boards[0].doors.length));
   assert.ok(actions.slice(30).every(l => l.allowed.includes('call') && l.solution.some(b => b.type === 'call')));
   for (const level of actions) assert.equal(evaluateAll(level, withIds(level.solution), withIds(level.definition)).success, true, level.id);
+});
+test('The surprise world progresses from arrows to switches, conditions, loops, and functions', () => {
+  const levels = LEVELS.filter(l => l.grade === 10);
+  assert.equal(levels.length, 40);
+  assert.deepEqual(levels[0].allowed, ['move']);
+  assert.ok(levels[10].allowed.includes('press') && levels[10].required.includes('press'));
+  assert.ok(levels[26].required.includes('if') && levels[26].required.includes('repeat'));
+  assert.ok(levels[30].required.includes('call'));
+  assert.ok(WORLDS[9].trails[0].focus.includes('visual'));
+  assert.ok(WORLDS[9].trails[3].focus.includes('Funções'));
+});
+test('Switch actions open the bridge and surprise events change routes during execution', () => {
+  const switchLevel = getLevel('10-11');
+  const switchRun = simulate(switchLevel, withIds(switchLevel.solution));
+  assert.equal(switchRun.success, true);
+  assert.equal(switchRun.activatedSwitches.length, 1);
+  const surpriseLevel = getLevel('10-21');
+  const runs = evaluateAll(surpriseLevel, withIds(surpriseLevel.solution)).results;
+  assert.ok(runs.every(run => run.success));
+  assert.ok(runs.every(run => run.timeline.some(frame => frame.kind === 'surprise')));
+  assert.notDeepEqual(runs[0].blockedCells, runs[1].blockedCells);
 });
 test('Actions require the right target, and a locked door requires its key', () => {
   assert.match(simulate(getLevel('9-11'), [actionBlock('jump', 'U')]).failure, /pular um buraco/);

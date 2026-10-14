@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, Flag, Lightbulb, Play, Pause, RotateCcw, Footprints, Check, ChevronRight, Rabbit, Turtle, Hand, PackageOpen, KeyRound, Bug, DoorClosed, DoorOpen } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Flag, Lightbulb, Play, Pause, RotateCcw, Footprints, Check, ChevronRight, Rabbit, Turtle, Hand, PackageOpen, KeyRound, Bug, DoorClosed, DoorOpen, ToggleRight } from 'lucide-react';
 import { WORLDS, getLevel, referenceCount } from '../data/curriculum';
 import { evaluateAll, withIds } from '../game/engine';
 import { Robot, Gem } from './Art';
@@ -7,10 +7,12 @@ import { Modal, Stars } from './UI';
 import BlockEditor from './BlockEditor';
 
 function Board({ board, frame, grade, skin = 0 }) {
-  const path = new Set(board.cells.map(p => `${p.x},${p.y}`));
+  const walls = new Set(frame.blockedCells ?? (board.walls || []).map(p => `${p.x},${p.y}`));
+  const path = new Set(board.cells.filter(p => !walls.has(`${p.x},${p.y}`)).map(p => `${p.x},${p.y}`));
   const crystals = new Set(board.crystals.map(p => `${p.x},${p.y}`));
-  const walls = new Set((board.walls || []).map(p => `${p.x},${p.y}`));
   const gaps = new Set((board.gaps || []).map(p => `${p.x},${p.y}`));
+  const switches = new Map((board.switches || []).filter(item => !(frame.activatedSwitches || []).includes(`${item.x},${item.y}`)).map(item => [`${item.x},${item.y}`, item]));
+  const surpriseTiles = new Set((board.surprises || []).map(event => `${event.at.x},${event.at.y}`));
   const items = new Map((board.items || []).filter(item => !(frame.itemsPicked || []).includes(`${item.x},${item.y}`)).map(item => [`${item.x},${item.y}`, item]));
   const enemies = new Set((board.enemies || []).filter(p => !(frame.defeated || []).includes(`${p.x},${p.y}`)).map(p => `${p.x},${p.y}`));
   const doors = new Map((board.doors || []).map(p => [`${p.x},${p.y}`, { ...p, open: (frame.opened || []).includes(`${p.x},${p.y}`) }]));
@@ -19,9 +21,9 @@ function Board({ board, frame, grade, skin = 0 }) {
     {Array.from({ length: board.rows * board.cols }, (_, i) => {
       const x = i % board.cols, y = Math.floor(i / board.cols), k = `${x},${y}`;
       const isPath = path.has(k), isGoal = x === board.goal.x && y === board.goal.y;
-      const item = items.get(k), door = doors.get(k), enemy = enemies.has(k);
-      const entity = item ? item.item === 'key' ? <KeyRound className="action-object key-object"/> : <PackageOpen className="action-object item-object"/> : enemy ? <Bug className="action-object enemy-object"/> : door ? door.open ? <DoorOpen className="action-object open-door-object"/> : <DoorClosed className="action-object door-object"/> : null;
-      return <div className={`board-cell ${isPath ? 'path-cell' : gaps.has(k) ? 'gap-cell' : walls.has(k) ? 'wall-cell' : 'grass-cell'} ${isGoal ? 'goal-cell' : ''}`} key={k}>{isPath && <><span className="tile-top"/>{entity || (isGoal ? <Flag className="goal-flag" fill="currentColor"/> : crystals.has(k) && !collected.has(k) ? <Gem className="board-gem"/> : x === board.start.x && y === board.start.y ? <span className="start-mark"/> : <span className="path-pebble"/>)}</>}{gaps.has(k) && <span className="action-gap" aria-label="Buraco no caminho"/>}{walls.has(k) && <span className="maze-wall" aria-hidden="true"/>}{!isPath && !walls.has(k) && !gaps.has(k) && (i * 7 + grade) % 9 === 0 && <span className="grass-tuft">⌁</span>}{!isPath && !walls.has(k) && !gaps.has(k) && (i * 3 + grade) % 19 === 0 && <span className="board-flower">✿</span>}</div>;
+      const item = items.get(k), door = doors.get(k), enemy = enemies.has(k), button = switches.get(k);
+      const entity = item ? item.item === 'key' ? <KeyRound className="action-object key-object"/> : <PackageOpen className="action-object item-object"/> : enemy ? <Bug className="action-object enemy-object"/> : door ? door.open ? <DoorOpen className="action-object open-door-object"/> : <DoorClosed className="action-object door-object"/> : button ? <ToggleRight className="action-object switch-object"/> : null;
+      return <div className={`board-cell ${isPath ? 'path-cell' : gaps.has(k) ? 'gap-cell' : walls.has(k) ? 'wall-cell' : 'grass-cell'} ${isGoal ? 'goal-cell' : ''}`} key={k}>{isPath && <><span className="tile-top"/>{entity || (isGoal ? <Flag className="goal-flag" fill="currentColor"/> : crystals.has(k) && !collected.has(k) ? <Gem className="board-gem"/> : x === board.start.x && y === board.start.y ? <span className="start-mark"/> : <span className="path-pebble"/>)}</>}{surpriseTiles.has(k) && <span className="surprise-marker" aria-label="Evento surpresa">✦</span>}{gaps.has(k) && <span className="action-gap" aria-label="Buraco no caminho"/>}{walls.has(k) && <span className="maze-wall" aria-hidden="true"/>}{!isPath && !walls.has(k) && !gaps.has(k) && (i * 7 + grade) % 9 === 0 && <span className="grass-tuft">⌁</span>}{!isPath && !walls.has(k) && !gaps.has(k) && (i * 3 + grade) % 19 === 0 && <span className="board-flower">✿</span>}</div>;
     })}
     <div className={`board-robot ${frame.kind === 'blocked' ? 'bump' : ''}`} style={{ left: `${frame.position.x / board.cols * 100}%`, top: `${frame.position.y / board.rows * 100}%`, width: `${100 / board.cols}%`, height: `${100 / board.rows}%` }}><Robot happy={frame.kind === 'win'} skin={skin}/></div>
   </div></div><span className="board-decoration leaf-one">✦</span><span className="board-decoration leaf-two">✦</span></div>;
@@ -84,7 +86,7 @@ const SPEED_PREFERENCE_KEY = 'bloco.game.speed.v1';
     if (!current || playbackMode.current !== 'running') return;
     const event = current.events[current.index++];
     if (!event || !apply(event)) return;
-    timer.current = setTimeout(tick, ['move', 'jump', 'pick', 'attack', 'open', 'scene', 'blocked'].includes(event.kind) ? (slow ? 650 : 260) : (slow ? 240 : 100));
+    timer.current = setTimeout(tick, ['move', 'jump', 'pick', 'attack', 'open', 'press', 'surprise', 'scene', 'blocked'].includes(event.kind) ? (slow ? 650 : 260) : (slow ? 240 : 100));
   }
   function run() {
     if (mode === 'running') { clearTimeout(timer.current); playbackMode.current = 'paused'; setMode('paused'); return; }
@@ -100,7 +102,7 @@ const SPEED_PREFERENCE_KEY = 'bloco.game.speed.v1';
     if (event?.kind === 'scene') { apply(event); event = current.events[current.index++]; }
     if (event) apply(event);
   }
-  const robotText = feedback || (mode === 'running' ? frame.kind === 'condition' ? (frame.condition ? 'Caminho livre! Vamos pelo “se”.' : 'Não está livre. Vamos pelo “senão”.') : frame.kind === 'pick' ? 'Peguei! Um passo de cada vez.' : frame.kind === 'jump' ? 'Saltei o buraco com segurança!' : frame.kind === 'attack' ? 'Caminho livre! Vamos continuar.' : frame.kind === 'open' ? 'A porta abriu! A chave foi útil.' : 'Estou seguindo seu plano…' : mode === 'paused' ? 'Pausa para pensar. Qual será o próximo passo?' : level.kind === 'actions' ? 'Observe o que há no caminho. Qual ação Bip precisa fazer?' : level.kind === 'debug' ? 'Vamos observar e corrigir este programa?' : level.kind === 'optimize' ? 'Como usar menos blocos para chegar ao mesmo lugar?' : 'Primeiro, imagine o caminho. Depois, monte seu plano!');
+  const robotText = feedback || (mode === 'running' ? frame.kind === 'condition' ? (frame.condition ? 'Caminho livre! Vamos pelo “se”.' : 'Não está livre. Vamos pelo “senão”.') : frame.kind === 'surprise' ? frame.surpriseMessage : frame.kind === 'press' ? 'Botão ativado! O cenário mudou.' : frame.kind === 'pick' ? 'Peguei! Um passo de cada vez.' : frame.kind === 'jump' ? 'Saltei o buraco com segurança!' : frame.kind === 'attack' ? 'Caminho livre! Vamos continuar.' : frame.kind === 'open' ? 'A porta abriu! A chave foi útil.' : 'Estou seguindo seu plano…' : mode === 'paused' ? 'Pausa para pensar. Qual será o próximo passo?' : level.kind === 'actions' ? 'Observe o que há no caminho. Qual ação Bip precisa fazer?' : level.kind === 'debug' ? 'Vamos observar e corrigir este programa?' : level.kind === 'optimize' ? 'Como usar menos blocos para chegar ao mesmo lugar?' : 'Primeiro, imagine o caminho. Depois, monte seu plano!');
   return <div className={`game-page grade-${level.grade}`} style={{ '--world': world.color, '--world-soft': world.soft }}>
     <div className="game-breadcrumb"><button className="text-back" onClick={onBack}><ArrowLeft size={18}/><span>{world.short}</span></button><ChevronRight size={14}/><span>Desafio {level.number} de 40</span><span className="game-grade-badge">Nível {level.grade}</span><Stars count={team.progress[level.id]?.stars || 0}/></div>
     <div className="game-title"><div><span className="eyebrow">{level.concept}</span><h1>{level.title}</h1></div><div className="flex items-center gap-2"><button className="btn secondary small" onClick={() => setDemo(true)}><Play size={15}/>Como jogar</button></div></div>

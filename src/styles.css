@@ -2075,6 +2075,8 @@ input:focus {
 .enemy-object { color: #a75d66; fill: #eeb7ac; }
 .door-object { color: #836a50; fill: #e6c992; }
 .open-door-object { color: #578b79; }
+.switch-object { color: #8265a7; fill: #e4dcf2; }
+.surprise-marker { position: absolute; z-index: 4; right: 5%; top: 3%; color: #a078d1; font-size: clamp(8px, 1.4vw, 15px); line-height: 1; filter: drop-shadow(0 1px 1px #fff); }
 .maze-wall {
   position: absolute;
   inset: 7%;
@@ -2473,6 +2475,7 @@ input:focus {
 .palette-block.jump { background: #fff0d7; border-color: #f0d7a8; color: #b78337; box-shadow: 0 3px 0 #f0d7a8; }
 .palette-block.attack { background: #fae3de; border-color: #efc8bd; color: #b5645d; box-shadow: 0 3px 0 #efc8bd; }
 .palette-block.open { background: #deeff0; border-color: #bfdbdc; color: #54858a; box-shadow: 0 3px 0 #bfdbdc; }
+.palette-block.press { background: #eee8f6; border-color: #d8cbe9; color: #79619a; box-shadow: 0 3px 0 #d8cbe9; }
 .puzzle-tab {
   position: absolute;
   width: 12px;
@@ -2670,6 +2673,7 @@ input:focus {
 .code-block.jump { background: #fff0da; color: #ad7d37; border-color: #efd7ad; box-shadow: 0 2px 0 #efd7ad; }
 .code-block.attack { background: #fae5e0; color: #ad625b; border-color: #eccac2; box-shadow: 0 2px 0 #eccac2; }
 .code-block.open { background: #e1eff0; color: #568287; border-color: #c4dcdd; box-shadow: 0 2px 0 #c4dcdd; }
+.code-block.press { background: #eee8f6; color: #79619a; border-color: #d8cbe9; box-shadow: 0 2px 0 #d8cbe9; }
 .code-block.executing {
   outline: 3px solid #e2b449;
   outline-offset: 2px;

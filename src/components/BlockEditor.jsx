@@ -1,17 +1,17 @@
-import { ArrowUp, ArrowDown, Plus, Repeat2, GitFork, Trash2, Undo2, Play, CornerDownRight, PackageOpen, ArrowUpRight, Zap, DoorOpen } from 'lucide-react';
+import { ArrowUp, ArrowDown, Plus, Repeat2, GitFork, Trash2, Undo2, Play, CornerDownRight, PackageOpen, ArrowUpRight, Zap, DoorOpen, ToggleRight } from 'lucide-react';
 import { directionIcon } from './Art';
 import { DIRECTIONS, countBlocks, move, repeat, branch, call, actionBlock } from '../data/curriculum';
 import { withIds, editList, patchBlock } from '../game/engine';
 
 export default function BlockEditor({ level, value, onChange, target, setTarget, activeId, running, onUndo, canUndo }) {
-  const actionIcons = { pick: PackageOpen, jump: ArrowUpRight, attack: Zap, open: DoorOpen };
-  const actionLabels = { pick: 'Pegar', jump: 'Pular', attack: 'Atacar', open: 'Abrir' };
+  const actionIcons = { pick: PackageOpen, jump: ArrowUpRight, attack: Zap, open: DoorOpen, press: ToggleRight };
+  const actionLabels = { pick: 'Pegar', jump: 'Pular', attack: 'Atacar', open: 'Abrir', press: 'Ativar' };
   const firstYearDirections = new Set([...level.solution, ...(level.starter || [])].filter(b => b.type === 'move').map(b => b.direction));
   const specs = ['R', 'U', 'L', 'D'].filter(d => level.grade > 1 || firstYearDirections.has(d)).map(move);
   if (level.allowed.includes('repeat')) specs.push(repeat(2, []));
   if (level.allowed.includes('if')) specs.push(branch('R', [], []));
   if (level.allowed.includes('call')) specs.push(call());
-  for (const type of ['pick', 'jump', 'attack', 'open']) if (level.allowed.includes(type)) specs.push(actionBlock(type));
+  for (const type of ['pick', 'jump', 'attack', 'open', 'press']) if (level.allowed.includes(type)) specs.push(actionBlock(type));
   const total = countBlocks(value.program) + countBlocks(value.definition);
   function updateList(root, path, fn) {
     onChange({ ...value, [root]: editList(value[root], path, fn) });
