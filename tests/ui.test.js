@@ -235,7 +235,7 @@ test('Action challenges show tools and let Bip pick an item on the board', async
 test('Surprise trail presents the new activate action to the team', async () => {
   await mount(createElement(Game, { level: getLevel('10-11'), team: team('a', 'Equipe'), onComplete() {}, onBack() {}, onNext() {}, onWorld() {} }));
   assert.ok(button('Adicionar Ativar'));
-  assert.match(document.body.textContent, /ative-o e atravesse a ponte/i);
+  assert.match(document.body.textContent, /ative o botão correto, atravesse a ponte/i);
   assert.ok(document.querySelector('.switch-object'));
 });
 
