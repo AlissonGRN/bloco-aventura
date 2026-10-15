@@ -50,8 +50,7 @@ export const unlockedRobotSkins = (progress, stickers = [], bonusSkins = []) => 
   const received = Array.isArray(stickers) ? stickers.length : nonNegative(stickers);
   const progressUnlocked = ROBOT_SKINS.filter(skin => !skin.stickerUnlockAt && skin.unlockAt <= completed).length;
   const stickerUnlocked = ROBOT_SKINS.filter(skin => skin.stickerUnlockAt && received >= skin.stickerUnlockAt).length;
-  const manualUnlocked = Array.isArray(bonusSkins) ? bonusSkins.filter(index => Number.isInteger(index) && index >= 0 && index < ROBOT_SKINS.length && !skinUnlocked(index, progress, stickers)).length : 0;
-  return progressUnlocked + stickerUnlocked + manualUnlocked;
+  return progressUnlocked + stickerUnlocked + (Array.isArray(bonusSkins) ? bonusSkins.filter(index => Number.isInteger(index) && index >= 0 && index < ROBOT_SKINS.length && !skinUnlocked(index, progress, stickers)).length : 0);
 };
 export const skinUnlocked = (index, progress = {}, stickers = [], bonusSkins = []) => {
   const skin = ROBOT_SKINS[index];

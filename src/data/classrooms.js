@@ -22,3 +22,4 @@ export const visibleClassOptions = classes => {
   const online = new Set(classes.filter(c => c.classroomId).map(c => `${c.grade}-${c.section}`));
   return classes.filter(c => c.classroomId || !online.has(`${c.grade}-${c.section}`));
 };
+

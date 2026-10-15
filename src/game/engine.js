@@ -13,7 +13,7 @@ export function typesIn(blocks) {
 export function simulate(level, program, definition = [], scenario = 0) {
   const board = level.boards[scenario];
   const cells = new Set(board.cells.map(key));
-  const crystals = new Set((board.crystals || []).map(key));
+  const crystals = new Set(board.crystals.map(key));
   const items = new Map((board.items || []).map(item => [key(item), item]));
   const enemies = new Set((board.enemies || []).map(key));
   const doors = new Map((board.doors || []).map(door => [key(door), door]));

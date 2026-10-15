@@ -70,3 +70,4 @@ export default function BlockEditor({ level, value, onChange, target, setTarget,
     {level.allowed.includes('call') && <div className="function-workspace"><div className="function-title"><b>F</b><strong>Meu bloco</strong><small>Sua sequência reutilizável</small></div>{renderList(value.definition, 'definition')}</div>}
   </div>;
 }
+

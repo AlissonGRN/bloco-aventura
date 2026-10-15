@@ -169,7 +169,7 @@ test('Teacher password gate, class filter, reward and logout persist correctly',
   assert.match(document.querySelector('.team-detail-modal [role="status"]').textContent,/entregue com sucesso/i);
   await click(button('Skins'));
   await click(document.querySelectorAll('.teacher-skin-card button')[20]);
-  assert.ok(readSave().teams[0].bonusSkins.includes(20),'teacher grants a specific skin to the selected team');
+  assert.ok(readSave().teams[0].bonusSkins.includes(20),'the teacher can grant a specific skin to the selected team');
   await click(button('Fechar')); await click(button('Sair do painel'));
   assert.equal(document.querySelector('.team-progress-table'),null);
   await click(button('Conquistas')); assert.match(document.querySelector('.sticker-album').textContent,/Não desistiu/);

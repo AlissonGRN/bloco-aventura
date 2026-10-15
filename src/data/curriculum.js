@@ -347,9 +347,6 @@ const actionLevels = Array.from({ length: MISSIONS_PER_LEVEL }, (_, index) => {
   };
 });
 
-
-
-
 const eventRoute = (path, start = { x: 0, y: 0 }) => {
   const points = [start];
   const vectors = { R: [1, 0], L: [-1, 0], U: [0, -1], D: [0, 1] };
@@ -456,7 +453,6 @@ const lateActionLevels = Array.from({ length: 10 }, (_, index) => {
   return { ...source, id: `10-${index + 31}`, number: index + 31, title: advancedTitles[index], concept: 'Ações e repetições: desafios de integração', instruction: 'Planeje quando ativar o botão e agrupe os movimentos repetidos em um programa enxuto.', hint: 'A ativação libera a ponte. Organize as setas repetidas em um bloco amarelo.', solution: compressEventBlocks(source.solution), allowed: ['move', 'press', 'repeat'], required: ['press', 'repeat'], maxBlocks: 36 };
 });
 const eventLevels = [...actionOpeningLevels, ...switchLevels, ...intermediateLevels, ...lateActionLevels, ...mazePatternLevels, ...decisionLevels, ...advancedLevels];
-
 
 export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels, ...eventLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
   const allowed = l.allowed || ['move'];

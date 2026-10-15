@@ -122,3 +122,4 @@ export function countBlocks(blocks) {
   return blocks.reduce((total, block) => total + 1 + countBlocks(block.body || []) + countBlocks(block.elseBody || []), 0);
 }
 export function referenceCount(level) { return countBlocks(level.solution) + countBlocks(level.definition); }
+

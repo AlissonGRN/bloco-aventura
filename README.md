@@ -96,3 +96,4 @@ A presença desses arquivos não significa que exista um banco remoto configurad
 O SQL foi executado em PostgreSQL via PGlite, com testes de RLS para dois professores e dois computadores: isolamento de equipes, bloqueio de elevação a professor, proteção dos códigos da sala e entrega/remoção de stickers. Isso valida a migração e as políticas localmente; não substitui a verificação de uma instância Supabase real após a configuração.
 
 Build de produção validado. Interações verificadas em DOM simulado; revisão visual em navegador não esteve disponível nesta sessão.
+

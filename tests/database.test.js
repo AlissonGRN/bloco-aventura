@@ -48,6 +48,8 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
     await db.query(`update public.bloco_teams set progress='{"6-1":{"stars":3},"7-40":{"stars":2}}', last_level='7-40' where id='team-a'`);
     await db.query(`update public.bloco_teams set progress='{"8-1":{"stars":3},"9-40":{"stars":2}}', last_level='9-40' where id='team-a'`);
     await db.query(`update public.bloco_teams set progress='{"6-1":{"stars":3},"7-40":{"stars":2},"1-1":{"stars":3},"1-2":{"stars":2},"1-3":{"stars":3}}', avatar=5 where id='team-a'`);
+    await assert.rejects(db.query("update public.bloco_teams set bonus_skins=ARRAY[20]::smallint[] where id='team-a'"),/Somente o professor/,'a student cannot grant skins to their own team');
+    await assert.rejects(db.query("update public.bloco_teams set avatar=20 where id='team-a'"),/skin ainda não foi desbloqueada/i);
     await assert.rejects(db.query('update public.bloco_teams set avatar=6 where id=\'team-a\''),/skin ainda não foi desbloqueada/i);
     await assert.rejects(db.query(`update public.bloco_teams set progress='{"10-1":{"stars":3}}', avatar=4 where id='team-a'`),/Progresso inválido/);
     await assert.rejects(db.query(`update public.bloco_teams set progress='{"1-1":{"stars":999}}', avatar=4 where id='team-a'`),/Progresso inválido/);
@@ -64,13 +66,13 @@ test('Supabase schema and RLS isolate devices, teachers, classes and rewards', a
     for (const [index, type] of stickerTypes.entries()) {
       await db.query('insert into public.team_stickers(id,team_id,type,note) values($1,$2,$3,$4)', [`award-${index}`, 'team-a', type, 'Reconhecimento da equipe']);
     }
-    assert.equal((await rows("select * from public.team_stickers where team_id='team-a'")).length, stickerTypes.length + 1, 'Every sticker displayed in the teacher panel can be saved');
+    assert.equal((await rows('select * from public.team_stickers where team_id=\'team-a\'')).length, stickerTypes.length + 1, 'Every sticker displayed in the teacher panel can be saved');
     await db.query("update public.bloco_teams set bonus_skins=ARRAY[20]::smallint[] where id='team-a'");
-    assert.deepEqual((await rows("select bonus_skins from public.bloco_teams where id='team-a'"))[0].bonus_skins,[20],'teacher grants one specific skin');
+    assert.deepEqual((await rows("select bonus_skins from public.bloco_teams where id='team-a'"))[0].bonus_skins,[20],'the teacher can grant one selected skin to a specific team');
     await as(deviceA);
-    await assert.rejects(db.query("update public.bloco_teams set bonus_skins=ARRAY[19]::smallint[] where id='team-a'"),/Somente o professor/);
     assert.equal((await rows("update public.bloco_teams set avatar=13 where id='team-a' returning id")).length,1,'3+ teacher stickers unlock the first special skin in the database');
     await db.query("update public.bloco_teams set avatar=20 where id='team-a'");
+    await assert.rejects(db.query("update public.bloco_teams set bonus_skins=ARRAY[19]::smallint[] where id='team-a'"),/Somente o professor/,'students cannot edit teacher-granted unlocks');
     await db.query("update public.bloco_teams set avatar=5 where id='team-a'");
     await as(teacher);
     await db.query("delete from public.team_stickers where id like 'award-%'");

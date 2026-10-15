@@ -9,3 +9,4 @@ test('Class choices include 3rd grade B and show one entry for online classes', 
   assert.equal(visible.find(c => c.grade === 3 && c.section === 'B').classroomId, 'room-a');
   assert.equal(visible.filter(c => c.grade === 2 && c.section === 'A').length, 1);
 });
+

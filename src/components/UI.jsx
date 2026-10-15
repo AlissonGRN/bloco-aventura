@@ -35,3 +35,4 @@ export function Modal({ title, children, onClose, className = '' }) {
 export function Empty({ title, description, action, onAction }) {
   return <div className="empty-state"><Robot happy/><h3>{title}</h3><p>{description}</p>{action && <button className="btn primary" onClick={onAction}>{action}<ArrowRight size={18}/></button>}</div>;
 }
+

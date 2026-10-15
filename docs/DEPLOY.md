@@ -81,3 +81,4 @@ O pacote inclui testes locais de motor, interface, persistência, sincronizaçã
 - [Supabase: Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
 - [Vite na Vercel](https://vercel.com/docs/frameworks/frontend/vite)
 - [Variáveis de ambiente na Vercel](https://vercel.com/docs/environment-variables/managing-environment-variables)
+

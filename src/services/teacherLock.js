@@ -27,3 +27,4 @@ export async function verifyPassword(password, storage = localStorage) {
   let difference = 0; for (let i = 0; i < lock.hash.length; i++) difference |= lock.hash.charCodeAt(i) ^ candidate.charCodeAt(i);
   return difference === 0;
 }
+

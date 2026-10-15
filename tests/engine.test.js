@@ -8,7 +8,8 @@ test('440 unique missions, 40 per level', () => {
   assert.equal(new Set(LEVELS.map(l => l.id)).size, 440);
   for (let grade = 1; grade <= 11; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
   assert.equal(WORLDS.length, 11);
-});for (const l of LEVELS.filter(l => !['sequence','circuit'].includes(l.kind))) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
+});
+for (const l of LEVELS.filter(l => !['sequence','circuit'].includes(l.kind))) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
   const result = evaluateAll(l, withIds(l.solution), withIds(l.definition));
   assert.equal(result.success, true, result.results.map(r => r.failure).join(' / '));
   assert.equal(result.stars, 3);
@@ -55,7 +56,6 @@ test('The second new world starts with arrows and loops, then teaches decisions 
   assert.ok(WORLDS[10].trails[0].focus.includes('repetir'));
   assert.ok(WORLDS[10].trails[3].focus.includes('Funções'));
 });
-
 test('Switch actions open the bridge and surprise events change routes during execution', () => {
   const switchLevel = getLevel('10-11');
   const switchRun = simulate(switchLevel, withIds(switchLevel.solution));
@@ -138,7 +138,7 @@ test('Maze walls block movement and the goal only counts when reached by a short
 });
 test('Debugging starters contain an observable problem and all prescribed blocks are available', () => {
   for (const l of LEVELS) {
-    if (['sequence','circuit'].includes(l.kind)) continue;
+    if (l.kind==='sequence') continue;
     if (l.kind==='debug') assert.equal(evaluateAll(l,l.starter||[],l.starterDefinition||[]).success,false,l.id);
     const collect = bs=>bs.flatMap(b=>[b.type,...collect(b.body||[]),...collect(b.elseBody||[])]);
     assert.ok([...collect(l.solution),...collect(l.definition)].every(t=>l.allowed.includes(t)),l.id);
