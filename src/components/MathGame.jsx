@@ -45,7 +45,7 @@ export default function MathGame({ level, team, onBack, onNext, onWorld, onCompl
 
   return <div className="math-game" style={{ '--world': world.color, '--world-soft': world.soft }}>
     <div className="game-breadcrumb"><button className="text-back" onClick={onBack}><ArrowLeft size={18}/><span>{world.short}</span></button><span>Desafio {level.number} de 40</span><span className="game-grade-badge">Nível {level.grade}</span><Stars count={team.progress[level.id]?.stars || 0}/></div>
-    <header className="math-heading"><div><span className="eyebrow">MATEMÁTICA + PENSAMENTO COMPUTACIONAL</span><h1>{level.title}</h1><p>{level.prompt}</p></div><div className="math-scene" aria-hidden="true"><Calculator size={43}/></div></header>
+    <header className="math-heading"><div><span className="eyebrow">MATEMÁTICA + PENSAMENTO COMPUTACIONAL</span><h1>{level.title}</h1><p>Leiam o desafio, escolham uma resposta e expliquem como chegaram ao resultado.</p></div><div className="math-scene" aria-hidden="true"><Calculator size={43}/></div></header>
     <div className="math-progress"><span>Desafio {level.number} de 40</span><div className="progress-track"><span style={{ width: `${level.number / 40 * 100}%` }}/></div></div>
     <section className="math-card" aria-label="Desafio de matemática">
       <div className="math-card-top"><strong>Qual é o resultado?</strong><span>{level.operation === 'multiplication' ? 'Multiplicação' : 'Adição e subtração'}</span></div>
