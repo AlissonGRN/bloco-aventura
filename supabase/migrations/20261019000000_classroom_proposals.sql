@@ -1,5 +1,5 @@
 create table if not exists public.classroom_proposals (
-  class_group_id uuid primary key references public.class_groups(id) on delete cascade,
+  class_group_id text primary key references public.class_groups(id) on delete cascade,
   classroom_id uuid not null references public.classrooms(id) on delete cascade,
   title text not null default 'Atividade proposta para a aula' check (char_length(title) between 1 and 100),
   level_ids text[] not null default '{}' check (cardinality(level_ids) between 1 and 20),
