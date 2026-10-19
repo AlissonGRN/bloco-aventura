@@ -107,6 +107,19 @@ export async function teacherLogin(email, password) {
   return user;
 }
 export const teacherLogout = () => teacherClient?.auth.signOut();
+export async function saveTeacherProposal(classGroupId, title, levelIds) {
+  const user = unwrap(await teacherClient.auth.getUser()).user;
+  const group = unwrap(await teacherClient.from('class_groups').select('id,classroom_id').eq('id', classGroupId).single());
+  const row = { class_group_id: classGroupId, classroom_id: group.classroom_id, title: title.trim().slice(0, 100), level_ids: [...new Set(levelIds)].slice(0, 20), updated_at: new Date().toISOString(), updated_by: user.id };
+  return unwrap(await teacherClient.from('classroom_proposals').upsert(row, { onConflict: 'class_group_id' }).select().single());
+}
+export async function removeTeacherProposal(classGroupId) { unwrap(await teacherClient.from('classroom_proposals').delete().eq('class_group_id', classGroupId)); }
+export async function fetchClassProposal(classGroupId) {
+  if (!classGroupId) return null;
+  if (!CLOUD_ENABLED) { try { return JSON.parse(localStorage.getItem('bloco.proposal.' + classGroupId) || 'null'); } catch { return null; } }
+  await studentIdentity();
+  return unwrap(await studentClient.from('classroom_proposals').select('class_group_id,title,level_ids,updated_at').eq('class_group_id', classGroupId).maybeSingle());
+}
 export async function teacherSnapshot() {
   const user = unwrap(await teacherClient.auth.getUser()).user;
   let rooms = unwrap(await teacherClient.from('classrooms').select('*').eq('teacher_id', user.id));
@@ -116,9 +129,9 @@ export async function teacherSnapshot() {
   const currentIds = new Set(current.map(c => c.id));
   const missing = expected.filter(c => !currentIds.has(c.id)).map(c => ({ id: c.id, classroom_id: rooms[0].id, name: c.name, grade: c.grade, section: c.section, active: true }));
   if (missing.length) unwrap(await teacherClient.from('class_groups').insert(missing));
-  const [classes, teams, stickers, helpRequests] = await Promise.all([teacherClient.from('class_groups').select('*').eq('classroom_id', rooms[0].id).order('grade').order('section'), teacherClient.from('bloco_teams').select('*').eq('classroom_id', rooms[0].id).order('name'), teacherClient.from('team_stickers').select('*'), teacherClient.from('teacher_help_requests').select('*').eq('classroom_id', rooms[0].id).is('resolved_at', null).order('created_at')]);
+  const [classes, teams, stickers, helpRequests, proposals] = await Promise.all([teacherClient.from('class_groups').select('*').eq('classroom_id', rooms[0].id).order('grade').order('section'), teacherClient.from('bloco_teams').select('*').eq('classroom_id', rooms[0].id).order('name'), teacherClient.from('team_stickers').select('*'), teacherClient.from('teacher_help_requests').select('*').eq('classroom_id', rooms[0].id).is('resolved_at', null).order('created_at'), teacherClient.from('classroom_proposals').select('*').eq('classroom_id', rooms[0].id)]);
   const awards = unwrap(stickers);
-  return { room: rooms[0], helpRequests: unwrap(helpRequests), ...validateSave({ version: 2, classes: unwrap(classes).map(classFromRow), teams: unwrap(teams).map(t => teamFromRow(t, awards)) }) };
+  return { room: rooms[0], helpRequests: unwrap(helpRequests), proposals: unwrap(proposals), ...validateSave({ version: 2, classes: unwrap(classes).map(classFromRow), teams: unwrap(teams).map(t => teamFromRow(t, awards)) }) };
 }
 export function subscribeToTeacherHelp(classroomId, onChange) {
   if (!CLOUD_ENABLED || !classroomId || typeof onChange !== 'function') return () => {};
