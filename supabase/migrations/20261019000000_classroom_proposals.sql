@@ -50,6 +50,10 @@ create policy "Teachers can update classroom proposals"
       join public.teacher_profiles tp on tp.id = auth.uid()
       where c.id = classroom_id and c.teacher_id = auth.uid()
     )
+    and exists (
+      select 1 from public.class_groups cg
+      where cg.id = class_group_id and cg.classroom_id = classroom_id
+    )
   );
 
 drop policy if exists "Teachers can delete classroom proposals" on public.classroom_proposals;
