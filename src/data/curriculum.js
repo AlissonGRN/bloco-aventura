@@ -37,6 +37,8 @@ export const WORLDS = [
   { id: 9, name: 'Expedição das ações', short: 'Expedição', topic: 'Sequências, ações e interação', description: 'Além de andar, ensine Bip a pegar itens, saltar buracos, afastar criaturas e abrir portas.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Planejar ações no momento certo, combinar comandos com deslocamentos e reutilizar sequências.', teacher: 'Neste mundo, algumas casas têm itens, criaturas, portas e buracos. Pegar, atacar/afastar e abrir agem na casa indicada; pular atravessa exatamente um buraco. Peça que a equipe preveja o resultado de cada comando.', trails: makeTrails(['Pegar e levar', 'Pular com cuidado', 'Abrir passagem', 'Combinar as ações'], ['Quando Bip precisa pegar o item: antes ou depois de andar até ele?', 'Qual casa está faltando no caminho e como Bip pode atravessá-la?', 'O que precisa acontecer antes de a porta deixar Bip passar?', 'Como dividir e testar uma sequência maior?']) },
   { id: 10, name: 'Oficina das ações', short: 'Ações', topic: 'Ações, setas e repetições', description: 'Ative botões, abra passagens e descubra como simplificar seus planos.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Este mundo começa com ações novas e avança das setas para repetir. O professor pode recomendar esta trilha para equipes que ainda estão conhecendo os comandos.', teacher: 'As missões já começam com botões e passagens que precisam ser ativadas: não é necessário repetir o tutorial de andar até a bandeira. Nas primeiras etapas, use setas e ativar; depois, identifique trechos repetidos para escrever o plano com menos blocos.', trails: makeTrails(['Ativar e avançar', 'Botões pelo caminho', 'Repetir para planejar', 'Oficina de soluções'], ['Qual botão libera a passagem?', 'Quando Bip precisa ativar o botão?', 'Que trecho do plano se repete?', 'Como as repetições deixam o programa menor?']).map((trail, index) => ({ ...trail, focus: ['Ações + setas · introdutória', 'Ações · intermediária', 'Repetir · intermediária', 'Ações + repetir · avançada'][index] })) },
   { id: 11, name: 'Trilha dos imprevistos', short: 'Imprevistos', topic: 'Setas, repetir, decisões e funções', description: 'Planeje com repetir desde o começo e prepare Bip para caminhos que mudam.', color: '#8265a7', soft: '#eee8f6', type: 'maze-surprise', icon: 'grid', skill: 'Esta trilha começa combinando setas e repetir; depois introduz se/senão e Meu bloco. Pode ser recomendada para equipes que já conhecem as repetições.', teacher: 'As primeiras missões já exigem organizar as setas dentro de repetir, sem reapresentar o básico. Mais adiante, o cenário muda e o mesmo programa precisa decidir entre caminhos; no final, Meu bloco ajuda a reutilizar estratégias. Indique esta trilha para equipes que já dominam setas e repetir.', trails: makeTrails(['Setas e repetir', 'Caminhos que mudam', 'Decidir e repetir', 'Funções no imprevisto'], ['Que sequência de setas se repete no mapa?', 'O que mudou no cenário e como perceberam?', 'Como combinar a decisão com repetir?', 'Que estratégia vale a pena guardar em Meu bloco?']).map((trail, index) => ({ ...trail, focus: ['Setas + repetir · intermediária', 'Se/senão · avançada', 'Decisão + repetir · avançada', 'Funções · integração'][index] })) },
+  { id: 12, name: 'Expedição dos números', short: 'Números', topic: 'Adição, subtração e depuração', description: 'Resolva desafios numéricos, divida contas em etapas e encontre erros.', color: '#478b78', soft: '#e4f3eb', type: 'math', icon: 'calculator', skill: 'Use adição e subtração para resolver problemas. Planeje a conta, separe números em partes e confira resultados como quem depura um algoritmo.', teacher: 'As missões alternam adição e subtração, problemas do cotidiano e contas com erros para corrigir. Incentive a equipe a explicar a operação escolhida, calcular por etapas e conferir se a resposta faz sentido.', trails: makeTrails(['Somar para descobrir', 'Subtrair e comparar', 'Quebrar a conta em partes', 'Detetives dos resultados'], ['Que informação vocês usaram para escolher a operação?', 'Como conferir se a diferença faz sentido?', 'Que partes menores deixam a conta mais fácil?', 'Onde está o erro e como vocês provaram?']) },
+  { id: 13, name: 'Fábrica da multiplicação', short: 'Multiplicação', topic: 'Multiplicação, padrões e algoritmos', description: 'Descubra grupos iguais, padrões e maneiras de calcular mais rápido.', color: '#b87939', soft: '#fbefd9', type: 'math', icon: 'calculator', skill: 'Represente multiplicações como grupos iguais, reconheça padrões nas tabuadas e organize cálculos em etapas.', teacher: 'As missões usam grupos iguais, padrões da tabuada, decomposição e depuração de resultados. Convide a equipe a explicar como transformou a multiplicação em partes menores e como conferiu a resposta.', trails: makeTrails(['Grupos iguais', 'Padrões da tabuada', 'Multiplicar por partes', 'Corrija e confira'], ['Quantos grupos iguais existem?', 'O que muda quando um fator aumenta?', 'Como separar um fator em partes menores?', 'Como descobrir se o resultado está errado?']) },
 ];
 const seq = text => [...text].map(move);
 const dirs = ['R', 'U', 'L', 'D'];
@@ -454,7 +456,59 @@ const lateActionLevels = Array.from({ length: 10 }, (_, index) => {
 });
 const eventLevels = [...actionOpeningLevels, ...switchLevels, ...intermediateLevels, ...lateActionLevels, ...mazePatternLevels, ...decisionLevels, ...advancedLevels];
 
-export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels, ...eventLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
+
+const mathLevels = Array.from({ length: 80 }, (_, index) => {
+  const grade = index < 40 ? 12 : 13;
+  const number = index % 40 + 1;
+  const multiplication = grade === 13;
+  const mode = (number - 1) % 4;
+  let a, b, answer, symbol, instruction, hint, strategy;
+  if (multiplication) {
+    a = (number % 8) + 2;
+    b = ((number * 3) % 9) + 2;
+    answer = a * b;
+    symbol = '×';
+    instruction = mode === 0
+      ? `Bip organizou ${a} grupos com ${b} cristais em cada grupo. Quantos cristais são ao todo?`
+      : mode === 1
+        ? `Cada caixa guarda ${b} peças. Quantas peças há em ${a} caixas iguais?`
+        : mode === 2
+          ? `Separe ${a} × ${b} em grupos menores e descubra o total.`
+          : `Bip anotou ${a} × ${b} = ${answer + (number % 2 ? 2 : -2)}. A conta está certa? Qual é o resultado correto?`;
+    hint = mode === 2 ? `Você pode dividir ${a} em partes e multiplicar cada parte por ${b}.` : `Pense em ${a} grupos de ${b} ou some ${b} ${a} vezes.`;
+    strategy = mode === 3 ? 'Depuração: compare o resultado escrito com os grupos iguais e corrija o erro.' : mode === 2 ? 'Decomposição: divida um fator em partes menores, calcule cada parte e junte os resultados.' : 'Reconhecimento de padrões: conte grupos iguais em vez de contar cada peça uma a uma.';
+  } else {
+    a = 12 + ((number * 7) % 29);
+    b = 2 + ((number * 5) % Math.max(3, a - 1));
+    const subtract = number % 2 === 0;
+    if (subtract && b > a) [a, b] = [b, a];
+    symbol = subtract ? '−' : '+';
+    answer = subtract ? a - b : a + b;
+    instruction = mode === 0
+      ? subtract ? `Bip tinha ${a} cristais e usou ${b}. Quantos sobraram?` : `Bip encontrou ${a} cristais e depois mais ${b}. Quantos tem agora?`
+      : mode === 1
+        ? subtract ? `Uma caixa tinha ${a} peças. ${b} foram usadas. Quantas continuam na caixa?` : `Há ${a} peças na primeira caixa e ${b} na segunda. Quantas peças há juntas?`
+        : mode === 2
+          ? `Calcule ${a} ${symbol} ${b} separando os números em partes menores.`
+          : `Bip anotou ${a} ${symbol} ${b} = ${answer + (number % 2 ? 2 : -2)}. Encontre o erro e escolha o resultado correto.`;
+    hint = subtract ? `Comece em ${a} e retire ${b}, ou conte a diferença entre os dois números.` : `Some primeiro as dezenas e depois as unidades para conferir o total.`;
+    strategy = mode === 3 ? 'Depuração: confira a operação e compare o resultado anotado com o cálculo.' : mode === 2 ? 'Decomposição: separe dezenas e unidades, resolva cada parte e junte os resultados.' : 'Planejamento: identifique se a situação pede juntar quantidades ou descobrir o que sobrou.';
+  }
+  const candidates = [answer, Math.max(0, answer + 2), Math.max(0, answer - 1), answer + 5];
+  const choices = [...new Set(candidates)].slice(0, 3);
+  if (!choices.includes(answer)) choices[choices.length - 1] = answer;
+  const orderedChoices = choices.sort((x, y) => ((x * 7 + number * 3) % 17) - ((y * 7 + number * 3) % 17));
+  return {
+    id: `${grade}-${number}`, grade, number,
+    title: multiplication ? ['Grupos de cristais', 'Caixas iguais', 'Multiplicar por partes', 'Conserte a conta'][mode] : ['Junte os cristais', 'O que sobrou?', 'Calcule em etapas', 'Detetives da conta'][mode],
+    concept: multiplication ? 'Multiplicação e pensamento computacional' : 'Adição, subtração e pensamento computacional',
+    kind: 'math', operation: multiplication ? 'multiplication' : 'add-sub',
+    prompt: instruction, equation: `${a} ${symbol} ${b}`, answer, choices: orderedChoices,
+    hint, strategy, trail: Math.floor((number - 1) / 10) + 1,
+    discussion: mode === 3 ? 'Como vocês encontraram e corrigiram o erro?' : mode === 2 ? 'Em quais etapas menores vocês dividiram a conta?' : 'Que pistas ajudaram a escolher a operação?'
+  };
+});
+export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels, ...eventLevels, ...mathLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
   const allowed = l.allowed || ['move'];
   if (!l.allowed && (l.grade >= 3 || (l.grade === 2 && l.number >= 21))) allowed.push('repeat');
   if (!l.allowed && (l.grade >= 4 || (l.grade === 3 && l.number >= 21))) allowed.push('if');
