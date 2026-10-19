@@ -8,6 +8,7 @@ import { Welcome, TeamAvatar, TeamForm, TeamsPage } from './components/Teams';
 import { Dashboard, WorldMap, Achievements } from './components/Pages';
 import Game from './components/Game';
 import SequenceGame from './components/SequenceGame';
+import MathGame from './components/MathGame';
 import TeacherPage from './components/Teacher';
 import { FeedbackModal, CloudStatus, StickerNotification } from './components/ClassroomExtras';
 
@@ -32,7 +33,7 @@ export default function App() {
       <main id="main-content" className="main-content">{classroom.error && <div className="storage-warning inline" role="alert">{classroom.error}</div>}
         {route.page === 'explore' && team && <Dashboard team={team} onWorld={openWorld} onLevel={openLevel}/>}
         {route.page === 'world' && team && <WorldMap world={WORLDS[route.grade - 1]} team={team} key={route.grade} onBack={() => navigate('explore')} onLevel={openLevel}/>}
-        {route.page === 'game' && team && (getLevel(route.levelId).kind === 'sequence' ? <SequenceGame key={`${team.id}-${route.levelId}`} level={getLevel(route.levelId)} team={team} onBack={() => openWorld(getLevel(route.levelId).grade)} onNext={openLevel} onWorld={openWorld} onComplete={classroom.complete} onAttempt={classroom.attempt}/> : <Game key={`${team.id}-${route.levelId}`} level={getLevel(route.levelId)} team={team} onBack={() => openWorld(getLevel(route.levelId).grade)} onNext={openLevel} onWorld={openWorld} onComplete={classroom.complete} onAttempt={classroom.attempt}/>)}
+        {route.page === 'game' && team && (getLevel(route.levelId).kind === 'math' ? <MathGame key={`${team.id}-${route.levelId}`} level={getLevel(route.levelId)} team={team} onBack={() => openWorld(getLevel(route.levelId).grade)} onNext={openLevel} onWorld={openWorld} onComplete={classroom.complete} onAttempt={classroom.attempt}/> : getLevel(route.levelId).kind === 'sequence' ? <SequenceGame key={`${team.id}-${route.levelId}`} level={getLevel(route.levelId)} team={team} onBack={() => openWorld(getLevel(route.levelId).grade)} onNext={openLevel} onWorld={openWorld} onComplete={classroom.complete} onAttempt={classroom.attempt}/> : <Game key={`${team.id}-${route.levelId}`} level={getLevel(route.levelId)} team={team} onBack={() => openWorld(getLevel(route.levelId).grade)} onNext={openLevel} onWorld={openWorld} onComplete={classroom.complete} onAttempt={classroom.attempt}/>) }
         {route.page === 'achievements' && team && <Achievements team={team} onExplore={() => navigate('explore')} onSkinChange={avatar => classroom.updateTeam({ avatar }, team.id)}/>}
         {route.page === 'teams' && team && <TeamsPage classroom={classroom} onNew={() => setModal({ type: 'new' })} onSelect={selectTeam}/>}
         {route.page === 'teacher' && <TeacherPage classroom={classroom}/>}
