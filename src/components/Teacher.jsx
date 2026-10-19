@@ -107,7 +107,7 @@ function Planning({ classes, proposals, busy, onPublish, onRemove }) {
   const [title, setTitle] = useState('Atividade proposta para a aula');
   const [selectedLevels, setSelectedLevels] = useState([]);
   const activeClasses = classes.filter(c => !c.archived);
-  const proposal = proposals.find(p => p.class_group_id === classId);
+  const proposal = proposals.find(p => p.class_group_id === classId) || (!CLOUD_ENABLED && classId ? (() => { try { return JSON.parse(localStorage.getItem('bloco.proposal.' + classId) || 'null'); } catch { return null; } })() : null);
   useEffect(() => { if (!classId && activeClasses.length) setClassId(activeClasses[0].id); }, [classId, activeClasses]);
   useEffect(() => { if (proposal) { setTitle(proposal.title || 'Atividade proposta para a aula'); setSelectedLevels(proposal.level_ids || []); } else setSelectedLevels([]); }, [classId, proposal?.updated_at]);
   const toggle = id => setSelectedLevels(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
