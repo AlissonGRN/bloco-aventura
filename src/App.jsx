@@ -11,12 +11,30 @@ import SequenceGame from './components/SequenceGame';
 import MathGame from './components/MathGame';
 import TeacherPage from './components/Teacher';
 import { FeedbackModal, CloudStatus, StickerNotification } from './components/ClassroomExtras';
+import { CLOUD_ENABLED, fetchClassProposal } from './services/cloud';
 
 export default function App() {
   const classroom = useClassroom();
   const [route, setRoute] = useState({ page: 'explore' });
   const [modal, setModal] = useState(null);
+  const [proposal, setProposal] = useState(null);
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [route]);
+  useEffect(() => {
+    const classId = classroom.active?.classId;
+    if (!classId) { setProposal(null); return; }
+    let alive = true;
+    const refreshProposal = async () => {
+      try {
+        let value;
+        if (CLOUD_ENABLED) value = await fetchClassProposal(classId);
+        else { try { value = JSON.parse(localStorage.getItem('bloco.proposal.' + classId) || 'null'); } catch { value = null; } }
+        if (alive) setProposal(value);
+      } catch { if (alive) setProposal(null); }
+    };
+    void refreshProposal();
+    const timer = setInterval(refreshProposal, 15000);
+    return () => { alive = false; clearInterval(timer); };
+  }, [classroom.active?.classId]);
   function navigate(page) { setRoute({ page }); }
   function openWorld(grade) { setRoute({ page: 'world', grade }); }
   function openLevel(level) { classroom.remember(level); setRoute({ page: 'game', levelId: level.id }); }
@@ -31,8 +49,8 @@ export default function App() {
     <aside className="sidebar"><Brand onClick={() => navigate('explore')}/><span className="sidebar-label">SUA JORNADA</span><nav aria-label="Menu principal">{nav.map(item => <button className={`nav-item ${(item.page === 'explore' ? isExploring : route.page === item.page) ? 'active' : ''}`} key={item.page} onClick={() => navigate(item.page)} title={item.label}><item.icon size={21}/><span>{item.label}</span>{item.page === 'explore' && <i/>}</button>)}</nav><div className="sidebar-bip"><Robot happy/><strong>Uma ideia de cada vez.</strong><p>Você tem tudo para<br/>ir muito longe!</p><span>✦</span></div><div className="sidebar-bottom"><button className={`nav-item teacher-nav ${route.page === 'teacher' ? 'active' : ''}`} onClick={() => navigate('teacher')} title="Espaço do professor"><BookOpen size={20}/><span>Espaço do professor</span></button><div className="sidebar-footer"><span className="status-dot"/>{route.page === 'game' ? 'Feito com ❤️ por Alisson Nascimento' : 'Feito para mentes curiosas'}</div></div></aside>
     <div className="app-main"><header className="topbar"><div className="topbar-context"><span className="mini-logo"><Robot/></span><span>{route.page === 'teacher' ? 'Aprender juntos vai mais longe.' : 'Pensar. Criar. Descobrir.'}</span></div><div className="topbar-actions"><CloudStatus classroom={classroom} compact/>{team && route.page === 'game' && <HelpRequestButton team={team} classroom={classroom}/>}{team && route.page !== 'teacher' && <button className="btn secondary small end-session" onClick={() => { if (route.page === 'game') openWorld(getLevel(route.levelId).grade); setModal({ type: 'feedback' }); }}><Check size={17}/>Encerrar sessão</button>}{route.page !== 'teacher' && (team ? <button className="team-switcher" onClick={() => setModal({ type: 'switch' })}><TeamAvatar team={team}/><span><strong>{team.name}</strong><small>Trocar equipe</small></span><ChevronDown size={17}/></button> : <button className="btn primary small" onClick={() => navigate('explore')}>Criar equipe<ArrowRight size={17}/></button>)}</div></header>
       <main id="main-content" className="main-content">{classroom.error && <div className="storage-warning inline" role="alert">{classroom.error}</div>}
-        {route.page === 'explore' && team && <Dashboard team={team} onWorld={openWorld} onLevel={openLevel}/>}
-        {route.page === 'world' && team && <WorldMap world={WORLDS[route.grade - 1]} team={team} key={route.grade} onBack={() => navigate('explore')} onLevel={openLevel}/>}
+        {route.page === 'explore' && team && <Dashboard team={team} proposal={proposal} onWorld={openWorld} onLevel={openLevel}/>}
+        {route.page === 'world' && team && <WorldMap world={WORLDS[route.grade - 1]} team={team} proposal={proposal} key={route.grade} onBack={() => navigate('explore')} onLevel={openLevel}/>}
         {route.page === 'game' && team && (getLevel(route.levelId).kind === 'math' ? <MathGame key={`${team.id}-${route.levelId}`} level={getLevel(route.levelId)} team={team} onBack={() => openWorld(getLevel(route.levelId).grade)} onNext={openLevel} onWorld={openWorld} onComplete={classroom.complete} onAttempt={classroom.attempt}/> : getLevel(route.levelId).kind === 'sequence' ? <SequenceGame key={`${team.id}-${route.levelId}`} level={getLevel(route.levelId)} team={team} onBack={() => openWorld(getLevel(route.levelId).grade)} onNext={openLevel} onWorld={openWorld} onComplete={classroom.complete} onAttempt={classroom.attempt}/> : <Game key={`${team.id}-${route.levelId}`} level={getLevel(route.levelId)} team={team} onBack={() => openWorld(getLevel(route.levelId).grade)} onNext={openLevel} onWorld={openWorld} onComplete={classroom.complete} onAttempt={classroom.attempt}/>) }
         {route.page === 'achievements' && team && <Achievements team={team} onExplore={() => navigate('explore')} onSkinChange={avatar => classroom.updateTeam({ avatar }, team.id)}/>}
         {route.page === 'teams' && team && <TeamsPage classroom={classroom} onNew={() => setModal({ type: 'new' })} onSelect={selectTeam}/>}
