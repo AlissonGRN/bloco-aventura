@@ -6,12 +6,14 @@ import { StickerAlbum } from './ClassroomExtras';
 import { Stars } from './UI';
 import { SkinSelector } from './Teams';
 
-export function Dashboard({ team, onWorld, onLevel }) {
+export function Dashboard({ team, proposal, onWorld, onLevel }) {
   const done = Object.keys(team.progress).length;
   const stars = Object.values(team.progress).reduce((s, p) => s + p.stars, 0);
   const last = getLevel(team.lastLevel) || LEVELS[0];
   const next = levelsFor(last.grade).find(l => !team.progress[l.id]) || last;
+  const proposed = proposal?.level_ids?.map(id => getLevel(id)).filter(Boolean) || [];
   return <>
+    {proposed.length > 0 && <section className="student-proposal"><span className="eyebrow">ATIVIDADE PROPOSTA PELO PROFESSOR</span><h2>{proposal.title || 'Atividade proposta para a aula'}</h2><p>Estes são os desafios indicados para a aula. Os outros mundos continuam disponíveis.</p><div className="student-proposal-levels">{proposed.map(level => <button key={level.id} onClick={() => onLevel(level)}><strong>Nível {level.grade} · Desafio {level.number}</strong><span>{level.title}</span><ArrowRight size={17}/></button>)}</div></section>}
     <div className="dashboard-greeting"><span>UM NOVO DIA PARA DESCOBRIR</span><span className="save-status"><i/>Uma descoberta de cada vez</span></div>
     <section className="hero-card"><div className="hero-copy"><span className="hero-pill"><Sparkles size={15}/> OI, {team.name.toLocaleUpperCase('pt-BR')}!</span><h1>Pequenos passos.<br/>Grandes <span>descobertas.</span></h1><p>Monte blocos, explore caminhos e dê vida às suas ideias.<br className="desktop-only"/> O Bip está pronto para a próxima aventura!</p><button className="btn primary" onClick={() => onLevel(done ? next : LEVELS[0])}><Play size={17} fill="currentColor"/>{done ? 'Continuar aventura' : 'Começar aventura'}<ArrowRight size={18}/></button><span className="hero-caption">{done ? `Nível ${next.grade} · Desafio ${next.number}` : 'Comece pelo jardim dos primeiros passos'}</span></div><WorldArt className="hero-art" hero/><span className="art-caption"><span className="status-dot"/> Bip, seu companheiro de descobertas</span></section>
     <section className="journey-stats" aria-label="Seu progresso"><div><span className="stat-icon mint"><Flag size={21}/></span><span><strong>{done}<small> / {LEVELS.length}</small></strong><p>Desafios concluídos</p></span></div><div><span className="stat-icon gold"><Star size={22}/></span><span><strong>{stars}</strong><p>Estrelas conquistadas</p></span></div><div><span className="stat-icon lavender"><Compass size={22}/></span><span><strong>{WORLDS.filter(w => levelsFor(w.id).some(l => team.progress[l.id])).length}<small> / {WORLDS.length}</small></strong><p>Mundos explorados</p></span></div><div className="stats-encouragement"><Lightbulb size={23}/><span>Toda grande ideia começa<br/>com uma pequena tentativa.</span></div></section>
@@ -26,7 +28,7 @@ function WorldCard({ world: w, team, onClick }) {
   return <button className="world-card" onClick={onClick} style={{ '--world': w.color, '--world-soft': w.soft }}><div className="world-art-wrap"><span className="year-badge">Nível {w.id}</span><span className="world-number">0{w.id}</span><WorldArt type={w.type}/></div><div className="world-info"><span className="world-topic"><Icon size={15}/>{w.topic}</span><h3>{w.name}</h3><p>{w.description}</p><div className="world-progress-label"><span>{done ? `${done} de ${levels.length} desafios` : `${levels.length} desafios para descobrir`}</span><ArrowRight size={18}/></div><div className="progress-track"><span style={{ width: `${done / levels.length * 100}%` }}/></div></div></button>;
 }
 
-export function WorldMap({ world: w, team, onBack, onLevel }) {
+export function WorldMap({ world: w, team, proposal, onBack, onLevel }) {
   const levels = levelsFor(w.id);
   const done = levels.filter(l => team.progress[l.id]).length;
   const next = levels.find(l => !team.progress[l.id]);
@@ -39,7 +41,8 @@ export function WorldMap({ world: w, team, onBack, onLevel }) {
       const progress = team.progress[l.id];
       const available = true;
       const current = l.id === next?.id;
-      return <button className={`level-node ${progress ? 'complete' : ''} ${current ? 'current' : ''} ${!available ? 'locked' : ''}`} key={l.id} disabled={!available} onClick={() => onLevel(l)} aria-label={`Desafio ${l.number}: ${l.title}${available ? '' : '. Complete o desafio anterior para abrir.'}`}><span className="node-top">{current ? 'VOCÊ ESTÁ AQUI' : progress ? 'CONCLUÍDO' : 'DESAFIO ' + l.number}</span><span className="node-circle">{!available ? <LockKeyhole size={26}/> : progress ? <Check size={33}/> : current ? <Play size={27} fill="currentColor"/> : l.number}<span className="node-number">{l.number}</span></span><Stars count={progress?.stars || 0}/><strong>{l.title}</strong>{l.starter && <span className="debug-tag">Ache o erro</span>}</button>;
+      const proposed = proposal?.level_ids?.includes(l.id);
+      return <button className={`level-node ${progress ? 'complete' : ''} ${current ? 'current' : ''} ${proposed ? 'proposed' : ''} ${!available ? 'locked' : ''}`} key={l.id} disabled={!available} onClick={() => onLevel(l)} aria-label={`Desafio ${l.number}: ${l.title}${available ? '' : '. Complete o desafio anterior para abrir.'}`}><span className="node-top">{proposed ? 'PROPOSTO PARA A AULA' : current ? 'VOCÊ ESTÁ AQUI' : progress ? 'CONCLUÍDO' : 'DESAFIO ' + l.number}</span><span className="node-circle">{!available ? <LockKeyhole size={26}/> : progress ? <Check size={33}/> : current ? <Play size={27} fill="currentColor"/> : l.number}<span className="node-number">{l.number}</span></span><Stars count={progress?.stars || 0}/><strong>{l.title}</strong>{l.starter && <span className="debug-tag">Ache o erro</span>}</button>;
     })}</section>
     <div className="map-tips"><div className="tip-icon"><Lightbulb size={25}/></div><div><strong>{w.id === 1 ? 'Olhe, toque, descubra.' : `Aqui você vai aprender: ${w.topic.toLowerCase()}.`}</strong><p>{w.id === 1 ? 'As setas mostram o caminho. A animação mostra como jogar, sem precisar ler ou ouvir. Você pode pedir ajuda para começar!' : w.skill}</p></div></div>
   </div>;
