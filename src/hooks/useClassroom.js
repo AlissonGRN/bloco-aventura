@@ -67,9 +67,15 @@ export function useClassroom() {
   }, [fingerprint, JSON.stringify(data.classes), syncNow]);
   useEffect(() => {
     if (!CLOUD_ENABLED) return;
-    const timer = setInterval(syncNow, 30000);
+    const syncWhenVisible = () => {
+      if (document.visibilityState === 'visible') void syncNow();
+    };
     window.addEventListener('online', syncNow);
-    return () => { clearInterval(timer); window.removeEventListener('online', syncNow); };
+    document.addEventListener('visibilitychange', syncWhenVisible);
+    return () => {
+      window.removeEventListener('online', syncNow);
+      document.removeEventListener('visibilitychange', syncWhenVisible);
+    };
   }, [syncNow]);
   useEffect(() => {
     if (!CLOUD_ENABLED || !data.activeId || !activeSessionId) return;
