@@ -5139,3 +5139,28 @@ textarea:focus-visible { outline: 3px solid #b1d3b6; outline-offset: 2px; }
 .math-hint strong { display: block; margin-bottom: 3px; color: #846b2d; font-size: 12px; }
 .math-discussion { color: #818979; font-size: 12px; line-height: 1.6; }
 @media (max-width: 700px) { .math-heading { gap: 10px; } .math-scene { width: 65px; height: 65px; flex-basis: 65px; border-radius: 17px; } .math-scene svg { width: 30px; } .math-choices { gap: 7px; } .math-choice { min-height: 62px; font-size: 21px; } .math-plan { grid-template-columns: 1fr; } .math-plan > div { padding: 10px 12px; } .math-question { font-size: 15px; } }
+
+
+/* Atividades propostas pelo professor */
+.proposed-activity-editor { display: grid; gap: 16px; }
+.proposed-activity-editor > label, .proposal-level-picker > label { display: grid; gap: 7px; }
+.proposal-level-picker { display: grid; gap: 10px; }
+.proposal-level-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-height: 360px; overflow: auto; padding: 4px; }
+.proposal-level-option { display: flex; align-items: flex-start; gap: 10px; border: 1px solid var(--line, #dce5e2); border-radius: 12px; padding: 11px; cursor: pointer; }
+.proposal-level-option:has(input:checked) { border-color: var(--green, #478b78); background: #eaf5ef; }
+.proposal-level-option input { margin-top: 3px; accent-color: #478b78; }
+.proposal-level-option span { display: grid; gap: 4px; min-width: 0; }
+.proposal-level-option small { color: var(--muted, #64716d); line-height: 1.4; }
+.proposal-selection { background: #f4f7f5; border-radius: 12px; padding: 14px 16px; }
+.proposal-selection ul { margin: 8px 0 0; padding-left: 20px; }
+.student-proposal { margin-bottom: 28px; border: 1px solid #a8d7c0; background: #f0f8f3; border-radius: 20px; padding: clamp(18px, 3vw, 28px); }
+.student-proposal h2 { margin: 8px 0; }
+.student-proposal p { margin: 0 0 16px; color: #52645b; }
+.student-proposal-levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.student-proposal-levels button { display: grid; grid-template-columns: 1fr auto; text-align: left; gap: 4px 10px; align-items: center; border: 1px solid #c5e2d2; border-radius: 12px; padding: 12px 14px; background: white; cursor: pointer; color: inherit; }
+.student-proposal-levels button strong, .student-proposal-levels button span { grid-column: 1; }
+.student-proposal-levels button svg { grid-column: 2; grid-row: 1 / span 2; }
+.student-proposal-levels button:hover { border-color: #478b78; }
+.level-node.proposed .node-circle { outline: 3px solid #4b9a77; outline-offset: 4px; }
+.level-node.proposed .node-top { color: #347b59; font-weight: 800; }
+@media (max-width: 640px) { .proposal-level-list { grid-template-columns: 1fr; } }
