@@ -120,7 +120,7 @@ function Planning({ classes, proposals, busy, onPublish, onRemove }) {
   useEffect(() => {
     if (selectedWorld && !proposal) return;
   }, [selectedGrade, proposal]);
-  const title = selectedWorld ? selectedWorld.title || selectedWorld.topic : '';
+  const title = selectedWorld ? selectedWorld.name || selectedWorld.topic : '';
   return <>
     <section className="teacher-intro"><BookOpen size={32}/><div><h2>Atividade proposta</h2><p>Escolha uma turma e indique um nível completo. Todos os desafios desse nível serão marcados como propostos para a aula.</p></div></section>
     <section className="teacher-panel proposed-activity-editor"><h2>Propor um nível para a turma</h2>
