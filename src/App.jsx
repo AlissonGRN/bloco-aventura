@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Compass, Trophy, Users, BookOpen, ChevronDown, ArrowRight, Plus, Check, CircleHelp } from 'lucide-react';
+import { Compass, Trophy, Users, BookOpen, ChevronDown, ArrowRight, Plus, Check, CircleHelp, BellRing, X, VolumeX, Heart, Eye, UsersRound, Pause } from 'lucide-react';
 import { useClassroom } from './hooks/useClassroom';
 import { WORLDS, getLevel } from './data/curriculum';
 import { Brand, Modal } from './components/UI';
@@ -11,13 +11,13 @@ import SequenceGame from './components/SequenceGame';
 import MathGame from './components/MathGame';
 import TeacherPage from './components/Teacher';
 import { FeedbackModal, CloudStatus, StickerNotification } from './components/ClassroomExtras';
-import { CLOUD_ENABLED, fetchClassProposal } from './services/cloud';
+import { CLOUD_ENABLED, fetchClassProposal, fetchStudentNotifications } from './services/cloud';
 
 export default function App() {
   const classroom = useClassroom();
   const [route, setRoute] = useState({ page: 'explore' });
   const [modal, setModal] = useState(null);
-  const [proposal, setProposal] = useState(null);
+  const [proposal, setProposal] = useState(null);\n  const [classroomNotice, setClassroomNotice] = useState(null);\n  const [dismissedNoticeIds, setDismissedNoticeIds] = useState([]);
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [route]);
   useEffect(() => {
     const classId = classroom.active?.classId;
@@ -35,6 +35,26 @@ export default function App() {
     const timer = setInterval(refreshProposal, 15000);
     return () => { alive = false; clearInterval(timer); };
   }, [classroom.active?.classId]);
+  useEffect(() => {
+    const classId = classroom.active?.classId;
+    if (!CLOUD_ENABLED || !classId || route.page === 'teacher') { setClassroomNotice(null); return; }
+    let alive = true;
+    const refreshNotices = async () => {
+      try {
+        const notices = await fetchStudentNotifications(classId);
+        if (!alive) return;
+        const latest = notices.find(item => !dismissedNoticeIds.includes(item.id));
+        setClassroomNotice(current => {
+          if (!latest) return current && notices.some(item => item.id === current.id) ? current : null;
+          if (current?.id === latest.id) return current;
+          return latest;
+        });
+      } catch { /* A temporary network failure should not interrupt the activity. */ }
+    };
+    void refreshNotices();
+    const timer = setInterval(refreshNotices, 5000);
+    return () => { alive = false; clearInterval(timer); };
+  }, [classroom.active?.classId, route.page, dismissedNoticeIds]);
   function navigate(page) { setRoute({ page }); }
   function openWorld(grade) { setRoute({ page: 'world', grade }); }
   function openLevel(level) { classroom.remember(level); setRoute({ page: 'game', levelId: level.id }); }
@@ -58,6 +78,7 @@ export default function App() {
       </main>{route.page !== 'game' && <footer className="app-footer"><span>bloco. <span>Pequenos blocos, grandes ideias.</span></span><span>Feito com ❤️ por Alisson Nascimento</span></footer>}
     </div>
     <StickerNotification notice={route.page === 'teacher' ? null : classroom.stickerNotices[0]} onDismiss={() => classroom.dismissStickerNotice(classroom.stickerNotices[0]?.id)}/>
+    {classroomNotice && route.page !== 'teacher' && <ClassroomNotificationOverlay notice={classroomNotice} onDismiss={() => { setDismissedNoticeIds(ids => [...ids, classroomNotice.id]); setClassroomNotice(null); }}/>}
     {modal?.type === 'feedback' && team && <FeedbackModal team={team} onClose={() => setModal(null)} onFinish={feedback => { classroom.endSession(feedback); setModal(null); navigate('explore'); }}/>}
     {modal && modal.type !== 'feedback' && <Modal title={modal.type === 'switch' ? 'Trocar equipe' : 'Criar equipe'} onClose={() => setModal(null)} className="teams-modal"><span className="eyebrow">JUNTOS NA AVENTURA</span><h2>{modal.type === 'switch' ? 'Quem vai explorar agora?' : 'Uma nova equipe, novas ideias.'}</h2>{modal.type === 'switch' ? <><p>Escolha uma equipe para continuar de onde parou.</p><div className="switch-team-list">{classroom.data.teams.map(t => <button className={`team-row ${team?.id === t.id ? 'selected' : ''}`} key={t.id} onClick={() => selectTeam(t.id)}><TeamAvatar team={t}/><span><strong>{t.name}</strong><small>{t.members.join(', ')}</small></span>{team?.id === t.id ? <Check size={20}/> : <ArrowRight size={19}/>}</button>)}</div><button className="btn secondary full" onClick={() => setModal({ type: 'new' })}><Plus size={18}/>Criar nova equipe</button></> : <TeamForm classes={classroom.data.classes} initial={modal.team} onSave={saveTeam} onCancel={() => setModal(null)}/>}</Modal>}
 
@@ -89,4 +110,22 @@ function HelpRequestButton({ team, classroom }) {
   const disabled = ['checking', 'sending', 'pending', 'offline'].includes(status);
   const label = status === 'pending' ? 'Ajuda solicitada' : status === 'sending' ? 'Enviando pedido…' : status === 'offline' ? 'Conecte à sala do professor' : 'Pedir ajuda ao professor';
   return <span className="help-request-control"><button className={`btn secondary small help-request-button ${status === 'pending' ? 'requested' : ''}`} type="button" disabled={disabled} onClick={requestHelp} aria-label={label} title={label}><CircleHelp size={17}/>{label}</button>{status === 'pending' && <span role="status" className="help-request-status">Pedido enviado ao professor.</span>}{message && <span role="alert" className="help-request-error">{message}</span>}</span>;
+}
+
+function ClassroomNotificationOverlay({ notice, onDismiss }) {
+  useEffect(() => {
+    const timer = setTimeout(onDismiss, notice.kind === 'silence' ? 18000 : 12000);
+    return () => clearTimeout(timer);
+  }, [notice.id]);
+  const Icon = notice.kind === 'silence' ? VolumeX : notice.kind === 'standard' ? BellRing : Heart;
+  return <div className={`classroom-notification-overlay ${notice.kind === 'silence' ? 'is-silence' : ''}`} role="alertdialog" aria-modal="true" aria-labelledby="classroom-notification-title">
+    <section className="classroom-notification-card">
+      <button className="classroom-notification-close" onClick={onDismiss} aria-label="Fechar aviso"><X size={24}/></button>
+      <span className="classroom-notification-icon"><Icon size={notice.kind === 'silence' ? 58 : 42}/></span>
+      <span className="classroom-notification-label">{notice.kind === 'silence' ? 'AVISO DO PROFESSOR' : 'MENSAGEM DO PROFESSOR'}</span>
+      <h2 id="classroom-notification-title">{notice.title}</h2>
+      <p>{notice.message}</p>
+      <button className="classroom-notification-ack" onClick={onDismiss}><Check size={18}/> Entendi</button>
+    </section>
+  </div>;
 }
