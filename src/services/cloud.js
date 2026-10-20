@@ -78,7 +78,8 @@ export async function subscribeToTeamHelp(teamId, onStatus) {
 export async function saveStudentTeams(teams, classes) {
   const user = await studentIdentity();
   // Teacher-granted skins are server-owned. Student sync never writes this field.
-  const records = teams.filter(t => classes.some(c => c.id === t.classId && c.classroomId) && (!t.cloudOwner || t.cloudOwner === user.id || t.sharedAccess)).map(t => ({ id: t.id, owner_id: t.cloudOwner || user.id, classroom_id: classes.find(c => c.id === t.classId).classroomId, class_id: t.classId, name: t.name, members: t.members, avatar: t.avatar, progress: t.progress, attempts: t.attempts, sessions: t.sessions, last_level: t.lastLevel }));
+  const deletedIds = new Set(unwrap(await studentClient.from('deleted_bloco_teams').select('team_id')).map(row => row.team_id));
+  const records = teams.filter(t => !deletedIds.has(t.id) && classes.some(c => c.id === t.classId && c.classroomId) && (!t.cloudOwner || t.cloudOwner === user.id || t.sharedAccess)).map(t => ({ id: t.id, owner_id: t.cloudOwner || user.id, classroom_id: classes.find(c => c.id === t.classId).classroomId, class_id: t.classId, name: t.name, members: t.members, avatar: t.avatar, progress: t.progress, attempts: t.attempts, sessions: t.sessions, last_level: t.lastLevel }));
   const owned = records.filter(t => t.owner_id === user.id);
   const shared = records.filter(t => t.owner_id !== user.id);
   if (owned.length) {
@@ -129,9 +130,9 @@ export async function teacherSnapshot() {
   const currentIds = new Set(current.map(c => c.id));
   const missing = expected.filter(c => !currentIds.has(c.id)).map(c => ({ id: c.id, classroom_id: rooms[0].id, name: c.name, grade: c.grade, section: c.section, active: true }));
   if (missing.length) unwrap(await teacherClient.from('class_groups').insert(missing));
-  const [classes, teams, stickers, helpRequests, proposals] = await Promise.all([teacherClient.from('class_groups').select('*').eq('classroom_id', rooms[0].id).order('grade').order('section'), teacherClient.from('bloco_teams').select('*').eq('classroom_id', rooms[0].id).order('name'), teacherClient.from('team_stickers').select('*'), teacherClient.from('teacher_help_requests').select('*').eq('classroom_id', rooms[0].id).is('resolved_at', null).order('created_at'), teacherClient.from('classroom_proposals').select('*').eq('classroom_id', rooms[0].id)]);
+  const [classes, teams, stickers, helpRequests, proposals, deletedTeams] = await Promise.all([teacherClient.from('class_groups').select('*').eq('classroom_id', rooms[0].id).order('grade').order('section'), teacherClient.from('bloco_teams').select('*').eq('classroom_id', rooms[0].id).order('name'), teacherClient.from('team_stickers').select('*'), teacherClient.from('teacher_help_requests').select('*').eq('classroom_id', rooms[0].id).is('resolved_at', null).order('created_at'), teacherClient.from('classroom_proposals').select('*').eq('classroom_id', rooms[0].id), teacherClient.from('deleted_bloco_teams').select('team_id')]);
   const awards = unwrap(stickers);
-  return { room: rooms[0], helpRequests: unwrap(helpRequests), proposals: unwrap(proposals), ...validateSave({ version: 2, classes: unwrap(classes).map(classFromRow), teams: unwrap(teams).map(t => teamFromRow(t, awards)) }) };
+  return { room: rooms[0], helpRequests: unwrap(helpRequests), proposals: unwrap(proposals), ...validateSave({ version: 2, classes: unwrap(classes).map(classFromRow), teams: unwrap(teams).filter(t => !new Set(unwrap(deletedTeams).map(row => row.team_id)).has(t.id)).map(t => teamFromRow(t, awards)) }) };
 }
 export function subscribeToTeacherHelp(classroomId, onChange) {
   if (!CLOUD_ENABLED || !classroomId || typeof onChange !== 'function') return () => {};
@@ -154,6 +155,7 @@ export async function grantCloudSkin(teamId, skinIndex, currentlyGranted = []) {
 export async function cloudAward(teamId, type, note) { return unwrap(await teacherClient.from('team_stickers').insert({ team_id: teamId, type, note }).select()); }
 export async function cloudRemoveAward(id) { unwrap(await teacherClient.from('team_stickers').delete().eq('id', id)); }
 export async function cloudDeleteTeam(id) {
+  unwrap(await teacherClient.from('deleted_bloco_teams').upsert({ team_id: id, deleted_by: (await teacherClient.auth.getUser()).data.user.id }, { onConflict: 'team_id' }));
   const rows = unwrap(await teacherClient.from('bloco_teams').delete().eq('id', id).select('id'));
   if (!rows?.length) throw new Error('Equipe não encontrada ou sem permissão para excluí-la.');
 }
