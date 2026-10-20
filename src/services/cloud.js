@@ -160,3 +160,26 @@ export async function cloudDeleteTeam(id) {
   const rows = unwrap(await teacherClient.from('bloco_teams').delete().eq('id', id).select('id'));
   if (!rows?.length) throw new Error('Equipe não encontrada ou sem permissão para excluí-la.');
 }
+
+
+export async function sendClassroomNotification(classroomId, targetClassGroupId, title, message, kind = 'standard') {
+  if (!CLOUD_ENABLED) throw new Error('As notificações precisam da conexão com o Supabase.');
+  const user = unwrap(await teacherClient.auth.getUser()).user;
+  return unwrap(await teacherClient.from('classroom_notifications').insert({
+    classroom_id: classroomId,
+    target_class_group_id: targetClassGroupId || null,
+    title: title.trim().slice(0, 100),
+    message: message.trim().slice(0, 500),
+    kind,
+    created_by: user.id,
+    expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+  }).select().single());
+}
+export async function fetchStudentNotifications(classGroupId) {
+  if (!CLOUD_ENABLED || !classGroupId) return [];
+  await studentIdentity();
+  const group = unwrap(await studentClient.from('class_groups').select('classroom_id').eq('id', classGroupId).maybeSingle());
+  if (!group?.classroom_id) return [];
+  const rows = unwrap(await studentClient.from('classroom_notifications').select('*').eq('classroom_id', group.classroom_id).gt('expires_at', new Date().toISOString()).order('created_at', { ascending: false }).limit(20));
+  return rows.filter(row => !row.target_class_group_id || row.target_class_group_id === classGroupId);
+}
