@@ -5189,3 +5189,52 @@ textarea:focus-visible { outline: 3px solid #b1d3b6; outline-offset: 2px; }
   .student-proposal-compact { padding: 18px; }
   .student-proposal-compact .btn { width: 100%; justify-content: center; }
 }
+
+
+/* Teacher notification center */
+.teacher-notifications { display: grid; gap: 18px; }
+.teacher-notifications-header > div { display: flex; align-items: flex-start; gap: 14px; }
+.teacher-notifications-header > div > svg { color: var(--green, #478b78); flex: 0 0 auto; margin-top: 5px; }
+.teacher-notifications-header h2 { margin: 0 0 6px; }
+.teacher-notifications-header p, .notification-target p { margin: 0; color: var(--muted, #65736c); }
+.notification-target { display: grid; gap: 8px; }
+.notification-target label, .custom-notification-form label { display: grid; gap: 7px; }
+.standard-notification-grid { display: grid; gap: 10px; }
+.standard-notification-grid article { display: flex; align-items: center; justify-content: space-between; gap: 18px; border: 1px solid var(--line, #e0e6e1); border-radius: 13px; padding: 14px; }
+.standard-notification-grid article > div { min-width: 0; }
+.standard-notification-grid article strong { display: block; }
+.standard-notification-grid article p { margin: 5px 0 0; color: var(--muted, #65736c); line-height: 1.45; }
+.custom-notification-form { display: grid; gap: 14px; }
+.custom-notification-form .btn { justify-self: start; }
+.silence-notification-panel { display: flex; justify-content: space-between; align-items: center; gap: 18px; border: 1px solid #f1b5b5; background: #fff4f4; }
+.silence-notification-panel h3 { color: #b42323; margin-top: 0; }
+.silence-notification-panel h3 span { display: inline-flex; align-items: center; justify-content: center; background: #c92525; color: white; border-radius: 50%; width: 26px; height: 26px; margin-right: 7px; }
+.silence-notification-panel p { color: #743c3c; margin-bottom: 0; }
+.silence-confirm { display: grid; gap: 12px; }
+.silence-confirm > div { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn.danger { background: #c92525; color: white; border-color: #c92525; }
+.btn.danger:hover { background: #a91d1d; }
+.classroom-notification-overlay { position: fixed; z-index: 10000; inset: 0; display: grid; place-items: center; padding: 20px; background: rgb(18 28 23 / 72%); backdrop-filter: blur(5px); animation: classroom-notice-in .18s ease-out; }
+.classroom-notification-card { position: relative; width: min(620px, 100%); max-height: min(85dvh, 760px); overflow-y: auto; border-radius: 26px; padding: clamp(28px, 5vw, 54px); background: #fffefa; color: #26382f; text-align: center; box-shadow: 0 24px 90px rgb(0 0 0 / 32%); }
+.classroom-notification-close { position: absolute; right: 15px; top: 15px; display: grid; place-items: center; border: 0; border-radius: 50%; width: 42px; height: 42px; background: #edf1ed; color: #34483c; cursor: pointer; }
+.classroom-notification-icon { width: 84px; height: 84px; margin: 0 auto 18px; border-radius: 24px; display: grid; place-items: center; color: #347b59; background: #e4f3e9; }
+.classroom-notification-label { display: block; font-size: .78rem; letter-spacing: .12em; font-weight: 850; color: #52715e; }
+.classroom-notification-card h2 { font-size: clamp(1.8rem, 5vw, 2.7rem); line-height: 1.08; margin: 14px 0; overflow-wrap: anywhere; }
+.classroom-notification-card p { font-size: clamp(1.05rem, 2.5vw, 1.25rem); line-height: 1.55; margin: 0 auto 28px; max-width: 46ch; }
+.classroom-notification-ack { display: inline-flex; justify-content: center; align-items: center; gap: 9px; min-height: 50px; padding: 12px 26px; border: 0; border-radius: 14px; background: #367653; color: white; font-weight: 800; font-size: 1rem; cursor: pointer; }
+.classroom-notification-overlay.is-silence { background: rgb(92 0 0 / 86%); }
+.classroom-notification-overlay.is-silence .classroom-notification-card { width: min(760px, 100%); background: #b91f26; color: white; border: 5px solid #ffb7b7; box-shadow: 0 0 0 10px rgb(255 255 255 / 10%), 0 30px 100px rgb(0 0 0 / 45%); }
+.classroom-notification-overlay.is-silence .classroom-notification-icon { width: 112px; height: 112px; background: #fff; color: #b91f26; border-radius: 50%; }
+.classroom-notification-overlay.is-silence .classroom-notification-label { color: #ffe3e3; }
+.classroom-notification-overlay.is-silence .classroom-notification-card h2 { font-size: clamp(2.4rem, 9vw, 5rem); text-transform: uppercase; font-weight: 950; letter-spacing: .02em; }
+.classroom-notification-overlay.is-silence .classroom-notification-card p { font-size: clamp(1.2rem, 4vw, 1.8rem); font-weight: 750; }
+.classroom-notification-overlay.is-silence .classroom-notification-close { background: rgb(255 255 255 / 18%); color: white; }
+.classroom-notification-overlay.is-silence .classroom-notification-ack { background: white; color: #a91920; }
+@keyframes classroom-notice-in { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: scale(1); } }
+@media (max-width: 600px) {
+ .standard-notification-grid article { align-items: flex-start; flex-direction: column; }
+ .standard-notification-grid article .btn { width: 100%; justify-content: center; }
+ .silence-notification-panel { align-items: stretch; flex-direction: column; }
+ .silence-notification-panel > .btn { justify-content: center; }
+ .classroom-notification-card { border-radius: 20px; padding: 36px 22px 24px; }
+}
