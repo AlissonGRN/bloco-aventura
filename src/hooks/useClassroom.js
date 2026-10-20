@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { nextLevel } from '../data/curriculum.js';
 import { STORAGE_KEY, emptySave, validateSave, mergeSave, mergeTeams, uid, newSession, STICKERS } from '../data/classroom.js';
-import { CLOUD_ENABLED, joinRoom, joinTeam, studentSnapshot, saveStudentTeams, subscribeToTeamStickers, requestTeacherHelp, subscribeToTeamHelp } from '../services/cloud.js';
+import { CLOUD_ENABLED, joinRoom, joinTeam, studentSnapshot, saveStudentTeams, deleteStudentTeam, subscribeToTeamStickers, requestTeacherHelp, subscribeToTeamHelp } from '../services/cloud.js';
 export { STORAGE_KEY, validateSave } from '../data/classroom.js';
 const now = () => new Date().toISOString();
 const unique = values => [...new Set(values)];
@@ -117,7 +117,9 @@ export function useClassroom() {
     setData(d => ({ ...d, teams: d.teams.map(t => t.id === id ? { ...t, ...values, updatedAt: now() } : t) }));
   }
   function deleteTeam(id) {
+    const team = latest.current.teams.find(t => t.id === id);
     setData(d => ({ ...d, activeId: d.activeId === id ? null : d.activeId, teams: d.teams.filter(t => t.id !== id) }));
+    if (CLOUD_ENABLED && team?.cloudOwner) void deleteStudentTeam(id).catch(error => setSync({ state: 'error', message: `A equipe foi removida deste dispositivo, mas não foi possível excluí-la da nuvem: ${error.message || 'erro de sincronização'}` }));
   }
   function award(teamId, type, note = '') {
     if (!STICKERS.some(s => s.id === type)) return;
