@@ -17,7 +17,8 @@ export default function App() {
   const classroom = useClassroom();
   const [route, setRoute] = useState({ page: 'explore' });
   const [modal, setModal] = useState(null);
-  const [proposal, setProposal] = useState(null);\n  const [classroomNotice, setClassroomNotice] = useState(null);\n  const [dismissedNoticeIds, setDismissedNoticeIds] = useState([]);
+  const [proposal, setProposal] = useState(null);
+  const [classroomNotice, setClassroomNotice] = useState(null);\n  const [dismissedNoticeIds, setDismissedNoticeIds] = useState([]);
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [route]);
   useEffect(() => {
     const classId = classroom.active?.classId;
