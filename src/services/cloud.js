@@ -111,7 +111,7 @@ export const teacherLogout = () => teacherClient?.auth.signOut();
 export async function saveTeacherProposal(classGroupId, title, levelIds) {
   const user = unwrap(await teacherClient.auth.getUser()).user;
   const group = unwrap(await teacherClient.from('class_groups').select('id,classroom_id').eq('id', classGroupId).single());
-  const row = { class_group_id: classGroupId, classroom_id: group.classroom_id, title: title.trim().slice(0, 100), level_ids: [...new Set(levelIds)].slice(0, 20), updated_at: new Date().toISOString(), updated_by: user.id };
+  const row = { class_group_id: classGroupId, classroom_id: group.classroom_id, title: title.trim().slice(0, 100), level_ids: [...new Set(levelIds)].slice(0, 40), updated_at: new Date().toISOString(), updated_by: user.id };
   return unwrap(await teacherClient.from('classroom_proposals').upsert(row, { onConflict: 'class_group_id' }).select().single());
 }
 export async function removeTeacherProposal(classGroupId) { unwrap(await teacherClient.from('classroom_proposals').delete().eq('class_group_id', classGroupId)); }
