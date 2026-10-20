@@ -75,6 +75,7 @@ export async function subscribeToTeamHelp(teamId, onStatus) {
     });
   return () => { active = false; void studentClient.removeChannel(channel); };
 }
+export async function deleteStudentTeam(teamId) { if (!CLOUD_ENABLED || !teamId) return; unwrap(await studentClient.rpc('delete_bloco_team_for_owner', { target_team_id: teamId })); }
 export async function saveStudentTeams(teams, classes) {
   const user = await studentIdentity();
   // Teacher-granted skins are server-owned. Student sync never writes this field.
