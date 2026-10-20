@@ -45,7 +45,7 @@ export default function App() {
         if (!alive) return;
         const latest = notices.find(item => !dismissedNoticeIds.includes(item.id));
         setClassroomNotice(current => {
-          if (!latest) return current && notices.some(item => item.id === current.id) ? current : null;
+          if (!latest) return current && !dismissedNoticeIds.includes(current.id) && notices.some(item => item.id === current.id) ? current : null;
           if (current?.id === latest.id) return current;
           return latest;
         });
