@@ -134,7 +134,8 @@ function Notifications({ classes, classroomId, busy, onSend }) {
     {feedback && <p role="status" className="panel-message">{feedback}</p>}
   </section>;
 }
-\nfunction Planning({ classes, proposals, busy, onPublish, onRemove }) {
+
+function Planning({ classes, proposals, busy, onPublish, onRemove }) {
   const [classId, setClassId] = useState('');
   const [selectedGrade, setSelectedGrade] = useState('');
   const activeClasses = classes.filter(c => !c.archived);
