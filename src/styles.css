@@ -5164,3 +5164,9 @@ textarea:focus-visible { outline: 3px solid #b1d3b6; outline-offset: 2px; }
 .level-node.proposed .node-circle { outline: 3px solid #4b9a77; outline-offset: 4px; }
 .level-node.proposed .node-top { color: #347b59; font-weight: 800; }
 @media (max-width: 640px) { .proposal-level-list { grid-template-columns: 1fr; } }
+
+
+.proposal-world-preview { border: 1px solid var(--line, #dce5e2); border-radius: 14px; padding: 16px; background: var(--surface-soft, #f5f8f5); }
+.proposal-world-preview h3 { margin: 6px 0; }
+.proposal-world-preview p { margin: 6px 0; }
+.proposal-world-preview ul { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 6px; }
