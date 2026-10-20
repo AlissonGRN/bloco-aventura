@@ -104,33 +104,36 @@ function ChangePassword() {
 }
 function Planning({ classes, proposals, busy, onPublish, onRemove }) {
   const [classId, setClassId] = useState('');
-  const [title, setTitle] = useState('Atividade proposta para a aula');
-  const [selectedLevels, setSelectedLevels] = useState([]);
+  const [selectedGrade, setSelectedGrade] = useState('');
   const activeClasses = classes.filter(c => !c.archived);
   const proposal = proposals.find(p => p.class_group_id === classId) || (!CLOUD_ENABLED && classId ? (() => { try { return JSON.parse(localStorage.getItem('bloco.proposal.' + classId) || 'null'); } catch { return null; } })() : null);
+  const selectedWorld = WORLDS.find(world => String(world.id) === String(selectedGrade));
+  const selectedLevels = selectedGrade ? LEVELS.filter(level => level.grade === Number(selectedGrade)).map(level => level.id) : [];
+  const proposedGrade = proposal?.level_ids?.length ? LEVELS.find(level => proposal.level_ids.includes(level.id))?.grade : null;
   useEffect(() => { if (!classId && activeClasses.length) setClassId(activeClasses[0].id); }, [classId, activeClasses]);
-  useEffect(() => { if (proposal) { setTitle(proposal.title || 'Atividade proposta para a aula'); setSelectedLevels(proposal.level_ids || []); } else setSelectedLevels([]); }, [classId, proposal?.updated_at]);
-  const toggle = id => setSelectedLevels(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
-  const proposedLevels = LEVELS.filter(level => selectedLevels.includes(level.id));
+  useEffect(() => {
+    if (proposal) {
+      const grade = LEVELS.find(level => proposal.level_ids?.includes(level.id))?.grade;
+      setSelectedGrade(grade ? String(grade) : '');
+    } else setSelectedGrade('');
+  }, [classId, proposal?.updated_at]);
+  useEffect(() => {
+    if (selectedWorld && !proposal) return;
+  }, [selectedGrade, proposal]);
+  const title = selectedWorld ? selectedWorld.title || selectedWorld.topic : '';
   return <>
-    <section className="teacher-intro"><BookOpen size={32}/><div><h2>Atividade proposta</h2><p>Escolha a turma e marque os desafios que deseja indicar para a aula. A proposta ficará visível para os alunos dessa turma, sem bloquear os outros níveis.</p></div></section>
-    <section className="teacher-panel proposed-activity-editor"><h2>Montar proposta</h2>
+    <section className="teacher-intro"><BookOpen size={32}/><div><h2>Atividade proposta</h2><p>Escolha uma turma e indique um nível completo. Todos os desafios desse nível serão marcados como propostos para a aula.</p></div></section>
+    <section className="teacher-panel proposed-activity-editor"><h2>Propor um nível para a turma</h2>
       {!activeClasses.length ? <p>Não há turmas ativas disponíveis.</p> : <>
         <label><span className="field-label">Turma</span><select value={classId} onChange={e => setClassId(e.target.value)}>{activeClasses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
-        <label><span className="field-label">Nome da atividade</span><input maxLength={100} value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex.: Revisão de repetições"/></label>
-        <LevelPicker selectedLevels={selectedLevels} onToggle={toggle}/>
-        {proposedLevels.length > 0 && <div className="proposal-selection"><strong>{proposedLevels.length} desafio(s) selecionado(s)</strong><ul>{proposedLevels.map(level => <li key={level.id}>Nível {level.grade} · Desafio {level.number} — {level.title}</li>)}</ul></div>}
-        <div className="backup-actions"><button className="btn primary" disabled={busy || !classId || !title.trim() || !selectedLevels.length} onClick={() => onPublish(classId, title, selectedLevels)}>Publicar atividade</button>{proposal && <button className="btn secondary" disabled={busy} onClick={() => onRemove(classId)}>Retirar proposta</button>}</div>
-        {proposal && <p className="panel-message">Esta turma já tem uma proposta publicada. Ao publicar novamente, ela será substituída.</p>}
+        <label><span className="field-label">Nível completo</span><select value={selectedGrade} onChange={e => setSelectedGrade(e.target.value)}><option value="">Selecione um nível</option>{WORLDS.map(world => <option key={world.id} value={world.id}>Nível {world.id} — {world.title || world.topic}</option>)}</select></label>
+        {selectedWorld && <div className="proposal-world-preview"><span className="eyebrow">NÍVEL {selectedWorld.id}</span><h3>{selectedWorld.title || selectedWorld.topic}</h3><p>{selectedWorld.topic}</p><p>{selectedLevels.length} desafios serão propostos para a turma.</p><ul>{selectedWorld.trails.map(trail => <li key={trail.number}><strong>{trail.title}</strong> — desafios {trail.first}–{trail.last}</li>)}</ul></div>}
+        <div className="backup-actions"><button className="btn primary" disabled={busy || !classId || !selectedGrade || !selectedLevels.length} onClick={() => onPublish(classId, title, selectedLevels)}>Publicar nível proposto</button>{proposal && <button className="btn secondary" disabled={busy} onClick={() => onRemove(classId)}>Retirar proposta</button>}</div>
+        {proposal && <p className="panel-message">Esta turma já tem um nível proposto. Publicar outro nível substituirá a proposta atual.</p>}
       </>}
     </section>
     <div className="section-heading"><div><span className="eyebrow">PLANEJAMENTO SUGERIDO</span><h2>Organize os encontros</h2></div></div>
     <div className="planning-grid">{WORLDS.map(w => <section className="teacher-panel" key={w.id}><span className="eyebrow">NÍVEL {w.id} · 40 DESAFIOS</span><h2>{w.topic}</h2><p>{w.teacher}</p><ol className="trail-plan">{w.trails.map(t => <li key={t.number}><strong>Aula {t.number}</strong><div><b>{t.title}</b><p>Desafios {t.first}–{t.last}</p><small>Conversa: {t.discussion}</small></div></li>)}</ol></section>)}</div>
     <section className="teacher-panel"><h3>Um encontro de 50 minutos</h3><ol><li><strong>5 min</strong><span>Aquecimento com gestos, previsão do caminho e uma demonstração.</span></li><li><strong>30 min</strong><span>Desafios em equipe. Alternem quem planeja, monta e confere.</span></li><li><strong>10 min</strong><span>Compartilhem soluções e expliquem o que mudaram após um erro.</span></li><li><strong>5 min</strong><span>Encerrem a sessão com as carinhas de feedback.</span></li></ol><p>O nível 1 usa setas grandes, objetivo visual e demonstração animada. Não há som. Um adulto pode ajudar a cadastrar os nomes e a turma.</p></section>
   </>;
-}
-function LevelPicker({ selectedLevels, onToggle }) {
-  const [search, setSearch] = useState('');
-  const filtered = LEVELS.filter(level => (level.grade + ' ' + level.number + ' ' + level.title + ' ' + level.concept).toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR'))).slice(0, 100);
-  return <div className="proposal-level-picker"><label><span className="field-label">Buscar desafio</span><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Ex.: multiplicação, repetir, desafio 3"/></label><div className="proposal-level-list">{filtered.map(level => <label className="proposal-level-option" key={level.id}><input type="checkbox" checked={selectedLevels.includes(level.id)} onChange={() => onToggle(level.id)}/><span><strong>Nível {level.grade} · Desafio {level.number}</strong><small>{level.title} — {level.concept}</small></span></label>)}</div><small>Mostrando até 100 resultados. Pesquise para encontrar outros desafios.</small></div>;
 }
