@@ -30,6 +30,11 @@ test('The daily-life sequence world is a short set of ten transfer challenges', 
   assert.ok(reading.every(l => l.sequenceMode === 'words' && l.steps.length >= 4));
   for (const l of reading) assert.deepEqual(l.solution, l.steps.map((_, i) => i));
 });
+test('The planning world does not repeat routes from the introductory world', () => {
+  const routes = LEVELS.filter(level => level.grade === 1 || level.grade === 2)
+    .map(level => level.solution.map(block => block.direction).join(''));
+  assert.equal(new Set(routes).size, routes.length);
+});
 test('The action world introduces collection, jumping, combat and locked doors without duplicate routes', () => {
   const actions = LEVELS.filter(l => l.grade === 9);
   assert.equal(actions.length, 30);
