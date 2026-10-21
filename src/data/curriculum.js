@@ -83,8 +83,16 @@ function adaptive(grade, number, title, paths, turns = 0, options = {}) {
 adaptivePaths.forEach((paths, i) => adaptive(3, 21 + i, ['Uma nova pergunta', 'Se estiver livre', 'A escolha da curva', 'Repetir uma decisão', 'Conferir o caminho', 'Dois cenários', 'Olhar antes de andar', 'O teste da equipe', 'Duas rotas, um plano', 'Misturando ideias'][i], paths));
 adaptivePaths.forEach((paths, i) => adaptive(3, 31 + i, ['Decisão espelhada', 'Outra direção', 'O sensor errado', 'Escolha com poucos blocos', 'Corrija a pergunta', 'Repetir e escolher', 'Revise os dois caminhos', 'Uma solução enxuta', 'O plano que se adapta', 'Expedição pelo vale'][i], paths, 1, i % 2 ? { kind: 'optimize', budget: paths[0].length === 1 ? 3 : 4 } : { kind: 'debug', starter: seq(rotPath(paths[0], 1)) }));
 const three = [['RRUU', 'UURR', 'RURU'], ['RRRUU', 'UURRR', 'RURRU'], ['RRRUUU', 'UUURRR', 'RURURU'], ['RRRRUU', 'UURRRR', 'RRURRU'], ['RRUURRUU', 'UURRUURR', 'RURURURU'], ['RRRUUURR', 'UURRRRUU', 'RURURURU'], ['RRRRUUUU', 'UUUURRRR', 'RRUURRUU'], ['RRRUUURRR', 'UUURRRRRR', 'RURURURRR'], ['RRRUUURRUU', 'UURRUUURRR', 'RURURURURU'], ['RRRUUURRRUUU', 'UUURRRUUURRR', 'RRUURRUURRUU']];
-three.forEach((paths, i) => adaptive(4, 11 + i, ['Mais de uma resposta', 'Um terceiro caminho', 'A mesma regra', 'Observe os cenários', 'Escada e curva', 'Plano flexível', 'Mudou o desenho', 'Teste antes de concluir', 'A regra continua', 'Três caminhos resolvidos'][i], paths, i % 4));
-three.forEach((paths, i) => adaptive(4, 21 + i, ['Conserte o sensor', 'Revise a repetição', 'O caminho funciona?', 'Encurte a decisão', 'O teste que faltava', 'Uma correção pequena', 'Planeje, teste, ajuste', 'A regra mais simples', 'Confira os cenários', 'Oficina concluída'][i], paths, (i + 2) % 4, i % 2 ? { kind: 'optimize', budget: 4 } : { kind: 'debug', starter: seq(rotPath(paths[0], (i + 2) % 4)) }));
+three.forEach((paths, i) => {
+  const turns = (i + 2) % 4;
+  const starter = i % 2
+    ? rotBlocks(Array.from({ length: paths[0].length }, () => choose()), turns)
+    : rotBlocks([repeat(paths[0].length, [branch('L', [move('R')], [move('U')])])], turns);
+  const options = i % 2
+    ? { kind: 'optimize', budget: paths[0].length === 1 ? 3 : 4, starter, instruction: 'O plano funciona nos três mapas, mas usa comandos demais. Simplifique-o sem perder a condição e respeite o limite de blocos.' }
+    : { kind: 'debug', starter, instruction: 'O sensor está olhando para a direção errada. Corrija a condição e teste o programa nos três mapas.' };
+  adaptive(4, 11 + i, ['Conserte o sensor', 'Revise a repetição', 'O caminho funciona?', 'Encurte a decisão', 'O teste que faltava', 'Uma correção pequena', 'Planeje, teste, ajuste', 'A regra mais simples', 'Confira os cenários', 'Oficina concluída'][i], paths, turns, options);
+});
 const functions = [['RU', 2], ['RRU', 2], ['UR', 3], ['RDD', 2], ['LLU', 3], ['RRUU', 2], ['DDR', 3]];
 functions.forEach(([p, n], i) => add(4, 31 + i, ['Guarde uma sequência', 'Use sua ideia de novo', 'A escada vira um bloco', 'Uma peça para descer', 'Uma invenção diferente', 'Repetir uma função', 'Corrija a função'][i], p.repeat(n), [repeat(n, [call()])], { kind: i === 6 ? 'debug' : 'compose', required: ['call'], definition: seq(p), ...(i === 6 ? { starter: [repeat(n, [call()])], starterDefinition: broken(p) } : {}), concept: 'Sequências, funções e repetições', hint: 'Monte a sequência em Meu bloco. Depois use F no programa principal para chamar sua criação.' }));
 for (let i = 0; i < 3; i++) {
@@ -264,7 +272,7 @@ const jumpingRoutes = [
   'RRJRUUR', 'RRUJRRR', 'RDRJRRU', 'RRUJRDRR', 'RURRUJRR',
 ];
 const advancedRoutes = [
-  'RRUURRDDRR', 'RRDDRRUURRR', 'RRDURRRUUD', 'RURRRDRRR', 'RRURRURRDD',
+  'RRUURRDDRR', 'RRDDRRUURRR', 'RRDRRRUURD', 'RURRRDRRR', 'RRURRURRDD',
   'RRDRRUURRR', 'RURRDRRRU', 'RRRUURRDD', 'RRDRURRRDD', 'RURRDDRRU',
 ];
 function createActionBoard(route) {
