@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Flag, Lightbulb, Play, Pause, RotateCcw, Footprints, Check, ChevronRight, Rabbit, Turtle, Hand, PackageOpen, KeyRound, Bug, DoorClosed, DoorOpen, ToggleRight } from 'lucide-react';
-import { WORLDS, nextLevel, referenceCount } from '../data/curriculum';
+import { WORLDS, nextLevel, referenceCount, levelsFor } from '../data/curriculum';
 import { evaluateAll, withIds } from '../game/engine';
 import { Robot, Gem } from './Art';
 import { Modal, Stars } from './UI';
@@ -32,6 +32,7 @@ function Board({ board, frame, grade, skin = 0 }) {
 export default function Game({ level, team, onBack, onNext, onWorld, onComplete, onAttempt }) {
   const world = WORLDS[level.grade - 1];
   const followingLevel = nextLevel(level);
+  const challengeCount = levelsFor(level.grade).length;
 const SPEED_PREFERENCE_KEY = 'bloco.game.speed.v1';
   const [history, setHistory] = useState([{ program: withIds(level.starter || []), definition: withIds(level.starterDefinition || []) }]);
   const value = history.at(-1);
@@ -105,7 +106,7 @@ const SPEED_PREFERENCE_KEY = 'bloco.game.speed.v1';
   }
   const robotText = feedback || (mode === 'running' ? frame.kind === 'condition' ? (frame.condition ? 'Caminho livre! Vamos pelo “se”.' : 'Não está livre. Vamos pelo “senão”.') : frame.kind === 'surprise' ? frame.surpriseMessage : frame.kind === 'press' ? 'Botão ativado! O cenário mudou.' : frame.kind === 'pick' ? 'Peguei! Um passo de cada vez.' : frame.kind === 'jump' ? 'Saltei o buraco com segurança!' : frame.kind === 'attack' ? 'Caminho livre! Vamos continuar.' : frame.kind === 'open' ? 'A porta abriu! A chave foi útil.' : 'Estou seguindo seu plano…' : mode === 'paused' ? 'Pausa para pensar. Qual será o próximo passo?' : level.kind === 'actions' ? 'Observe o que há no caminho. Qual ação Bip precisa fazer?' : level.kind === 'debug' ? 'Vamos observar e corrigir este programa?' : level.kind === 'optimize' ? 'Como usar menos blocos para chegar ao mesmo lugar?' : 'Primeiro, imagine o caminho. Depois, monte seu plano!');
   return <div className={`game-page grade-${level.grade}`} style={{ '--world': world.color, '--world-soft': world.soft }}>
-    <div className="game-breadcrumb"><button className="text-back" onClick={onBack}><ArrowLeft size={18}/><span>{world.short}</span></button><ChevronRight size={14}/><span>Desafio {level.number} de 40</span><span className="game-grade-badge">Nível {world.displayNumber}</span><Stars count={team.progress[level.id]?.stars || 0}/></div>
+    <div className="game-breadcrumb"><button className="text-back" onClick={onBack}><ArrowLeft size={18}/><span>{world.short}</span></button><ChevronRight size={14}/><span>Desafio {level.number} de {challengeCount}</span><span className="game-grade-badge">Nível {world.displayNumber}</span><Stars count={team.progress[level.id]?.stars || 0}/></div>
     <div className="game-title"><div><span className="eyebrow">{level.concept}</span><h1>{level.title}</h1></div><div className="flex items-center gap-2"><button className="btn secondary small" onClick={() => setDemo(true)}><Play size={15}/>Como jogar</button></div></div>
     <div className="mission-bar"><div className="visual-mission"><Robot skin={team.avatar}/><ArrowRight size={21}/>{board.crystals.length > 0 && <><Gem/><ArrowRight size={21}/></>}<Flag size={25} fill="currentColor"/></div><p>{level.instruction}</p><span className="mission-label">SUA MISSÃO</span></div>
     <div className="game-layout"><section className="game-stage"><div className="board-toolbar"><span><span className="status-dot"/>{level.boards.length > 1 ? `O mesmo código, ${level.boards.length} caminhos` : level.kind === 'maze' ? 'Encontre a menor rota' : level.kind === 'actions' ? 'Explore, aja e chegue à bandeira' : 'O caminho do Bip'}</span>{level.kind === 'maze' ? <div className="crystal-counter move-counter">Passos: {frame.moves}<span>/ {board.shortestMoves}</span></div> : level.kind === 'actions' ? <div className="crystal-counter"><PackageOpen/>{(frame.itemsPicked || []).length}<span>/ {board.items.length} itens</span></div> : <div className="crystal-counter"><Gem/>{frame.collected.length}<span>/ {board.crystals.length}</span></div>}</div>
