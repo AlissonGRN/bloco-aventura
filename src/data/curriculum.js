@@ -37,14 +37,15 @@ export const WORLDS = [
   { id: 9, name: 'Expedição das ações', short: 'Expedição', topic: 'Sequências, ações e interação', description: 'Além de andar, ensine Bip a pegar itens, saltar buracos, afastar criaturas e abrir portas.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Planejar ações no momento certo, combinar comandos com deslocamentos e reutilizar sequências.', teacher: 'Neste mundo, algumas casas têm itens, criaturas, portas e buracos. Pegar, atacar/afastar e abrir agem na casa indicada; pular atravessa exatamente um buraco. Peça que a equipe preveja o resultado de cada comando.', trails: makeTrails(['Pegar e levar', 'Pular com cuidado', 'Abrir passagem', 'Combinar as ações'], ['Quando Bip precisa pegar o item: antes ou depois de andar até ele?', 'Qual casa está faltando no caminho e como Bip pode atravessá-la?', 'O que precisa acontecer antes de a porta deixar Bip passar?', 'Como dividir e testar uma sequência maior?']) },
   { id: 10, name: 'Oficina das ações', short: 'Ações', topic: 'Ações, setas e repetições', description: 'Ative botões, abra passagens e descubra como simplificar seus planos.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Este mundo começa com ações novas e avança das setas para repetir. O professor pode recomendar esta trilha para equipes que ainda estão conhecendo os comandos.', teacher: 'As missões já começam com botões e passagens que precisam ser ativadas: não é necessário repetir o tutorial de andar até a bandeira. Nas primeiras etapas, use setas e ativar; depois, identifique trechos repetidos para escrever o plano com menos blocos.', trails: makeTrails(['Ativar e avançar', 'Botões pelo caminho', 'Repetir para planejar', 'Oficina de soluções'], ['Qual botão libera a passagem?', 'Quando Bip precisa ativar o botão?', 'Que trecho do plano se repete?', 'Como as repetições deixam o programa menor?']).map((trail, index) => ({ ...trail, focus: ['Ações + setas · introdutória', 'Ações · intermediária', 'Repetir · intermediária', 'Ações + repetir · avançada'][index] })) },
   { id: 11, name: 'Trilha dos imprevistos', short: 'Imprevistos', topic: 'Setas, repetir, decisões e funções', description: 'Planeje com repetir desde o começo e prepare Bip para caminhos que mudam.', color: '#8265a7', soft: '#eee8f6', type: 'maze-surprise', icon: 'grid', skill: 'Esta trilha começa combinando setas e repetir; depois introduz se/senão e Meu bloco. Pode ser recomendada para equipes que já conhecem as repetições.', teacher: 'As primeiras missões já exigem organizar as setas dentro de repetir, sem reapresentar o básico. Mais adiante, o cenário muda e o mesmo programa precisa decidir entre caminhos; no final, Meu bloco ajuda a reutilizar estratégias. Indique esta trilha para equipes que já dominam setas e repetir.', trails: makeTrails(['Setas e repetir', 'Caminhos que mudam', 'Decidir e repetir', 'Funções no imprevisto'], ['Que sequência de setas se repete no mapa?', 'O que mudou no cenário e como perceberam?', 'Como combinar a decisão com repetir?', 'Que estratégia vale a pena guardar em Meu bloco?']).map((trail, index) => ({ ...trail, focus: ['Setas + repetir · intermediária', 'Se/senão · avançada', 'Decisão + repetir · avançada', 'Funções · integração'][index] })) },
-  { id: 12, name: 'Expedição dos números', short: 'Números', topic: 'Adição, subtração e depuração', description: 'Resolva desafios numéricos, divida contas em etapas e encontre erros.', color: '#478b78', soft: '#e4f3eb', type: 'math', icon: 'calculator', skill: 'Use adição e subtração para resolver problemas. Planeje a conta, separe números em partes e confira resultados como quem depura um algoritmo.', teacher: 'As missões alternam adição e subtração, problemas do cotidiano e contas com erros para corrigir. Incentive a equipe a explicar a operação escolhida, calcular por etapas e conferir se a resposta faz sentido.', trails: makeTrails(['Somar para descobrir', 'Subtrair e comparar', 'Quebrar a conta em partes', 'Detetives dos resultados'], ['Que informação vocês usaram para escolher a operação?', 'Como conferir se a diferença faz sentido?', 'Que partes menores deixam a conta mais fácil?', 'Onde está o erro e como vocês provaram?']) },
-  { id: 13, name: 'Fábrica da multiplicação', short: 'Multiplicação', topic: 'Multiplicação, padrões e algoritmos', description: 'Descubra grupos iguais, padrões e maneiras de calcular mais rápido.', color: '#b87939', soft: '#fbefd9', type: 'math', icon: 'calculator', skill: 'Represente multiplicações como grupos iguais, reconheça padrões nas tabuadas e organize cálculos em etapas.', teacher: 'As missões usam grupos iguais, padrões da tabuada, decomposição e depuração de resultados. Convide a equipe a explicar como transformou a multiplicação em partes menores e como conferiu a resposta.', trails: makeTrails(['Grupos iguais', 'Padrões da tabuada', 'Multiplicar por partes', 'Corrija e confira'], ['Quantos grupos iguais existem?', 'O que muda quando um fator aumenta?', 'Como separar um fator em partes menores?', 'Como descobrir se o resultado está errado?']) },
+
 ];
 
 // Persistent grade-number IDs stay stable, while the visible catalogue follows a
 // pedagogical path. Everyday sequencing is early; maze worlds consolidate skills.
-export const CURRICULUM_WORLD_ORDER = [1, 8, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13];
-WORLDS.sort((a, b) => CURRICULUM_WORLD_ORDER.indexOf(a.id) - CURRICULUM_WORLD_ORDER.indexOf(b.id));
+export const CURRICULUM_WORLD_ORDER = [1, 8, 2, 3, 4, 5, 6, 7, 9, 10, 11];
+// Keep WORLDS in numeric ID order because game components resolve a world by grade.
+// DISPLAY_WORLDS is only for curriculum browsing and planning lists.
+export const DISPLAY_WORLDS = CURRICULUM_WORLD_ORDER.map(id => WORLDS.find(world => world.id === id)).filter(Boolean);
 
 const seq = text => [...text].map(move);
 const dirs = ['R', 'U', 'L', 'D'];
@@ -630,125 +631,8 @@ const lateActionLevels = lateActionRoutes.map((path, index) => makeSwitchCourseL
 }));
 const eventLevels = [...actionOpeningLevels, ...switchLevels, ...intermediateLevels, ...lateActionLevels, ...mazePatternLevels, ...decisionLevels, ...advancedLevels];
 
-const mathLevels = Array.from({ length: 80 }, (_, index) => {
-  const grade = index < 40 ? 12 : 13;
-  const number = index % 40 + 1;
-  const multiplication = grade === 13;
-  const trail = Math.floor((number - 1) / 10) + 1;
-  let answer, equation, prompt, hint, strategy, discussion;
 
-  const choicesFor = value => {
-    const candidates = [value, Math.max(0, value - 2), value + 3, value + 6, value + 1];
-    const unique = [...new Set(candidates)];
-    const choices = unique.slice(0, 3);
-    if (!choices.includes(value)) choices[choices.length - 1] = value;
-    return choices.sort((a, b) => ((a * 7 + number * 3) % 17) - ((b * 7 + number * 3) % 17));
-  };
-
-  if (!multiplication) {
-    if (number <= 10) {
-      const a = 8 + (number % 8), b = 2 + ((number * 3) % 6);
-      const subtract = number % 2 === 0;
-      const left = subtract ? a + b : a;
-      const right = b;
-      equation = `${left} ${subtract ? '−' : '+'} ${right}`;
-      answer = subtract ? left - right : left + right;
-      prompt = subtract
-        ? `Bip tinha ${left} cristais e usou ${right}. Quantos sobraram? Representem o que aconteceu com uma conta.`
-        : `Bip encontrou ${left} cristais e depois mais ${right}. Quantos tem agora? Representem o que aconteceu com uma conta.`;
-      hint = subtract ? 'Comece com a quantidade inicial e retire apenas o que foi usado.' : 'Juntar duas quantidades é uma etapa do algoritmo. Estimem o total antes de calcular.';
-      strategy = 'Escolher a operação a partir das mudanças na quantidade.';
-      discussion = 'Que palavra ou pista indicou se era para juntar ou retirar?';
-    } else if (number <= 20) {
-      const a = 9 + (number % 9), b = 2 + (number % 5), c = 1 + ((number * 2) % 4);
-      const subtractAfter = number % 2 === 0;
-      answer = subtractAfter ? a + b - c : a - b + c;
-      equation = subtractAfter ? `${a} + ${b} − ${c}` : `${a} − ${b} + ${c}`;
-      prompt = subtractAfter
-        ? `O algoritmo começa com ${a}, soma ${b} e depois retira ${c}. Qual valor fica no final?`
-        : `O algoritmo começa com ${a}, retira ${b} e depois soma ${c}. Qual valor fica no final?`;
-      hint = 'Execute as instruções na ordem apresentada. Não faça a última operação antes da primeira.';
-      strategy = 'Decompor um problema em etapas e respeitar a sequência das instruções.';
-      discussion = 'O que mudaria se as instruções fossem executadas em outra ordem?';
-    } else if (number <= 30) {
-      const step = 1 + (number % 4), times = 2 + (number % 4);
-      const subtract = number % 2 === 0;
-      const start = subtract ? step * times + 3 : 3 + (number % 7);
-      answer = subtract ? start - step * times : start + step * times;
-      equation = `${start} ${subtract ? '−' : '+'} (${times} × ${step})`;
-      prompt = subtract
-        ? `Comece com ${start}. Repita ${times} vezes: retire ${step}. Qual é o valor final?`
-        : `Comece com ${start}. Repita ${times} vezes: some ${step}. Qual é o valor final?`;
-      hint = 'A repetição executa a mesma instrução o número de vezes indicado. Calcule a mudança total antes de aplicá-la.';
-      strategy = 'Rastrear um laço de repetição e calcular o efeito acumulado de cada volta.';
-      discussion = 'Como vocês evitaram perder a conta das repetições?';
-    } else {
-      const start = 10 + (number % 9), step = 2 + (number % 4), times = 2 + (number % 3);
-      const subtract = number % 2 === 0;
-      answer = subtract ? start - step * times : start + step * times;
-      const written = answer + (number % 2 ? 2 : -2);
-      equation = `${start} ${subtract ? '−' : '+'} (${times} × ${step})`;
-      prompt = `Bip começou com ${start} e repetiu ${times} vezes a instrução “${subtract ? 'retirar' : 'somar'} ${step}”. Ele anotou ${written}. Siga o algoritmo e escolha o resultado correto.`;
-      hint = 'Ignore a resposta anotada por Bip. Execute cada repetição e calcule o valor que realmente aparece no final.';
-      strategy = 'Depurar um algoritmo: separar instruções, rastrear o estado e comparar o resultado obtido com o anotado.';
-      discussion = 'Em qual etapa seria mais fácil perceber o erro?';
-    }
-  } else {
-    if (number <= 10) {
-      const groups = 2 + (number % 5), items = 2 + ((number * 2) % 8);
-      answer = groups * items;
-      equation = `${groups} × ${items}`;
-      prompt = `Bip organizou ${groups} grupos com ${items} cristais em cada grupo. Quantos cristais há ao todo?`;
-      hint = 'Conte os grupos iguais. Multiplicar é uma maneira compacta de representar a mesma quantidade somada várias vezes.';
-      strategy = 'Reconhecer grupos iguais e representar uma soma repetida com multiplicação.';
-      discussion = 'Como a multiplicação resumiu a contagem dos grupos?';
-    } else if (number <= 20) {
-      const multiplier = 3 + (number % 5), partA = 2 + (number % 4), partB = 1 + ((number * 2) % 4);
-      const items = partA + partB;
-      answer = multiplier * items;
-      equation = `${multiplier} × (${partA} + ${partB})`;
-      prompt = `Há ${multiplier} caixas. Cada caixa tem ${partA} peças vermelhas e ${partB} azuis. Calcule o total sem contar peça por peça.`;
-      hint = 'Calcule os dois tipos de peças por caixa ou multiplique cada parte e some os resultados.';
-      strategy = 'Decompor uma multiplicação em subtarefas menores e combinar os resultados.';
-      discussion = 'Qual forma de dividir a conta deixou o cálculo mais simples?';
-    } else if (number <= 30) {
-      const start = 1 + (number % 4), groups = 2 + (number % 5), items = 2 + ((number * 3) % 7);
-      answer = start + groups * items;
-      equation = `${start} + (${groups} × ${items})`;
-      prompt = `O algoritmo começa com ${start} pontos. Repita ${groups} vezes: some ${items} pontos. Qual será o total?`;
-      hint = 'Cada volta acrescenta a mesma quantidade. Calcule o acréscimo total e depois some o valor inicial.';
-      strategy = 'Rastrear uma repetição numérica e relacionar a soma repetida à multiplicação.';
-      discussion = 'Como vocês transformaram várias somas iguais em uma conta mais curta?';
-    } else {
-      const groups = 2 + (number % 5), items = 3 + (number % 6), bonus = 1 + ((number * 2) % 5);
-      const subtract = number % 2 === 0;
-      answer = subtract ? groups * items - bonus : groups * items + bonus;
-      const written = answer + (number % 2 ? 3 : -3);
-      equation = `${groups} × ${items} ${subtract ? '−' : '+'} ${bonus}`;
-      prompt = `Bip calculou ${groups} caixas com ${items} peças cada e depois ${subtract ? 'retirou' : 'adicionou'} ${bonus} peças. O programa anotou ${written}. Qual resultado o algoritmo deveria produzir?`;
-      hint = 'Resolva a quantidade das caixas primeiro; depois aplique a última instrução. A resposta anotada pode estar errada.';
-      strategy = 'Depurar um algoritmo com subtarefas: calcular grupos iguais, aplicar a mudança final e verificar o resultado.';
-      discussion = 'Que etapa vocês conferiram primeiro para encontrar o erro?';
-    }
-  }
-
-  const title = multiplication
-    ? (number <= 10 ? ['Grupos iguais', 'Caixas de peças', 'Contagem compacta', 'Multiplique os grupos'][number % 4]
-      : number <= 20 ? ['Separe para calcular', 'Partes do total', 'Duas cores de peças', 'Multiplicação por etapas'][number % 4]
-        : number <= 30 ? ['Repetir uma soma', 'Pontos acumulados', 'Laço multiplicador', 'Contagem em ciclos'][number % 4]
-          : ['Depure a fábrica', 'Confira as caixas', 'A última instrução', 'Resultado correto'][number % 4])
-    : (number <= 10 ? ['Junte e conte', 'O que sobrou?', 'Duas quantidades', 'Conta da expedição'][number % 4]
-      : number <= 20 ? ['Duas etapas', 'A ordem importa', 'Atualize o total', 'Algoritmo em partes'][number % 4]
-        : number <= 30 ? ['Repita a instrução', 'Laço de soma', 'Subtração repetida', 'Contagem de ciclos'][number % 4]
-          : ['Depure o resultado', 'Confira as etapas', 'A anotação errada', 'Rastreador de valores'][number % 4]);
-  return {
-    id: `${grade}-${number}`, grade, number, title,
-    concept: multiplication ? 'Multiplicação, decomposição e algoritmos' : 'Adição, subtração e rastreamento de algoritmos',
-    kind: 'math', operation: multiplication ? 'multiplication' : 'add-sub',
-    prompt, equation, answer, choices: choicesFor(answer), hint, strategy, trail, discussion,
-  };
-});
-export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels, ...eventLevels, ...mathLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
+export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels, ...eventLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
   const allowed = l.allowed || ['move'];
   if (!l.allowed && (l.grade >= 3 || (l.grade === 2 && l.number >= 21))) allowed.push('repeat');
   if (!l.allowed && (l.grade >= 4 || (l.grade === 3 && l.number >= 21))) allowed.push('if');
