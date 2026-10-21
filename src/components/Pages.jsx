@@ -8,7 +8,7 @@ import { SkinSelector } from './Teams';
 
 export function Dashboard({ team, proposal, onWorld, onLevel }) {
   const done = LEVELS.filter(level => team.progress[level.id]).length;
-  const stars = LEVELS.reduce((total, level) => total + (team.progress[level.id]?.stars || 0), 0);
+  const stars = Object.values(team.progress).reduce((total, result) => total + (result?.stars || 0), 0);
   const next = recommendedLevel(team);
   const proposedLevel = proposal?.level_ids?.length ? getLevel(proposal.level_ids[0]) : null;
   const proposedWorld = proposedLevel ? WORLDS.find(world => world.id === proposedLevel.grade) : null;
@@ -51,7 +51,7 @@ export function WorldMap({ world: w, team, proposal, onBack, onLevel }) {
 
 export function Achievements({ team, onExplore, onSkinChange }) {
   const complete = LEVELS.filter(level => team.progress[level.id]).length;
-  const stars = LEVELS.reduce((total, level) => total + (team.progress[level.id]?.stars || 0), 0);
+  const stars = Object.values(team.progress).reduce((total, result) => total + (result?.stars || 0), 0);
   const badges = [
     { title: 'Primeiro passo', description: 'Conclua seu primeiro desafio.', won: complete >= 1, icon: Flag, color: '#4c8966' },
     { title: 'Mente curiosa', description: 'Conclua 10 desafios.', won: complete >= 10, icon: Lightbulb, color: '#c69b38' },
