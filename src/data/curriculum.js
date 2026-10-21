@@ -42,7 +42,7 @@ export const WORLDS = [
 
 // Persistent grade-number IDs stay stable, while the visible catalogue follows a
 // pedagogical path. Everyday sequencing is early; maze worlds consolidate skills.
-export const CURRICULUM_WORLD_ORDER = [1, 8, 2, 3, 4, 5, 6, 7, 9, 10, 11];
+export const CURRICULUM_WORLD_ORDER = [1, 8, 2, 3, 4, 5, 6, 9, 10, 11];
 // Keep WORLDS in numeric ID order: persistent level IDs still use grades 1–11.
 // Display numbers communicate the new learning sequence without changing saved IDs.
 export const DISPLAY_WORLDS = CURRICULUM_WORLD_ORDER.map((id, index) => {
@@ -67,14 +67,10 @@ function add(grade, number, title, path, solution, options = {}) {
 const gardenPaths = ['UUR', 'RRD', 'DLL', 'LLUU', 'DDRR', 'RUUR', 'URRU', 'RRDLL', 'UURDD', 'RRUULLD', 'RUURR', 'UURRD', 'RRDDLL', 'LLURR', 'DDRUU', 'RRUUUL', 'UURRDL', 'LLDDRR', 'RRDLLU', 'UURRDDLL', 'RRRUU', 'UUURR', 'RRUULLUU', 'UURRDDRR', 'DDRRUURR', 'LLUURRU', 'RRDDLLDD', 'UURRUULL', 'RRUULLUURR', 'UURRDDLLDDRR'];
 const gardenNames = ['Suba até a curva', 'Hora de descer', 'Olhe para a esquerda', 'Um canto do jardim', 'Uma curva diferente', 'Siga os brilhos', 'Troque a ordem', 'Contorne as flores', 'Suba e volte', 'Quatro direções', 'Uma seta trocada', 'O cristal esquecido', 'Conserte a volta', 'Um começo diferente', 'Bip se confundiu', 'A curva errada', 'Revise o plano', 'Gire sua ideia', 'Encontre a primeira seta', 'Uma volta bem pensada', 'A trilha comprida', 'Primeiro lá em cima', 'Duas curvas iguais', 'A ponte do jardim', 'Uma nova saída', 'A volta das flores', 'Uma grande descida', 'Zigue-zague verde', 'O passeio dos cristais', 'Expedição completa'];
 gardenPaths.forEach((p, i) => add(1, i + 11, gardenNames[i], p, seq(p), i >= 10 && i < 20 ? { kind: 'debug', starter: broken(p), concept: 'Observar e corrigir sequências' } : {}));
-const islandPaths = ['RRUURR', 'UURRDDRR', 'RRDDLLUU', 'UURRUULL', 'LLDDRRDD', 'RRUULLUURR', 'DDRRUURRUU', 'RRRUUULLDD', 'UURRDDRRUU', 'RRUUULLUURR'];
-islandPaths.forEach((p, i) => add(2, 11 + i, ['Rota da praia', 'Depois da ponte', 'Contorne a lagoa', 'O alto da ilha', 'Vire o mapa', 'Busque os cristais', 'Plano em duas partes', 'Volta pelo mirante', 'O caminho esquecido', 'Grande passeio'][i], p, seq(p), i % 3 === 2 ? { kind: 'debug', starter: broken(p) } : {}));
 const loopPatterns = [['R', 4], ['U', 4], ['D', 3], ['L', 4], ['RU', 3], ['RD', 3], ['LU', 3], ['RRU', 2], ['RUU', 2], ['RRUU', 2]];
 loopPatterns.forEach(([p, n], i) => {
   const path = p.repeat(n), sol = [repeat(n, seq(p))];
-  add(2, 21 + i, ['Um comando repetido', 'Repetir para subir', 'Repetir para descer', 'Voltar em quatro passos', 'O padrão da escada', 'Uma escada para baixo', 'O padrão espelhado', 'Dois passos e uma curva', 'Subidas em dobro', 'Um padrão de quatro'][i], path, sol, { required: ['repeat'], concept: 'Sequências e primeiras repetições', instruction: 'Descubra a parte que se repete e coloque essa sequência dentro de repetir.', hint: 'Monte a parte repetida dentro do bloco amarelo e escolha quantas vezes ela acontece.' });
-  const turned = rotPath(path, 1), solution = rotBlocks(sol, 1);
-  add(2, 31 + i, ['Encurte a caminhada', 'Menos setas, mesma ideia', 'O padrão economiza', 'Uma sequência menor', 'A escada compacta', 'Repetir sem se perder', 'Duas ideias combinadas', 'O plano da ponte', 'Economize os blocos', 'Mestre da ilha'][i], turned, solution, { kind: 'optimize', starter: seq(turned), required: ['repeat'], budget: countBlocks(solution), concept: 'Planejamento, repetição e otimização' });
+  add(2, 11 + i, ['Repetir os passos', 'Subir em ciclos', 'Descer em ciclos', 'O retorno organizado', 'Padrão de escada', 'Escada invertida', 'Duas setas que voltam', 'Dois passos e uma curva', 'Subidas agrupadas', 'O padrão completo'][i], path, sol, { required: ['repeat'], concept: 'Introdução à repetição', instruction: 'Encontre o menor trecho que se repete e coloque-o dentro do bloco repetir.', hint: 'Monte o trecho dentro do bloco amarelo e escolha quantas vezes executá-lo.' });
 });
 const patterns = [['RU', 4], ['RRD', 3], ['UUL', 3], ['DDR', 3], ['LLUU', 2], ['RRUU', 3], ['RRRU', 2], ['DLL', 3], ['UURR', 3], ['RRDD', 3]];
 patterns.forEach(([p, n], i) => {
@@ -98,19 +94,6 @@ for (let i = 0; i < 3; i++) {
   const paths = three[i + 2];
   add(4, 38 + i, ['Um bloco com uma escolha', 'Função que se adapta', 'Guardião das ideias'][i], paths[0], [repeat(paths[0].length, [call()])], { kind: 'compose', boards: paths.map(p => boardFromPath(p)), definition: [choose()], required: ['call', 'if'], concept: 'Condições, repetições e funções', instruction: 'Crie um bloco que decide. Use sua função para resolver todos os cenários.' });
 }
-patterns.forEach(([p, n], i) => {
-  const path = p.repeat(n), def = seq(p), sol = [repeat(n, [call()])];
-  add(5, 11 + i, ['Divida a escada', 'A peça da ponte', 'Invenção espelhada', 'Um plano em partes', 'Compare duas soluções', 'A função econômica', 'Crie uma peça maior', 'Reutilize a curva', 'Duas formas de resolver', 'Arquiteto de caminhos'][i], path, sol, { kind: i % 2 ? 'optimize' : 'compose', definition: def, required: ['call'], ...(i % 2 ? { budget: countBlocks(sol) + countBlocks(def), starter: seq(path) } : {}), concept: 'Decomposição, padrões e funções' });
-});
-three.forEach((paths, i) => {
-  const turns = i % 4, def = rotBlocks([choose()], turns), sol = [repeat(paths[0].length, [call()])];
-  add(5, 21 + i, ['Função com defeito', 'O teste da decisão', 'Um cenário esquecido', 'Mude só uma peça', 'Depure por partes', 'Melhore sua regra', 'Conferir para confiar', 'Três testes, uma função', 'Corrija e explique', 'Laboratório concluído'][i], rotPath(paths[0], turns), sol, { kind: 'debug', boards: paths.map(p => boardFromPath(rotPath(p, turns))), definition: def, starter: [repeat(Math.max(2, paths[0].length - 1), [call()])], starterDefinition: def, required: ['call', 'if'], concept: 'Depuração, repetição, condições e funções' });
-});
-three.forEach((paths, i) => {
-  const turns = (i + 1) % 4, withFunction = i % 2 === 1, def = withFunction ? rotBlocks([choose()], turns) : [];
-  const sol = withFunction ? [repeat(paths[0].length, [call()])] : rotBlocks([repeat(paths[0].length, [choose()])], turns);
-  add(5, 31 + i, ['A escolha é de vocês', 'Invente sua estratégia', 'O caminho surpresa', 'Código em equipe', 'Poucas peças, muitas rotas', 'O plano reutilizável', 'Uma regra para explorar', 'Integre as descobertas', 'A expedição final', 'Inventores do futuro'][i], rotPath(paths[0], turns), sol, { kind: 'compose', boards: paths.map(p => boardFromPath(rotPath(p, turns))), definition: def, required: withFunction ? ['call', 'repeat', 'if'] : ['repeat', 'if'], budget: countBlocks(sol) + countBlocks(def), concept: 'Integração: planejar, decompor, testar e melhorar', instruction: 'Resolva os cenários com o mesmo programa e respeite a meta de blocos.' });
-});
 
 const mazeDirections = ['R', 'D', 'L', 'U'];
 function mazeBoard(variant) {
@@ -157,8 +140,8 @@ const mazeTitles = [
 for (const grade of [6, 7]) {
   for (let number = 1; number <= MISSIONS_PER_LEVEL; number++) {
     const board = mazeBoard(number - 1), path = board.solutionPath;
-    let solution = grade === 6 && number < 21 ? path.map(move) : compressPath(path), definition = [], required = grade === 6 ? (number >= 21 ? ['repeat'] : []) : ['repeat'];
-    let allowed = grade === 6 ? (number >= 21 ? ['move', 'repeat'] : ['move']) : (number >= 31 ? ['move', 'repeat', 'call'] : ['move', 'repeat']);
+    let solution = compressPath(path), definition = [], required = ['repeat'];
+    let allowed = ['move', 'repeat'];
     if (grade === 7 && number >= 31) {
       const first = solution.shift();
       definition = first.type === 'repeat' ? [first] : [first];
@@ -166,7 +149,7 @@ for (const grade of [6, 7]) {
       required = ['repeat', 'call'];
     }
     const concept = grade === 6
-      ? number < 21 ? 'Setas e planejamento de rotas' : 'Repetições e caminho mínimo'
+      ? 'Transferência: repetir em labirintos com paredes'
       : number < 31 ? 'Repetições e caminhos mínimos' : 'Decomposição e funções';
     extra.push({ id: `${grade}-${number}`, grade, number, title: mazeTitles[grade - 6][number - 1], concept, instruction: `Chegue à bandeira pelo menor caminho. Há ${board.shortestMoves} passos na rota mais curta; evite as paredes.`, hint: grade === 6 && number < 21 ? 'Conte os passos e procure uma rota sem encostar nas paredes.' : grade === 7 && number >= 31 ? 'Guarde o primeiro trecho em Meu bloco e use F no programa. Confirme que Bip percorre a menor rota.' : 'Agrupe os passos repetidos em um bloco amarelo. Compare a quantidade de passos com o caminho mais curto.', boards: [board], solution, definition, required, allowed, kind: 'maze', maxBlocks: 40, shortestPath: true });
   }
@@ -282,8 +265,8 @@ const jumpingRoutes = [
   'RRJRUUR', 'RRUJRRR', 'RDRJRRU', 'RRUJRDRR', 'RURRUJRR',
 ];
 const advancedRoutes = [
-  'RRURRRDRR', 'RRUURRDDRR', 'RRDDRRUURR', 'RURRRDRRR', 'RRURRURRDD',
-  'RRDRRUURRR', 'RURRDRRRU', 'RRRUURRDD', 'RRDRURRRDD', 'RRUURDDRR',
+  'RRUURRDDRR', 'RRDDRRUURRR', 'RRDURRRUUD', 'RURRRDRRR', 'RRURRURRDD',
+  'RRDRRUURRR', 'RURRDRRRU', 'RRRUURRDD', 'RRDRURRRDD', 'RURRDDRRU',
 ];
 function createActionBoard(route) {
   const start = { x: 0, y: 3 }, positions = [start], gaps = [];
@@ -636,7 +619,7 @@ const lateActionLevels = lateActionRoutes.map((path, index) => makeSwitchCourseL
 const eventLevels = [...actionOpeningLevels, ...switchLevels, ...intermediateLevels, ...lateActionLevels, ...mazePatternLevels, ...decisionLevels, ...advancedLevels];
 
 
-const ACTIVE_CHALLENGE_COUNTS = Object.freeze({ 1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 20, 8: 10, 9: 30, 10: 30, 11: 20 });
+const ACTIVE_CHALLENGE_COUNTS = Object.freeze({ 1: 10, 2: 20, 3: 10, 4: 20, 5: 20, 6: 20, 7: 0, 8: 10, 9: 30, 10: 30, 11: 20 });
 export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels, ...eventLevels]
   .filter(level => level.number <= (ACTIVE_CHALLENGE_COUNTS[level.grade] || 0))
   .sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
