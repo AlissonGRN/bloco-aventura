@@ -4,7 +4,7 @@ Aplicação em **React 19 + Vite + Tailwind CSS 4**, em português, para aulas d
 
 ## O que já funciona
 
-- **10 mundos de aprendizagem e 200 desafios ativos**, distribuídos por trilhas de dez. Cada mundo tem apenas a quantidade necessária para ensinar e consolidar seu objetivo.
+- **10 mundos de aprendizagem e 170 desafios ativos**, distribuídos por trilhas de dez. Cada mundo tem apenas a quantidade necessária para ensinar e consolidar seu objetivo.
 - Sequências, orientação espacial, reconhecimento de padrões, repetição, condições, funções, depuração, otimização e decomposição introduzidos progressivamente.
 - Equipes individuais, duplas, trios e quartetos; primeiro nome dos alunos, avatar e escolha de turma.
 - Troca de equipes no mesmo computador, com progresso independente e migração dos dados da versão anterior.
@@ -55,8 +55,8 @@ npm run preview
 | 3. Ilha dos caminhos | Planejar rotas maiores, prever resultados e depurar sequências | 20 / 2 |
 | 4. Vale dos padrões | Introduzir `repetir` e reconhecer padrões em movimentos | 10 / 1 |
 | 5. Floresta das escolhas | Usar `se/senão` em dois ou três cenários | 20 / 2 |
-| 6. Estação das invenções | Criar funções, chamá-las, e combinar função com repetição | 30 / 3 |
-| 7. Labirinto com obstáculos | Transferir `repetir` para mapas com paredes e verificar rotas curtas | 20 / 2 |
+| 6. Estação das invenções | Criar uma função, chamá-la e reutilizá-la | 10 / 1 |
+| 7. Labirinto com obstáculos | Transferir `repetir` para mapas com paredes e verificar rotas curtas | 10 / 1 |
 | 8. Expedição das ações | Combinar deslocamento com pegar, pular, atacar e abrir | 30 / 3 |
 | 9. Oficina das ações | Ativar botões, organizar movimentos e planejar duas passagens | 30 / 3 |
 | 10. Trilha dos imprevistos | Resolver mapas mutáveis com condições e, depois, com repetição | 20 / 2 |
@@ -87,7 +87,7 @@ A presença desses arquivos não significa que exista um banco remoto configurad
 
 ## Estrutura
 
-- `src/data/curriculum.js`: catálogo ativo de 200 desafios, ordem pedagógica e compatibilidade com IDs anteriores.
+- `src/data/curriculum.js`: catálogo ativo de 170 desafios, ordem pedagógica e compatibilidade com IDs anteriores.
 - `src/data/baseCurriculum.js`: as 50 missões originais e construtores de tabuleiro.
 - `src/game/engine.js`: interpretação segura e avaliação de todos os cenários.
 - `src/components/BlockEditor.jsx`: blocos aninhados, arraste/toque, reordenação e desfazer.
