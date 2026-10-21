@@ -82,6 +82,12 @@ const track3 = loopSpecs.map(([name, p, solution], i) => level(3, i + 1, name, p
   required: ['repeat'],
   instruction: 'Encontre o padrão do caminho e use o bloco repetir para chegar à bandeira.',
   hint: 'Coloque dentro do repetir a menor sequência que aparece várias vezes. Escolha quantas vezes ela vai acontecer.',
+  ...(i === 9 ? {
+    kind: 'optimize',
+    starter: seq(p),
+    budget: countBlocks(solution),
+    instruction: 'O programa funciona, mas está cheio de setas. Reescreva o plano com repetir e respeite o limite de blocos.',
+  } : {}),
 }));
 
 const conditionPaths = [
