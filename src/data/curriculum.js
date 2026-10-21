@@ -96,8 +96,10 @@ const mazeDirections = ['R', 'D', 'L', 'U'];
 function mazeBoard(variant) {
   const cols = 8, rows = 7, start = { x: 0, y: variant % 2 ? 6 : 0 }, goal = { x: 7, y: variant % 2 ? 0 : 6 };
   const walls = [];
-  const gateOptions = [1, 3, 5];
-  const gateA = gateOptions[variant % 3], gateB = gateOptions[Math.floor(variant / 3) % 3];
+  // Use a distinct pair of gate rows per active mission instead of cycling nine maps.
+  const gateA = variant % rows;
+  const rawGateB = Math.floor(variant / rows) % (rows - 1);
+  const gateB = rawGateB >= gateA ? rawGateB + 1 : rawGateB;
   for (let y = 0; y < rows; y++) {
     if (y !== gateA) walls.push({ x: 2, y });
     if (y !== gateB) walls.push({ x: 5, y });
