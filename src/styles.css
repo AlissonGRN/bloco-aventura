@@ -5110,35 +5110,6 @@ textarea:focus-visible { outline: 3px solid #b1d3b6; outline-offset: 2px; }
 }
 
 
-.math-game { width: min(100%, 920px); margin: 0 auto; padding-bottom: 32px; }
-.math-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin: 26px 0 22px; }
-.math-heading h1 { margin: 7px 0 9px; color: #3d5b48; font-size: clamp(27px, 4vw, 38px); }
-.math-heading p { max-width: 640px; color: #7c8777; font-size: 14px; line-height: 1.65; }
-.math-scene { display: grid; width: 96px; height: 96px; flex: 0 0 96px; place-items: center; border: 1px solid color-mix(in srgb, var(--world) 25%, white); border-radius: 24px; background: var(--world-soft); color: var(--world); }
-.math-progress { display: flex; align-items: center; gap: 12px; margin: 0 0 20px; color: #778472; font-size: 12px; }
-.math-progress .progress-track { flex: 1; margin: 0; }
-.math-card { padding: clamp(18px, 3vw, 30px); border: 1px solid #e5e8dc; border-radius: 20px; background: #fffefa; box-shadow: 0 8px 28px #3545230c; }
-.math-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
-.math-card-top span { color: #75836e; font-size: 11px; }
-.math-equation { display: grid; min-height: 106px; place-items: center; margin: 16px 0 22px; border: 1px dashed color-mix(in srgb, var(--world) 35%, white); border-radius: 17px; background: var(--world-soft); color: var(--world); font-size: clamp(35px, 6vw, 54px); font-weight: 800; letter-spacing: -.04em; }
-.math-question { max-width: 700px; margin: 0 auto; color: #455849; font-size: 17px; font-weight: 650; line-height: 1.65; text-align: center; }
-.math-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 22px 0 16px; }
-.math-choice { min-height: 76px; border: 1px solid #e0e7db; border-radius: 14px; background: #fff; color: #3f5947; font-size: 25px; font-weight: 750; }
-.math-choice:hover:not(:disabled) { border-color: var(--world); background: var(--world-soft); transform: translateY(-2px); }
-.math-choice.selected { border-color: var(--world); background: var(--world-soft); box-shadow: 0 0 0 2px color-mix(in srgb, var(--world) 18%, white); }
-.math-choice:disabled { cursor: default; }
-.math-feedback { margin: 12px 0 0; padding: 13px 15px; border-radius: 12px; background: #f0f6ec; color: #4f7351; font-size: 13px; line-height: 1.55; }
-.math-feedback.error { background: #fff3e6; color: #94652e; }
-.math-plan { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 17px; }
-.math-plan > div { display: flex; align-items: flex-start; gap: 8px; padding: 12px; border: 1px solid #e7eadf; border-radius: 12px; background: #fafbf6; }
-.math-plan b { display: grid; width: 24px; height: 24px; flex: 0 0 24px; place-items: center; border-radius: 8px; background: var(--world-soft); color: var(--world); font-size: 11px; }
-.math-plan span { color: #7a8574; font-size: 11px; line-height: 1.45; }
-.math-plan strong { display: block; margin-bottom: 3px; color: #4c5f4b; font-size: 11px; }
-.math-hint { display: flex; align-items: flex-start; gap: 10px; margin: 16px 0; padding: 13px 15px; border: 1px solid #e8e4ce; border-radius: 13px; background: #fffaf0; color: #9a803e; }
-.math-hint > span { color: #7e755b; font-size: 12px; line-height: 1.5; }
-.math-hint strong { display: block; margin-bottom: 3px; color: #846b2d; font-size: 12px; }
-.math-discussion { color: #818979; font-size: 12px; line-height: 1.6; }
-@media (max-width: 700px) { .math-heading { gap: 10px; } .math-scene { width: 65px; height: 65px; flex-basis: 65px; border-radius: 17px; } .math-scene svg { width: 30px; } .math-choices { gap: 7px; } .math-choice { min-height: 62px; font-size: 21px; } .math-plan { grid-template-columns: 1fr; } .math-plan > div { padding: 10px 12px; } .math-question { font-size: 15px; } }
 
 
 /* Atividades propostas pelo professor */
