@@ -70,7 +70,10 @@ gardenPaths.forEach((p, i) => add(1, i + 11, gardenNames[i], p, seq(p), i >= 10 
 const loopPatterns = [['R', 4], ['U', 4], ['D', 3], ['L', 4], ['RU', 3], ['RD', 3], ['LU', 3], ['RRU', 2], ['RUU', 2], ['RRUU', 2]];
 loopPatterns.forEach(([p, n], i) => {
   const path = p.repeat(n), sol = [repeat(n, seq(p))];
-  add(2, 11 + i, ['Repetir os passos', 'Subir em ciclos', 'Descer em ciclos', 'O retorno organizado', 'Padrão de escada', 'Escada invertida', 'Duas setas que voltam', 'Dois passos e uma curva', 'Subidas agrupadas', 'O padrão completo'][i], path, sol, { required: ['repeat'], concept: 'Introdução à repetição', instruction: 'Encontre o menor trecho que se repete e coloque-o dentro do bloco repetir.', hint: 'Monte o trecho dentro do bloco amarelo e escolha quantas vezes executá-lo.' });
+  const options = i === 9
+    ? { kind: 'optimize', starter: seq(path), budget: countBlocks(sol), instruction: 'O programa funciona, mas usa muitas setas. Reescreva-o com repetir e use no máximo o limite indicado.' }
+    : {};
+  add(2, 11 + i, ['Repetir os passos', 'Subir em ciclos', 'Descer em ciclos', 'O retorno organizado', 'Padrão de escada', 'Escada invertida', 'Duas setas que voltam', 'Dois passos e uma curva', 'Subidas agrupadas', 'O padrão completo'][i], path, sol, { required: ['repeat'], concept: 'Introdução à repetição', instruction: 'Encontre o menor trecho que se repete e coloque-o dentro do bloco repetir.', hint: 'Monte o trecho dentro do bloco amarelo e escolha quantas vezes executá-lo.', ...options });
 });
 const patterns = [['RU', 4], ['RRD', 3], ['UUL', 3], ['DDR', 3], ['LLUU', 2], ['RRUU', 3], ['RRRU', 2], ['DLL', 3], ['UURR', 3], ['RRDD', 3]];
 patterns.forEach(([p, n], i) => {
