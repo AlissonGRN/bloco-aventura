@@ -112,8 +112,9 @@ test('Tree editor changes only the selected nested list', () => {
 
 
 test('Progression introduces loops, conditions and functions in distinct worlds', () => {
-  assert.ok(getLevel('2-11').required.includes('repeat'));
-  assert.equal(getLevel('2-20').kind, 'optimize');
+  assert.equal(getLevel('2-11').required.includes('repeat'), false);
+  assert.equal(getLevel('2-13').kind, 'debug');
+  assert.equal(getLevel('3-10').kind, 'optimize');
   assert.ok(getLevel('3-1').required.includes('repeat'));
   assert.ok(getLevel('4-1').required.includes('if'));
   assert.ok(getLevel('5-11').required.includes('call'));
@@ -126,7 +127,7 @@ test('Progression introduces loops, conditions and functions in distinct worlds'
   }
 });
 test('Optimization budgets are enforced even when the path is solved', () => {
-  const l = getLevel('2-20');
+  const l = getLevel('3-10');
   const expanded = l.starter;
   assert.match(simulate({...l,required:[]}, expanded).failure,/simplifique/);
   assert.equal(evaluateAll(l,l.solution,l.definition).success,true);
