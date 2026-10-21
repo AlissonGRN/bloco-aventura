@@ -170,12 +170,18 @@ test('Teacher password gate, class filter, reward and logout persist correctly',
   await click(button('Skins'));
   await click(document.querySelectorAll('.teacher-skin-card button')[20]);
   assert.ok(readSave().teams[0].bonusSkins.includes(20),'the teacher can grant a specific skin to the selected team');
+  await click(document.querySelectorAll('.teacher-skin-card button')[24]);
+  assert.ok(readSave().teams[0].bonusSkins.includes(24),'the teacher can grant a new exclusive skin to the selected team');
   await click(button('Fechar')); await click(button('Sair do painel'));
   assert.equal(document.querySelector('.team-progress-table'),null);
   await click(button('Conquistas')); assert.match(document.querySelector('.sticker-album').textContent,/Não desistiu/);
   const giftedSkin=document.querySelector('[aria-label="Skin Fada das Engrenagens"]');
   assert.ok(giftedSkin && !giftedSkin.disabled,'the selected team can equip a skin granted by the teacher');
   await click(giftedSkin); assert.equal(readSave().teams[0].avatar,20);
+  const unicornSkin = [...document.querySelectorAll('.skin-option')].find(item => item.textContent.includes('Unicórnio Algodão Doce'));
+  assert.ok(unicornSkin && !unicornSkin.disabled, 'a teacher-granted exclusive skin is available to its team');
+  await click(unicornSkin);
+  assert.equal(readSave().teams[0].avatar,24);
   await click(button('Espaço do professor'));
   for(const el of document.querySelectorAll('.teacher-login input')) await change(el,'professor-test-42');
   await act(async()=>{ document.querySelector('.teacher-login form').dispatchEvent(new window.Event('submit',{bubbles:true,cancelable:true})); await new Promise(resolve=>setTimeout(resolve,2500)); });
