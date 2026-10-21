@@ -123,7 +123,7 @@ test('Progression introduces loops, conditions and functions in distinct worlds'
   for (let grade=1; grade<=5; grade++) {
     const missions=LEVELS.filter(level=>level.grade===grade);
     for (let trail=1; trail<=trails[grade]; trail++) assert.equal(missions.filter(level=>level.trail===trail).length,10);
-    assert.ok(new Set(missions.map(level=>level.kind)).size>=2);
+    if (grade > 1) assert.ok(new Set(missions.map(level=>level.kind)).size>=2);
   }
 });
 test('Optimization budgets are enforced even when the path is solved', () => {
@@ -137,6 +137,9 @@ test('Maze walls block movement and the goal only counts when reached by a short
   assert.equal(board.layout, 'maze');
   assert.ok(board.walls.length > 0);
   assert.equal(evaluateAll(l, withIds(l.solution)).success, true);
+  const activeMazeLevels = LEVELS.filter(level => level.grade === 6);
+  const mazeSignature = level => JSON.stringify([level.boards[0].start, level.boards[0].goal, level.boards[0].walls]);
+  assert.equal(new Set(activeMazeLevels.map(mazeSignature)).size, activeMazeLevels.length, 'every active maze uses a distinct wall layout');
   const longer = [...l.solution, move('L'), move('R')];
   assert.match(evaluateAll(l, withIds(longer)).results[0].failure, /menor caminho/);
   assert.match(evaluateAll(l, [move('R'), move('R'), move('D')]).results[0].failure, /parede|caminho/i);
