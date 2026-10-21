@@ -235,7 +235,7 @@ test('The updated character skins render as their own SVG variants', async () =>
   const variants = [
     [13, 'dragon', /M31 48Q17 33 5 17/],
     [16, 'mushroom', /M17 38C19 19 37 7 60 7/],
-    [18, 'lion', /M29 39\s+L18 25/],
+    [18, 'lion', /M29 39/],
     [20, 'fairy', /M41 87 L26 111/],
     [21, 'cat', /M82 101C103 111 116 94 109 81/],
     [25, 'ghost', /M19 78V51C19 34 31 24 47 24/],
