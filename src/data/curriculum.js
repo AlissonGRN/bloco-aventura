@@ -35,8 +35,8 @@ export const WORLDS = [
   { id: 7, name: 'Labirinto dos padrões', short: 'Padrões', topic: 'Repetições, decomposição e funções', description: 'Use padrões para atravessar mapas cheios de paredes.', color: '#765c99', soft: '#eee7f6', type: 'maze-loops', icon: 'blocks', skill: 'Aplicar repetir em labirintos: identificar trechos recorrentes, contornar paredes e comparar rotas curtas.', teacher: 'A turma já conhece repetir em caminhos simples. Aqui o desafio é transferir essa ideia para mapas com paredes: identificar padrões que respeitem o espaço disponível e conferir se a rota continua sendo a menor. As funções já foram apresentadas no mundo anterior e não precisam ser reapresentadas aqui.', trails: makeTrails(['Padrões no labirinto', 'Rotas com paredes'], ['Que sequência se repete sem atravessar uma parede?', 'Como conferir se a rota é curta e se o programa usa repetir?']) },
   { id: 8, name: 'Algoritmos do dia a dia', short: 'Algoritmos', topic: 'Algoritmos, decomposição e depuração', description: 'Coloque instruções simples na ordem certa e teste sua lógica.', color: '#508a72', soft: '#e4f2e9', type: 'sequence-words', icon: 'sequence', skill: 'Ler instruções, decompor uma rotina, comparar dependências entre etapas e corrigir sequências.', teacher: 'Antes de mover os cartões, leiam as ações e expliquem quais dependem umas das outras. Compare ordens alternativas e procure uma sequência válida.', trails: makeTrails(['Instruções em ordem', 'Rotinas e dependências', 'Corrija a sequência', 'Desafios de lógica'], ['Qual instrução precisa vir primeiro?', 'Que etapa depende do que veio antes?', 'Qual cartão está fora do lugar? Por quê?', 'Existe mais de uma ordem que funciona?']) },
   { id: 9, name: 'Expedição das ações', short: 'Expedição', topic: 'Sequências, ações e interação', description: 'Além de andar, ensine Bip a pegar itens, saltar buracos, afastar criaturas e abrir portas.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Planejar ações no momento certo, combinar comandos com deslocamentos e reutilizar sequências.', teacher: 'Neste mundo, algumas casas têm itens, criaturas, portas e buracos. Pegar, atacar/afastar e abrir agem na casa indicada; pular atravessa exatamente um buraco. Peça que a equipe preveja o resultado de cada comando.', trails: makeTrails(['Pegar e levar', 'Pular com cuidado', 'Abrir passagem', 'Combinar as ações'], ['Quando Bip precisa pegar o item: antes ou depois de andar até ele?', 'Qual casa está faltando no caminho e como Bip pode atravessá-la?', 'O que precisa acontecer antes de a porta deixar Bip passar?', 'Como dividir e testar uma sequência maior?']) },
-  { id: 10, name: 'Oficina das ações', short: 'Ações', topic: 'Ações, setas e repetições', description: 'Ative botões, abra passagens e descubra como simplificar seus planos.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Este mundo começa com ações novas e avança das setas para repetir. O professor pode recomendar esta trilha para equipes que ainda estão conhecendo os comandos.', teacher: 'As missões já começam com botões e passagens que precisam ser ativadas: não é necessário repetir o tutorial de andar até a bandeira. Nas primeiras etapas, use setas e ativar; depois, identifique trechos repetidos para escrever o plano com menos blocos.', trails: makeTrails(['Ativar e avançar', 'Botões pelo caminho', 'Repetir para planejar', 'Oficina de soluções'], ['Qual botão libera a passagem?', 'Quando Bip precisa ativar o botão?', 'Que trecho do plano se repete?', 'Como as repetições deixam o programa menor?']).map((trail, index) => ({ ...trail, focus: ['Ações + setas · introdutória', 'Ações · intermediária', 'Repetir · intermediária', 'Ações + repetir · avançada'][index] })) },
-  { id: 11, name: 'Trilha dos imprevistos', short: 'Imprevistos', topic: 'Setas, repetir, decisões e funções', description: 'Planeje com repetir desde o começo e prepare Bip para caminhos que mudam.', color: '#8265a7', soft: '#eee8f6', type: 'maze-surprise', icon: 'grid', skill: 'Esta trilha começa combinando setas e repetir; depois introduz se/senão e Meu bloco. Pode ser recomendada para equipes que já conhecem as repetições.', teacher: 'As primeiras missões já exigem organizar as setas dentro de repetir, sem reapresentar o básico. Mais adiante, o cenário muda e o mesmo programa precisa decidir entre caminhos; no final, Meu bloco ajuda a reutilizar estratégias. Indique esta trilha para equipes que já dominam setas e repetir.', trails: makeTrails(['Setas e repetir', 'Caminhos que mudam', 'Decidir e repetir', 'Funções no imprevisto'], ['Que sequência de setas se repete no mapa?', 'O que mudou no cenário e como perceberam?', 'Como combinar a decisão com repetir?', 'Que estratégia vale a pena guardar em Meu bloco?']).map((trail, index) => ({ ...trail, focus: ['Setas + repetir · intermediária', 'Se/senão · avançada', 'Decisão + repetir · avançada', 'Funções · integração'][index] })) },
+  { id: 10, name: 'Oficina das ações', short: 'Ações', topic: 'Ações, setas e repetições', description: 'Ative botões, abra passagens e planeje o momento certo para cada ação.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Use ativar em uma passagem, combine movimentos com repetir e depois coordene dois botões para atravessar mais de um obstáculo.', teacher: 'As duas primeiras trilhas apresentam um botão e depois reforçam a ordem das ações com repetir. A terceira trilha exige planejar duas ativações diferentes; os desafios de função foram retirados daqui porque a função já foi ensinada no mundo 5.', trails: makeTrails(['Ativar e avançar', 'Repetir para planejar', 'Duas passagens'], ['Qual botão libera a passagem?', 'Como agrupar os movimentos sem ativar o botão tarde demais?', 'Qual botão abre cada parede e em que ordem devem ser ativados?']).map((trail, index) => ({ ...trail, focus: ['Ações + setas · introdutória', 'Ações + repetir · intermediária', 'Duas ativações · avançada'][index] })) },
+  { id: 11, name: 'Trilha dos imprevistos', short: 'Imprevistos', topic: 'Condições e repetição em cenários dinâmicos', description: 'O mapa muda. Use pistas do cenário para escolher uma rota com o mesmo programa.', color: '#8265a7', soft: '#eee8f6', type: 'maze-surprise', icon: 'grid', skill: 'Introduza se/senão em dois mapas possíveis e depois combine a decisão com repetir para percorrer a rota sem codificar cada passo manualmente.', teacher: 'A primeira trilha trabalha a condição em cenários que mudam. A segunda exige integrar a condição ao bloco repetir. Os desafios extras de depuração e funções foram retirados daqui porque repetiam o mesmo mapa e habilidades já exercitadas; as funções continuam no mundo 5.', trails: makeTrails(['Caminhos que mudam', 'Decidir e repetir'], ['Qual pista mostra que o mapa mudou?', 'Como combinar se/senão e repetir sem escrever cada passo?']).map((trail, index) => ({ ...trail, focus: ['Se/senão · introdução', 'Se/senão + repetir · integração'][index] })) },
 
 ];
 
@@ -274,16 +274,16 @@ const sequenceLevels = SEQUENCE_TASKS.slice(0, MISSIONS_PER_LEVEL).map((task, in
 }));
 
 const actionRoutes = [
-  'RRRRRRR', 'RRURRRDRR', 'RRUURRRDDRR', 'RRDDRRUURRR', 'RURRRDRRR',
-  'RRRRRRR', 'RRURRRDRR', 'RRUURRRDDRR', 'RRDDRRUURRR', 'RURRRDRRR',
+  'RRRRRRR', 'RRURRRDRR', 'RRUURRDRR', 'RRDDRRUUR', 'RURURRDRR',
+  'RRRURRDDRR', 'RRUURDDRR', 'RDDRURRR', 'RRURDDRRR', 'RRDDRUURR',
 ];
 const jumpingRoutes = [
-  'RRJRRR', 'RURJRRDR', 'RRDDJRRUUR', 'RRUURJRRD', 'RURRRJR',
-  'RRJRUURR', 'RRUJRRR', 'RRDDJRRUUR', 'RURJRRDR', 'RRUURJRRD',
+  'RRJRRR', 'RURJRRD', 'RRDDJRRU', 'RRUURJRRD', 'RURRRJR',
+  'RRJRUUR', 'RRUJRRR', 'RDRJRRU', 'RRUJRDRR', 'RURRUJRR',
 ];
 const advancedRoutes = [
-  'RRURRRDRR', 'RRUURRRDDRR', 'RRDDRRUURRR', 'RRURRRDRR', 'RRUURRRDDRR',
-  'RRDDRRUURRR', 'RRURRRDRR', 'RRUURRRDDRR', 'RRDDRRUURRR', 'RRURRRDRR',
+  'RRURRRDRR', 'RRUURRDDRR', 'RRDDRRUURR', 'RURRRDRRR', 'RRURRURRDD',
+  'RRDRRUURRR', 'RURRDRRRU', 'RRRUURRDD', 'RRDRURRRDD', 'RRUURDDRR',
 ];
 function createActionBoard(route) {
   const start = { x: 0, y: 3 }, positions = [start], gaps = [];
@@ -315,7 +315,7 @@ function compressActionMoves(blocks) {
 }
 const actionLevels = Array.from({ length: MISSIONS_PER_LEVEL }, (_, index) => {
   const number = index + 1;
-  const route = number <= 10 ? actionRoutes[index] : number <= 20 ? jumpingRoutes[index - 10] : number <= 30 ? (index % 2 ? jumpingRoutes[index % 10] : actionRoutes[index % 10]) : advancedRoutes[index - 30];
+  const route = number <= 10 ? actionRoutes[index] : number <= 20 ? jumpingRoutes[index - 10] : advancedRoutes[(number - 21) % 10];
   const board = createActionBoard(route);
   const typeAt = new Map();
   const place = (positionIndex, type, details = {}) => {
@@ -636,7 +636,7 @@ const lateActionLevels = lateActionRoutes.map((path, index) => makeSwitchCourseL
 const eventLevels = [...actionOpeningLevels, ...switchLevels, ...intermediateLevels, ...lateActionLevels, ...mazePatternLevels, ...decisionLevels, ...advancedLevels];
 
 
-const ACTIVE_CHALLENGE_COUNTS = Object.freeze({ 1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 20, 8: 10, 9: 40, 10: 40, 11: 40 });
+const ACTIVE_CHALLENGE_COUNTS = Object.freeze({ 1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 20, 8: 10, 9: 30, 10: 30, 11: 20 });
 export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels, ...eventLevels]
   .filter(level => level.number <= (ACTIVE_CHALLENGE_COUNTS[level.grade] || 0))
   .sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
