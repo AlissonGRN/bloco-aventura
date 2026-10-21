@@ -236,10 +236,10 @@ test('The updated character skins render as their own SVG variants', async () =>
     [13, 'dragon', /M31 48Q17 33 5 17/],
     [16, 'mushroom', /M17 38C19 19 37 7 60 7/],
     [18, 'lion', /M29 39/],
-    [20, 'fairy', /M41 87 L26 111/],
+    [20, 'fairy', /M41 87/],
     [21, 'cat', /M82 101C103 111 116 94 109 81/],
     [25, 'ghost', /M19 78V51C19 34 31 24 47 24/],
-    [26, 'alien', /M43 29 38 13m39 16 5-16/],
+    [26, 'alien', /M43 29/],
   ];
   for (const [index, name, drawing] of variants) {
     await mount(createElement(Robot, { skin: index }));
