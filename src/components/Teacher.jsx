@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { LockKeyhole, LogOut, Users, Star, Flag, Download, Upload, RefreshCw, Pencil, BookOpen, Sparkles, ChevronRight, MessageCircle, Trash2, TriangleAlert, BellRing, CheckCircle2 } from 'lucide-react';
-import { DISPLAY_WORLDS, LEVELS, levelsFor } from '../data/curriculum';
+import { DISPLAY_WORLDS, LEVELS, WORLDS, levelsFor } from '../data/curriculum';
 import { STICKERS, ROBOT_SKINS, skinUnlocked, validateSave } from '../data/classroom';
 import { readLock, createLock, verifyPassword } from '../services/teacherLock';
 import { CLOUD_ENABLED, teacherLogin, teacherLogout, teacherSnapshot, cloudAward, cloudRemoveAward, cloudDeleteTeam, issueTeamCode, updateCloudTeam, grantCloudSkin, subscribeToTeacherHelp, resolveTeacherHelp, saveTeacherProposal, removeTeacherProposal, sendClassroomNotification } from '../services/cloud';

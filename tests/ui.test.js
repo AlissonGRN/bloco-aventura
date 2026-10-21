@@ -200,6 +200,31 @@ test('A sticker notification tells the team what the teacher sent and can be dis
   assert.equal(dismissed,'award-1');
 });
 
+
+test('Teacher planning tab renders the full lesson plan without crashing', async () => {
+  localStorage.clear();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    version: 2,
+    classes: [{ id: 'class-a', name: '1º A' }, { id: 'class-b', name: '2º B' }],
+    teams: [],
+    activeId: null,
+  }));
+  await mount(createElement(App));
+  await click(button('Espaço do professor'));
+  for (const el of document.querySelectorAll('.teacher-login input')) await change(el, 'professor-test-42');
+  await act(async () => {
+    document.querySelector('.teacher-login form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+    await new Promise(resolve => setTimeout(resolve, 2500));
+  });
+  assert.ok(document.querySelector('.teacher-stats'), 'Teacher panel should open');
+  await click(button('Planejar aulas'));
+  assert.ok(document.querySelector('.proposed-activity-editor'), 'Planning editor should render');
+  assert.match(document.body.textContent, /Organize os encontros/);
+  assert.ok(document.querySelectorAll('.planning-grid > section').length > 0, 'World-by-world lesson plans should be visible');
+  await change(document.querySelectorAll('.proposed-activity-editor select')[1], '1');
+  assert.ok(document.querySelector('.proposal-world-preview'), 'Selecting a world should show its preview');
+});
+
 after(async () => { if (root) await act(async () => root.unmount()); dom.window.close(); await rm(dir, { recursive: true, force: true }); });
 
 test('The daily-life sequence level remains available with written actions', async () => {
