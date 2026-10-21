@@ -146,7 +146,23 @@ export async function resolveTeacherHelp(id) {
   const rows = unwrap(await teacherClient.from('teacher_help_requests').update({ resolved_at: new Date().toISOString() }).eq('id', id).is('resolved_at', null).select('id'));
   if (!rows?.length) throw new Error('Este pedido já foi atendido ou não está disponível.');
 }
-export async function updateCloudTeam(teamId, values) { return unwrap(await teacherClient.from('bloco_teams').update({ name: values.name, members: values.members, avatar: values.avatar, class_id: values.classId }).eq('id', teamId).select()); }
+export async function updateCloudTeam(teamId, values) {
+  const rows = unwrap(await teacherClient
+    .from('bloco_teams')
+    .update({
+      name: values.name.trim().slice(0, 40),
+      members: values.members,
+      avatar: values.avatar,
+      class_id: values.classId,
+    })
+    .eq('id', teamId)
+    .select('id'));
+
+  if (!rows?.length) {
+    throw new Error('Nenhuma equipe foi atualizada. Atualize o painel e tente novamente; se persistir, verifique a permissão do professor no Supabase.');
+  }
+  return rows[0];
+}
 export async function grantCloudSkin(teamId, skinIndex, currentlyGranted = []) {
   if (!Number.isInteger(skinIndex) || skinIndex < 0 || skinIndex > 20) throw new Error('Skin inválida.');
   const bonusSkins = [...new Set([...currentlyGranted, skinIndex])].sort((a, b) => a - b);
