@@ -233,7 +233,8 @@ test('Teacher planning tab renders the full lesson plan without crashing', async
 
 test('The updated character skins render as their own SVG variants', async () => {
   const variants = [
-    [13, 'dragon', /M31 48Q17 33 5 17/],
+    [13, 'dragon', /M36 47C23 37 15 20 7 7/],
+    [14, 'spaceship', /M46 29 60 8 74 29/],
     [16, 'mushroom', /M17 38C19 19 37 7 60 7/],
     [18, 'lion', /M29 39/],
     [20, 'fairy', /M41 87/],
