@@ -1,13 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LEVELS, WORLDS, SEQUENCE_TASKS, move, repeat, branch, call, actionBlock, countBlocks, getLevel } from '../src/data/curriculum.js';
+import { LEVELS, WORLDS, DISPLAY_WORLDS, SEQUENCE_TASKS, move, repeat, branch, call, actionBlock, countBlocks, getLevel, nextLevel } from '../src/data/curriculum.js';
 import { simulate, evaluateAll, withIds, editList } from '../src/game/engine.js';
 
-test('440 unique missions, 40 per level', () => {
-  assert.equal(LEVELS.length, 440);
-  assert.equal(new Set(LEVELS.map(l => l.id)).size, 440);
-  for (let grade = 1; grade <= 11; grade++) assert.equal(LEVELS.filter(l => l.grade === grade).length, 40);
+test('230 active missions have stable IDs and a shorter progression per world', () => {
+  assert.equal(LEVELS.length, 230);
+  assert.equal(new Set(LEVELS.map(l => l.id)).size, 230);
+  const expected = { 1:20, 2:20, 3:20, 4:20, 5:20, 6:20, 7:20, 8:10, 9:30, 10:30, 11:20 };
+  for (const [grade, count] of Object.entries(expected)) assert.equal(LEVELS.filter(l => l.grade === Number(grade)).length, count);
   assert.equal(WORLDS.length, 11);
+  assert.ok(!WORLDS.some(world => [12, 13].includes(world.id)));
+  assert.ok(LEVELS.every(level => ![12, 13].includes(level.grade)));
 });
 for (const l of LEVELS.filter(l => !['sequence','circuit'].includes(l.kind))) test(`All scenarios solvable: ${l.id} ${l.title}`, () => {
   const result = evaluateAll(l, withIds(l.solution), withIds(l.definition));
@@ -19,42 +22,43 @@ for (const l of LEVELS.filter(l => !['sequence','circuit'].includes(l.kind))) te
     assert.equal(new Set(b.cells.map(p => `${p.x},${p.y}`)).size, b.cells.length);
   }
 });
-test('The daily-life sequence level has 40 reading challenges with ordered solutions', () => {
+test('The daily-life sequence world is a short set of ten transfer challenges', () => {
   assert.equal(SEQUENCE_TASKS.length, 40);
   const reading = LEVELS.filter(l => l.grade === 8);
-  assert.equal(reading.length, 40);
+  assert.equal(reading.length, 10);
   assert.ok(reading.every(l => l.sequenceMode === 'words' && l.steps.length >= 4));
   for (const l of reading) assert.deepEqual(l.solution, l.steps.map((_, i) => i));
 });
-test('The action world teaches collecting, jumping, fighting, opening, loops, and functions', () => {
+test('The action world introduces collection, jumping, combat and locked doors without duplicate routes', () => {
   const actions = LEVELS.filter(l => l.grade === 9);
-  assert.equal(actions.length, 40);
+  assert.equal(actions.length, 30);
   assert.ok(actions.every(l => l.kind === 'actions'));
   assert.ok(actions.slice(0, 10).every(l => l.allowed.includes('pick') && l.boards[0].items.length));
   assert.ok(actions.slice(10, 20).every(l => l.solution.some(b => b.type === 'jump')));
+  assert.ok(actions.slice(20, 25).every(l => l.boards[0].enemies.length && l.solution.some(b => b.type === 'attack')));
   assert.ok(actions.slice(25, 30).every(l => l.allowed.includes('open') && l.boards[0].doors.length));
-  assert.ok(actions.slice(30).every(l => l.allowed.includes('call') && l.solution.some(b => b.type === 'call')));
+  const routeSignature = level => level.boards[0].cells.map(p => `${p.x},${p.y}`).join('|');
+  assert.equal(new Set(actions.map(routeSignature)).size, actions.length);
   for (const level of actions) assert.equal(evaluateAll(level, withIds(level.solution), withIds(level.definition)).success, true, level.id);
 });
-test('The action world starts with new actions and progresses from arrows to loops', () => {
+test('The button world progresses from activation to loops and then two separate switches', () => {
   const levels = LEVELS.filter(l => l.grade === 10);
-  assert.equal(levels.length, 40);
+  assert.equal(levels.length, 30);
   assert.equal(levels[0].kind, 'actions');
   assert.ok(levels[0].allowed.includes('press') && levels[0].required.includes('press'));
   assert.ok(levels.slice(0, 20).every(l => !l.allowed.includes('if') && !l.allowed.includes('call')));
   assert.ok(levels[10].required.includes('repeat'));
   assert.ok(levels[20].required.includes('repeat'));
   assert.ok(WORLDS[9].trails[0].focus.includes('Ações'));
-  assert.ok(WORLDS[9].trails[2].focus.toLowerCase().includes('repetir'));
+  assert.ok(WORLDS[9].trails[2].focus.toLowerCase().includes('duas ativações'));
 });
-test('The second new world starts with arrows and loops, then teaches decisions and functions', () => {
+test('The surprise world progresses from dynamic conditions to decisions inside loops', () => {
   const levels = LEVELS.filter(l => l.grade === 11);
-  assert.equal(levels.length, 40);
-  assert.ok(levels.slice(0, 10).every(l => l.kind === 'maze' && l.required.includes('repeat')));
-  assert.ok(levels.slice(10, 30).every(l => l.required.includes('if') && l.required.includes('repeat')));
-  assert.ok(levels.slice(30).every(l => l.required.includes('call') && l.required.includes('if')));
-  assert.ok(WORLDS[10].trails[0].focus.includes('repetir'));
-  assert.ok(WORLDS[10].trails[3].focus.includes('Funções'));
+  assert.equal(levels.length, 20);
+  assert.ok(levels.slice(0, 10).every(l => l.kind === 'adapt' && l.required.includes('if')));
+  assert.ok(levels.slice(10, 20).every(l => l.required.includes('if') && l.required.includes('repeat')));
+  assert.ok(WORLDS[10].trails[0].focus.includes('Se/senão'));
+  assert.ok(WORLDS[10].trails[1].focus.includes('repetir'));
 });
 test('Switch actions open the bridge and surprise events change routes during execution', () => {
   const switchLevel = getLevel('10-11');
@@ -107,18 +111,17 @@ test('Tree editor changes only the selected nested list', () => {
 
 
 test('Concepts mix progressively instead of restricting each level to one block', () => {
-  assert.ok(getLevel('2-21').allowed.includes('repeat'));
-  assert.ok(getLevel('3-21').allowed.includes('if'));
-  assert.ok(getLevel('4-31').allowed.includes('call'));
-  assert.equal(getLevel('5-31').required.includes('call'), false);
+  assert.ok(getLevel('3-1').allowed.includes('repeat'));
+  assert.ok(getLevel('4-1').allowed.includes('if'));
+  assert.ok(getLevel('5-1').allowed.includes('call'));
   for (let difficulty=1; difficulty<=5; difficulty++) {
     const missions=LEVELS.filter(l=>l.grade===difficulty);
-    for(let trail=1; trail<=4; trail++) assert.equal(missions.filter(l=>l.trail===trail).length,10);
-    if (difficulty<=5) assert.ok(new Set(missions.map(l=>l.kind)).size>=2);
+    for(let trail=1; trail<=2; trail++) assert.equal(missions.filter(l=>l.trail===trail).length,10);
+    assert.ok(new Set(missions.map(l=>l.kind)).size>=2);
   }
 });
 test('Optimization budgets are enforced even when the path is solved', () => {
-  const l = getLevel('2-31');
+  const l = getLevel('3-11');
   const expanded = l.starter;
   assert.match(simulate({...l,required:[]}, expanded).failure,/simplifique/);
   assert.equal(evaluateAll(l,l.solution,l.definition).success,true);
@@ -132,9 +135,9 @@ test('Maze walls block movement and the goal only counts when reached by a short
   assert.match(evaluateAll(l, withIds(longer)).results[0].failure, /menor caminho/);
   assert.match(evaluateAll(l, [move('R'), move('R'), move('D')]).results[0].failure, /parede|caminho/i);
   assert.ok(getLevel('6-20').allowed.includes('move') && !getLevel('6-20').allowed.includes('repeat'));
-  assert.ok(getLevel('6-21').allowed.includes('repeat') && getLevel('6-21').required.includes('repeat'));
   assert.ok(getLevel('7-1').allowed.includes('repeat') && getLevel('7-1').required.includes('repeat'));
-  assert.ok(!getLevel('7-30').allowed.includes('call') && getLevel('7-31').allowed.includes('call'));
+  assert.ok(getLevel('5-11').allowed.includes('call') && getLevel('5-11').required.includes('call'));
+  assert.equal(getLevel('7-21'), undefined);
 });
 test('Debugging starters contain an observable problem and all prescribed blocks are available', () => {
   for (const l of LEVELS) {
@@ -143,4 +146,13 @@ test('Debugging starters contain an observable problem and all prescribed blocks
     const collect = bs=>bs.flatMap(b=>[b.type,...collect(b.body||[]),...collect(b.elseBody||[])]);
     assert.ok([...collect(l.solution),...collect(l.definition)].every(t=>l.allowed.includes(t)),l.id);
   }
+});
+
+test('Display order is pedagogical while internal IDs stay stable', () => {
+  assert.deepEqual(DISPLAY_WORLDS.map(world => world.id), [1, 8, 2, 3, 4, 5, 6, 7, 9, 10, 11]);
+  assert.deepEqual(DISPLAY_WORLDS.map(world => world.displayNumber), Array.from({ length: 11 }, (_, i) => i + 1));
+  assert.equal(nextLevel(getLevel('1-20')).id, '8-1');
+  assert.equal(nextLevel(getLevel('8-10')).id, '2-1');
+  assert.equal(nextLevel(getLevel('10-30')).id, '11-1');
+  assert.equal(nextLevel(getLevel('11-20')), null);
 });
