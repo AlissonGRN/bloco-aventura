@@ -46,7 +46,7 @@ export const ROBOT_SKINS = [
   { name: 'Fada das Engrenagens', color: '#9278bb', accent: '#e9b8d8', material: 'fairy', unlockAt: 0, stickerUnlockAt: 40 },
 ];
 export const unlockedRobotSkins = (progress, stickers = [], bonusSkins = []) => {
-  const completed = LEVELS.filter(level => progress?.[level.id]).length;
+  const completed = Object.keys(progress || {}).length;
   const received = Array.isArray(stickers) ? stickers.length : nonNegative(stickers);
   const progressUnlocked = ROBOT_SKINS.filter(skin => !skin.stickerUnlockAt && skin.unlockAt <= completed).length;
   const stickerUnlocked = ROBOT_SKINS.filter(skin => skin.stickerUnlockAt && received >= skin.stickerUnlockAt).length;
@@ -56,7 +56,8 @@ export const skinUnlocked = (index, progress = {}, stickers = [], bonusSkins = [
   const skin = ROBOT_SKINS[index];
   if (!skin) return false;
   if (Array.isArray(bonusSkins) && bonusSkins.includes(index)) return true;
-  return skin.stickerUnlockAt ? (stickers?.length || 0) >= skin.stickerUnlockAt : LEVELS.filter(level => progress?.[level.id]).length >= skin.unlockAt;
+  // Count archived progress too: pruning a mission must not revoke an already-earned skin.
+  return skin.stickerUnlockAt ? (stickers?.length || 0) >= skin.stickerUnlockAt : Object.keys(progress || {}).length >= skin.unlockAt;
 };
 export function uid() {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
