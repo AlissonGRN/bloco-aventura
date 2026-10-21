@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Apple, Armchair, Backpack, Bandage, Bed, Blocks, BookOpen, Bookmark, Brain, Brush, Check, Circle, CircleDot, CircleHelp, CloudSun, Construction, Contact, CookingPot, CupSoda, DoorOpen, Droplets, Ear, Eye, File, Flag, Flame, FlaskConical, FoldHorizontal, FoldVertical, FolderOpen, Footprints, Hand, Heart, House, Layers, Library, Lightbulb, ListChecks, Mail, Map, MessageCircle, NotebookPen, Origami, Package, Paintbrush, Palette, Pencil, Phone, PhoneCall, PhoneOff, Plane, Play, Popcorn, Puzzle, Recycle, RefreshCw, Ruler, Sandwich, Scale, Scissors, Send, Shapes, Shirt, ShoppingBag, Shovel, Sparkles, Sun, Trash2, Users, Utensils, VolumeX, Waves, Wind, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
-import { WORLDS, getLevel } from '../data/curriculum';
+import { WORLDS, nextLevel } from '../data/curriculum';
 import { Modal, Stars } from './UI';
 import { Robot } from './Art';
 
@@ -13,6 +13,7 @@ const icon = (name, size = 36) => {
 export default function SequenceGame({ level, team, onBack, onNext, onWorld, onComplete, onAttempt }) {
   const task = level.steps;
   const world = WORLDS[level.grade - 1];
+  const followingLevel = nextLevel(level);
   const [order, setOrder] = useState(() => task.map((_, i) => i).sort(() => Math.random() - .5));
   const [message, setMessage] = useState('');
   const [win, setWin] = useState(null);
@@ -40,10 +41,10 @@ export default function SequenceGame({ level, team, onBack, onNext, onWorld, onC
     }
   };
   const reset = () => { setOrder(task.map((_, i) => i).sort(() => Math.random() - .5)); setMessage(''); setWin(null); setTries(0); };
-  const next = () => level.number < 40 ? onNext(getLevel(`${level.grade}-${level.number + 1}`)) : onWorld(level.grade < WORLDS.length ? level.grade + 1 : level.grade);
+  const next = () => followingLevel ? onNext(followingLevel) : onWorld(level.grade);
 
   return <div className="sequence-game" style={{ '--world': world.color, '--world-soft': world.soft }}>
-    <div className="game-breadcrumb"><button className="text-back" onClick={onBack}><ArrowLeft size={18}/><span>{world.short}</span></button><span>Desafio {level.number} de 40</span><span className="game-grade-badge">Nível {level.grade}</span><Stars count={team.progress[level.id]?.stars || 0}/></div>
+    <div className="game-breadcrumb"><button className="text-back" onClick={onBack}><ArrowLeft size={18}/><span>{world.short}</span></button><span>Desafio {level.number} de 40</span><span className="game-grade-badge">Nível {world.displayNumber}</span><Stars count={team.progress[level.id]?.stars || 0}/></div>
     <header className="sequence-heading"><div><span className="eyebrow">ALGORITMOS DO COTIDIANO</span><h1>Coloque na ordem</h1><p>{level.instruction}</p></div><div className="sequence-scene" aria-hidden="true">{icon(task[0].icon, 30)}<span>{task[0].title}</span></div></header>
     <section className="sequence-board word-mode" aria-label={`Etapas de ${task[0].title}`}>
       <div className="sequence-board-title"><strong>O que acontece primeiro?</strong><span>{order.length} etapas</span></div>
@@ -62,6 +63,6 @@ export default function SequenceGame({ level, team, onBack, onNext, onWorld, onC
     </section>
     <aside className="sequence-hint"><Lightbulb size={19}/><span><strong>Dica da equipe</strong>{level.hint}</span></aside>
     <p className="sequence-discussion">Depois de conferir, expliquem por que escolheram essa ordem: {level.discussion}</p>
-    {win && <Modal title="Desafio concluído" onClose={() => setWin(null)} className="win-modal"><div className="celebration-dots"/><Robot happy className="winning-robot"/><span className="eyebrow">MAIS UMA DESCOBERTA!</span><h2>Sequência organizada!</h2><Stars count={win.stars} size={40}/><p>{win.stars === 3 ? 'Vocês observaram as pistas e encontraram a ordem logo na primeira tentativa!' : 'Boa colaboração! Vocês conversaram, testaram e chegaram a uma sequência que funciona.'}</p><p className="discussion-prompt">Conversem: {level.discussion}</p><div className="learned-pill"><Sparkles size={16}/>{world.topic}</div><button className="btn primary full" onClick={next}>{level.number < 40 ? 'Próximo desafio' : level.grade < WORLDS.length ? 'Explorar o próximo nível' : 'Voltar à trilha'}<ArrowRight size={19}/></button><button className="text-button" onClick={reset}>Jogar de novo</button></Modal>}
+    {win && <Modal title="Desafio concluído" onClose={() => setWin(null)} className="win-modal"><div className="celebration-dots"/><Robot happy className="winning-robot"/><span className="eyebrow">MAIS UMA DESCOBERTA!</span><h2>Sequência organizada!</h2><Stars count={win.stars} size={40}/><p>{win.stars === 3 ? 'Vocês observaram as pistas e encontraram a ordem logo na primeira tentativa!' : 'Boa colaboração! Vocês conversaram, testaram e chegaram a uma sequência que funciona.'}</p><p className="discussion-prompt">Conversem: {level.discussion}</p><div className="learned-pill"><Sparkles size={16}/>{world.topic}</div><button className="btn primary full" onClick={next}>{followingLevel ? 'Próximo desafio' : 'Voltar à trilha'}<ArrowRight size={19}/></button><button className="text-button" onClick={reset}>Jogar de novo</button></Modal>}
   </div>;
 }
