@@ -32,7 +32,7 @@ const makeTrails = (titles, prompts) => titles.map((title, j) => ({ number: j + 
 export const WORLDS = [
   ...WORLDS_BASE.map((w, i) => ({ ...w, name: i === 2 ? 'Vale dos padrões' : w.name, topic: topics[i], description: descriptions[i], skill: guidance[i], teacher: guidance[i], trails: makeTrails(trails[i], discussions[i]) })),
   { id: 6, name: 'Labirinto das setas', short: 'Labirinto', topic: 'Rotas, obstáculos e caminho mínimo', description: 'Leia o mapa, contorne paredes e encontre a menor rota.', color: '#397c86', soft: '#e1f2f1', type: 'maze-arrows', icon: 'grid', skill: 'Planejar rotas em uma grade, evitar paredes e comparar o tamanho dos caminhos. As setas aparecem primeiro; repetir é liberado nas trilhas finais.', teacher: 'Conversem sobre caminhos possíveis e contem os passos. Nas trilhas 3 e 4, os blocos repetir ajudam a representar trechos iguais. O objetivo é alcançar a bandeira pelo menor caminho.', trails: makeTrails(['Ler o mapa', 'Contornar paredes', 'Rotas mais curtas', 'Mestre do labirinto'], ['Que caminho vocês imaginaram antes de montar as setas?', 'Qual parede obrigou Bip a mudar de direção?', 'Como sabemos que a rota tem menos passos?', 'Onde uma repetição economiza blocos?']) },
-  { id: 7, name: 'Labirinto dos padrões', short: 'Padrões', topic: 'Repetições, decomposição e funções', description: 'Use padrões para atravessar mapas cheios de paredes.', color: '#765c99', soft: '#eee7f6', type: 'maze-loops', icon: 'blocks', skill: 'Representar rotas mínimas com laços, decompor um trajeto e reutilizar trechos em funções.', teacher: 'Os desafios começam usando repetir. Nas últimas trilhas, Meu bloco permite guardar um trecho do caminho e chamá-lo no programa principal. Incentive a equipe a conferir o menor número de passos.', trails: makeTrails(['Primeiros padrões', 'Repetições no mapa', 'Peças reutilizáveis', 'Funções no labirinto'], ['Que trecho do caminho se repete?', 'Como representar o mesmo padrão com menos blocos?', 'Que parte da rota poderia virar Meu bloco?', 'A função ajudou a organizar o caminho?']) },
+  { id: 7, name: 'Labirinto dos padrões', short: 'Padrões', topic: 'Repetições, decomposição e funções', description: 'Use padrões para atravessar mapas cheios de paredes.', color: '#765c99', soft: '#eee7f6', type: 'maze-loops', icon: 'blocks', skill: 'Aplicar repetir em labirintos: identificar trechos recorrentes, contornar paredes e comparar rotas curtas.', teacher: 'A turma já conhece repetir em caminhos simples. Aqui o desafio é transferir essa ideia para mapas com paredes: identificar padrões que respeitem o espaço disponível e conferir se a rota continua sendo a menor. As funções já foram apresentadas no mundo anterior e não precisam ser reapresentadas aqui.', trails: makeTrails(['Padrões no labirinto', 'Rotas com paredes'], ['Que sequência se repete sem atravessar uma parede?', 'Como conferir se a rota é curta e se o programa usa repetir?']) },
   { id: 8, name: 'Algoritmos do dia a dia', short: 'Algoritmos', topic: 'Algoritmos, decomposição e depuração', description: 'Coloque instruções simples na ordem certa e teste sua lógica.', color: '#508a72', soft: '#e4f2e9', type: 'sequence-words', icon: 'sequence', skill: 'Ler instruções, decompor uma rotina, comparar dependências entre etapas e corrigir sequências.', teacher: 'Antes de mover os cartões, leiam as ações e expliquem quais dependem umas das outras. Compare ordens alternativas e procure uma sequência válida.', trails: makeTrails(['Instruções em ordem', 'Rotinas e dependências', 'Corrija a sequência', 'Desafios de lógica'], ['Qual instrução precisa vir primeiro?', 'Que etapa depende do que veio antes?', 'Qual cartão está fora do lugar? Por quê?', 'Existe mais de uma ordem que funciona?']) },
   { id: 9, name: 'Expedição das ações', short: 'Expedição', topic: 'Sequências, ações e interação', description: 'Além de andar, ensine Bip a pegar itens, saltar buracos, afastar criaturas e abrir portas.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Planejar ações no momento certo, combinar comandos com deslocamentos e reutilizar sequências.', teacher: 'Neste mundo, algumas casas têm itens, criaturas, portas e buracos. Pegar, atacar/afastar e abrir agem na casa indicada; pular atravessa exatamente um buraco. Peça que a equipe preveja o resultado de cada comando.', trails: makeTrails(['Pegar e levar', 'Pular com cuidado', 'Abrir passagem', 'Combinar as ações'], ['Quando Bip precisa pegar o item: antes ou depois de andar até ele?', 'Qual casa está faltando no caminho e como Bip pode atravessá-la?', 'O que precisa acontecer antes de a porta deixar Bip passar?', 'Como dividir e testar uma sequência maior?']) },
   { id: 10, name: 'Oficina das ações', short: 'Ações', topic: 'Ações, setas e repetições', description: 'Ative botões, abra passagens e descubra como simplificar seus planos.', color: '#c5784f', soft: '#f8e9df', type: 'actions', icon: 'hand', skill: 'Este mundo começa com ações novas e avança das setas para repetir. O professor pode recomendar esta trilha para equipes que ainda estão conhecendo os comandos.', teacher: 'As missões já começam com botões e passagens que precisam ser ativadas: não é necessário repetir o tutorial de andar até a bandeira. Nas primeiras etapas, use setas e ativar; depois, identifique trechos repetidos para escrever o plano com menos blocos.', trails: makeTrails(['Ativar e avançar', 'Botões pelo caminho', 'Repetir para planejar', 'Oficina de soluções'], ['Qual botão libera a passagem?', 'Quando Bip precisa ativar o botão?', 'Que trecho do plano se repete?', 'Como as repetições deixam o programa menor?']).map((trail, index) => ({ ...trail, focus: ['Ações + setas · introdutória', 'Ações · intermediária', 'Repetir · intermediária', 'Ações + repetir · avançada'][index] })) },
@@ -43,9 +43,13 @@ export const WORLDS = [
 // Persistent grade-number IDs stay stable, while the visible catalogue follows a
 // pedagogical path. Everyday sequencing is early; maze worlds consolidate skills.
 export const CURRICULUM_WORLD_ORDER = [1, 8, 2, 3, 4, 5, 6, 7, 9, 10, 11];
-// Keep WORLDS in numeric ID order because game components resolve a world by grade.
-// DISPLAY_WORLDS is only for curriculum browsing and planning lists.
-export const DISPLAY_WORLDS = CURRICULUM_WORLD_ORDER.map(id => WORLDS.find(world => world.id === id)).filter(Boolean);
+// Keep WORLDS in numeric ID order: persistent level IDs still use grades 1–11.
+// Display numbers communicate the new learning sequence without changing saved IDs.
+export const DISPLAY_WORLDS = CURRICULUM_WORLD_ORDER.map((id, index) => {
+  const world = WORLDS.find(item => item.id === id);
+  if (world) world.displayNumber = index + 1;
+  return world;
+}).filter(Boolean);
 
 const seq = text => [...text].map(move);
 const dirs = ['R', 'U', 'L', 'D'];
@@ -216,7 +220,7 @@ export const SEQUENCE_TASKS = [
 
 // Complete the function world to four trails. Existing IDs 5-1 through 5-10
 // are retained; these are additive challenges with new IDs.
-const functionReuseSegments = ['R', 'U', 'RU', 'RR', 'UR', 'RRU', 'UUR', 'RUR', 'RRD', 'RUU'];
+const functionReuseSegments = ['RU', 'RD', 'UR', 'RRU', 'UUR', 'RUR', 'RRD', 'RDU', 'RURD', 'URR'];
 for (let index = 0; index < 10; index++) {
   const number = index + 11, segment = functionReuseSegments[index], calls = 2 + (index % 3);
   const path = segment.repeat(calls);
@@ -632,7 +636,10 @@ const lateActionLevels = lateActionRoutes.map((path, index) => makeSwitchCourseL
 const eventLevels = [...actionOpeningLevels, ...switchLevels, ...intermediateLevels, ...lateActionLevels, ...mazePatternLevels, ...decisionLevels, ...advancedLevels];
 
 
-export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels, ...eventLevels].sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
+const ACTIVE_CHALLENGE_COUNTS = Object.freeze({ 1: 20, 2: 20, 3: 20, 4: 20, 5: 20, 6: 20, 7: 20, 8: 10, 9: 40, 10: 40, 11: 40 });
+export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels, ...eventLevels]
+  .filter(level => level.number <= (ACTIVE_CHALLENGE_COUNTS[level.grade] || 0))
+  .sort((a, b) => a.grade - b.grade || a.number - b.number).map(l => {
   const allowed = l.allowed || ['move'];
   if (!l.allowed && (l.grade >= 3 || (l.grade === 2 && l.number >= 21))) allowed.push('repeat');
   if (!l.allowed && (l.grade >= 4 || (l.grade === 3 && l.number >= 21))) allowed.push('if');
@@ -641,6 +648,11 @@ export const LEVELS = [...ORIGINAL, ...extra, ...sequenceLevels, ...actionLevels
   return { ...l, kind: l.kind || (l.starter ? 'debug' : l.boards?.length > 1 ? 'adapt' : 'build'), allowed, trail, discussion: WORLDS.find(world => world.id === l.grade)?.trails?.[trail - 1]?.discussion || 'Que pistas ajudaram sua equipe a resolver este desafio?' };
 });
 export const TOTAL_MISSIONS = LEVELS.length;
+export const missionCountFor = grade => LEVELS.filter(level => level.grade === grade).length;
+for (const world of WORLDS) {
+  const trailCount = Math.ceil(missionCountFor(world.id) / MISSIONS_PER_TRAIL);
+  world.trails = world.trails.slice(0, trailCount);
+}
 export const levelsFor = difficulty => LEVELS.filter(l => l.grade === difficulty);
 export const getLevel = id => LEVELS.find(l => l.id === id);
 export function referenceCount(level) { return countBlocks(level.solution) + countBlocks(level.definition); }
