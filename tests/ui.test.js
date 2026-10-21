@@ -14,8 +14,8 @@ const { act, createElement } = await import('react');
 const { createRoot } = await import('react-dom/client');
 const dir = path.resolve('.test-build');
 await mkdir(dir, { recursive: true });
-await build({ stdin: { contents: `export { default as App } from './src/App.jsx'; export { default as Game } from './src/components/Game.jsx'; export { default as SequenceGame } from './src/components/SequenceGame.jsx'; export { StickerNotification } from './src/components/ClassroomExtras.jsx'; export { validateSave, STORAGE_KEY } from './src/hooks/useClassroom.js'; export { getLevel } from './src/data/curriculum.js';`, resolveDir: process.cwd(), loader: 'jsx' }, outfile: path.join(dir, 'ui.mjs'), bundle: true, format: 'esm', platform: 'node', packages: 'external', jsx: 'automatic', logLevel: 'silent' });
-const { App, Game, SequenceGame, StickerNotification, validateSave, STORAGE_KEY, getLevel } = await import(pathToFileURL(path.join(dir, 'ui.mjs')));
+await build({ stdin: { contents: `export { default as App } from './src/App.jsx'; export { default as Game } from './src/components/Game.jsx'; export { default as SequenceGame } from './src/components/SequenceGame.jsx'; export { StickerNotification } from './src/components/ClassroomExtras.jsx'; export { validateSave, STORAGE_KEY } from './src/hooks/useClassroom.js'; export { getLevel } from './src/data/curriculum.js'; export { Robot } from './src/components/Art.jsx';`, resolveDir: process.cwd(), loader: 'jsx' }, outfile: path.join(dir, 'ui.mjs'), bundle: true, format: 'esm', platform: 'node', packages: 'external', jsx: 'automatic', logLevel: 'silent' });
+const { App, Game, SequenceGame, StickerNotification, validateSave, STORAGE_KEY, getLevel, Robot } = await import(pathToFileURL(path.join(dir, 'ui.mjs')));
 let root;
 async function mount(element) {
   if (root) await act(async () => root.unmount());
@@ -229,6 +229,25 @@ test('Teacher planning tab renders the full lesson plan without crashing', async
   assert.ok(document.querySelectorAll('.planning-grid > section').length > 0, 'World-by-world lesson plans should be visible');
   await change(document.querySelectorAll('.proposed-activity-editor select')[1], '1');
   assert.ok(document.querySelector('.proposal-world-preview'), 'Selecting a world should show its preview');
+});
+
+test('The updated character skins render as their own SVG variants', async () => {
+  const variants = [
+    [13, 'dragon', /M31 48Q17 33 5 17/],
+    [16, 'mushroom', /M17 38C19 19 37 7 60 7/],
+    [18, 'lion', /M29 39/],
+    [20, 'fairy', /M41 87/],
+    [21, 'cat', /M82 101C103 111 116 94 109 81/],
+    [25, 'ghost', /M19 78V51C19 34 31 24 47 24/],
+    [26, 'alien', /M43 29/],
+  ];
+  for (const [index, name, drawing] of variants) {
+    await mount(createElement(Robot, { skin: index }));
+    const svg = document.querySelector('svg.bip-robot');
+    assert.ok(svg, name + ' skin renders an SVG');
+    assert.ok(svg.classList.contains('bip-skin-' + index), name + ' uses its saved skin index');
+    assert.match(svg.outerHTML, drawing, name + ' includes its defining visual details');
+  }
 });
 
 after(async () => { if (root) await act(async () => root.unmount()); dom.window.close(); await rm(dir, { recursive: true, force: true }); });
