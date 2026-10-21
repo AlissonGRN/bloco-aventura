@@ -21,7 +21,7 @@ test('classroom stickers include positive behavior, respect, care, participation
   assert.equal(data.teams[0].stickers.length,additions.length);
 });
 test('Bip skins unlock from completed challenges or teacher stickers and saved teams cannot select locked skins',()=>{
-  assert.equal(ROBOT_SKINS.length,25);
+  assert.equal(ROBOT_SKINS.length,27);
   assert.equal(unlockedRobotSkins({}),5);
   assert.equal(unlockedRobotSkins(Object.fromEntries(Array.from({length:15},(_,i)=>[`1-${i+1}`,{stars:2}]))),7);
   const progress=Object.fromEntries(Array.from({length:4},(_,i)=>[`1-${i+1}`,{stars:2}]));
@@ -33,7 +33,7 @@ test('Bip skins unlock from completed challenges or teacher stickers and saved t
   assert.equal(skinUnlocked(19,{},earned),false);
   const awarded=validateSave({version:2,teams:[{...original,stickers:earned,avatar:13}]}).teams[0];
   assert.equal(awarded.avatar,13,'the cloud/local saved team can equip a skin earned from stickers');
-  const teacherGift=validateSave({version:2,teams:[{...original,avatar:20,bonusSkins:[20,20,-1,26]}]}).teams[0];
+  const teacherGift=validateSave({version:2,teams:[{...original,avatar:20,bonusSkins:[20,20,-1,28]}]}).teams[0];
   assert.deepEqual(teacherGift.bonusSkins,[20],'specific teacher unlocks are kept and invalid indices are discarded');
   assert.equal(teacherGift.avatar,20,'a teacher-granted skin can be equipped without earning its sticker threshold');
   assert.equal(unlockedRobotSkins({},[],[20]),6,'a manual unlock counts once even if it is not adjacent to other skins');
@@ -53,12 +53,30 @@ test('four special skins require an explicit teacher grant and can be saved afte
     assert.equal(skinUnlocked(index, progress, stickers), false, 'progress and stickers alone must not unlock a teacher-only skin');
     assert.equal(skinUnlocked(index, progress, stickers, [index]), true, 'an explicit teacher grant unlocks the skin');
   }
-  assert.equal(unlockedRobotSkins(progress, stickers), 21, 'all regular skins can unlock, while the four teacher-only skins remain locked');
+  assert.equal(unlockedRobotSkins(progress, stickers), 23, 'all regular skins can unlock, while the four teacher-only skins remain locked');
   const saved = validateSave({ version: 2, teams: [{ ...original, avatar: 24, bonusSkins: [24] }] }).teams[0];
   assert.equal(saved.avatar, 24);
   assert.deepEqual(saved.bonusSkins, [24]);
   const denied = validateSave({ version: 2, teams: [{ ...original, avatar: 24 }] }).teams[0];
   assert.notEqual(denied.avatar, 24, 'importing an ungranted teacher-only avatar must not bypass the lock');
+});
+test('dragon, kitten, lion, mushroom, fairy, ghost and alien skin art metadata remains available', () => {
+  assert.equal(ROBOT_SKINS[13].material, 'dragon');
+  assert.equal(ROBOT_SKINS[16].material, 'mushroom');
+  assert.equal(ROBOT_SKINS[18].name, 'Leão Guardião');
+  assert.equal(ROBOT_SKINS[18].material, 'lion');
+  assert.equal(ROBOT_SKINS[20].material, 'fairy');
+  assert.equal(ROBOT_SKINS[21].material, 'cat');
+  assert.equal(ROBOT_SKINS[25].name, 'Fantasma Fofinho');
+  assert.equal(ROBOT_SKINS[25].stickerUnlockAt, 45);
+  assert.equal(ROBOT_SKINS[26].name, 'Alien Gelatinoso');
+  assert.equal(ROBOT_SKINS[26].stickerUnlockAt, 50);
+  assert.equal(skinUnlocked(25, {}, Array.from({ length: 44 }, (_, i) => ({ id: String(i), type: 'logic' }))), false);
+  assert.equal(skinUnlocked(25, {}, Array.from({ length: 45 }, (_, i) => ({ id: String(i), type: 'logic' }))), true);
+  assert.equal(skinUnlocked(26, {}, Array.from({ length: 49 }, (_, i) => ({ id: String(i), type: 'logic' }))), false);
+  assert.equal(skinUnlocked(26, {}, Array.from({ length: 50 }, (_, i) => ({ id: String(i), type: 'logic' }))), true);
+  const save = validateSave({ version: 2, teams: [{ ...original, avatar: 26, stickers: Array.from({ length: 50 }, (_, i) => ({ id: 's' + i, type: 'logic' })) }] });
+  assert.equal(save.teams[0].avatar, 26);
 });
 test('Backup merge preserves best stars and unions history without duplicating teams',()=>{
   const first=validateSave({version:1,teams:[original]});
