@@ -164,7 +164,7 @@ export async function updateCloudTeam(teamId, values) {
   return rows[0];
 }
 export async function grantCloudSkin(teamId, skinIndex, currentlyGranted = []) {
-  if (!Number.isInteger(skinIndex) || skinIndex < 0 || skinIndex > 20) throw new Error('Skin inválida.');
+  if (!Number.isInteger(skinIndex) || skinIndex < 0 || skinIndex > 24) throw new Error('Skin inválida.');
   const bonusSkins = [...new Set([...currentlyGranted, skinIndex])].sort((a, b) => a - b);
   const rows = unwrap(await teacherClient.from('bloco_teams').update({ bonus_skins: bonusSkins }).eq('id', teamId).select('id'));
   if (!rows?.length) throw new Error('Equipe não encontrada ou sem permissão para liberar esta skin.');

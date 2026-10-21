@@ -7,58 +7,107 @@ export const worldIcon = { calculator: Calculator, sprout: Sprout, compass: Comp
 
 export function Robot({ className = '', happy = false, color, skin = 0 }) {
   const skinIndex = Math.max(0, Math.min(ROBOT_SKINS.length - 1, Number(skin) || 0));
-  const skinData = ROBOT_SKINS[skinIndex];
+  const skinData = ROBOT_SKINS[skinIndex] || ROBOT_SKINS[0];
+  const material = skinData.material || 'gloss';
   const robotColor = color || skinData.color;
   const accent = skinData.accent || '#50886b';
-  const wood = skinData.material === 'wood';
-  const metal = ['cosmos', 'ice', 'lava', 'ninja', 'royal', 'neon', 'rainbow', 'submarine', 'spaceship'].includes(skinData.material);
-  const uid = useId().replaceAll(':', '');
-  const body = `url(#bip-body-${uid})`;
-  return <svg viewBox="0 0 120 140" fill="none" className={`bip-robot ${className} bip-skin-${skinIndex}`} aria-hidden="true">
+  const wood = material === 'wood';
+  const metal = ['cosmos', 'ice', 'lava', 'ninja', 'royal', 'neon', 'rainbow', 'submarine', 'spaceship'].includes(material);
+  const uid = useId().replace(/:/g, '');
+  const body = 'url(#robot-body-' + uid + ')';
+  const face = 'url(#robot-face-' + uid + ')';
+  const hasAntenna = !['cat', 'axolotl', 'capybara', 'unicorn', 'bee', 'fairy', 'dragon', 'mushroom', 'penguin', 'crab'].includes(material);
+  return <svg viewBox="0 0 120 140" fill="none" className={['bip-robot', className, 'bip-skin-' + skinIndex].filter(Boolean).join(' ')} aria-hidden="true">
     <defs>
-      <linearGradient id={`bip-body-${uid}`} x1="18" y1="25" x2="101" y2="119" gradientUnits="userSpaceOnUse"><stop stopColor={wood ? '#d0a36c' : robotColor}/><stop offset="1" stopColor={wood ? '#815537' : robotColor} stopOpacity={wood ? '.97' : '.82'}/></linearGradient>
-      <linearGradient id={`bip-panel-${uid}`} x1="30" y1="35" x2="90" y2="70" gradientUnits="userSpaceOnUse"><stop stopColor="#fffefa"/><stop offset="1" stopColor={wood ? '#f5dfb8' : '#fffaf0'}/></linearGradient>
-      <filter id={`bip-glow-${uid}`} x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <linearGradient id={'robot-body-' + uid} x1="17" y1="17" x2="101" y2="122" gradientUnits="userSpaceOnUse">
+        <stop stopColor={wood ? '#e4bd82' : robotColor}/>
+        <stop offset=".56" stopColor={robotColor}/>
+        <stop offset="1" stopColor={wood ? '#805337' : robotColor} stopOpacity={wood ? '.98' : '.78'}/>
+      </linearGradient>
+      <linearGradient id={'robot-face-' + uid} x1="30" y1="36" x2="92" y2="70" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#fffefa"/><stop offset="1" stopColor={wood ? '#f4dfbc' : '#f6f7f1'}/>
+      </linearGradient>
+      <linearGradient id={'robot-metal-' + uid} x1="30" y1="25" x2="90" y2="75" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#ffffff" stopOpacity=".36"/><stop offset="1" stopColor="#273c52" stopOpacity=".06"/>
+      </linearGradient>
+      <filter id={'robot-glow-' + uid} x="-80%" y="-80%" width="260%" height="260%">
+        <feGaussianBlur stdDeviation="2.1" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
     </defs>
-    <ellipse cx="60" cy="130" rx="30" ry="7" fill="#24473c" opacity=".12" />
-    <path d="M43 112v13m34-13v13" stroke={metal ? '#344b68' : '#294e43'} strokeWidth="11" strokeLinecap="round" />
-    <path d={happy ? 'M26 83 12 66m82 17 14-17' : 'M28 85 17 96m75-11 11 11'} stroke={robotColor} strokeWidth="12" strokeLinecap="round" />
-    <rect x="29" y="71" width="62" height="46" rx="16" fill={body} stroke={wood ? '#68462f' : metal ? accent : 'none'} strokeWidth={wood || metal ? '2' : '0'} />
-    {wood && <g stroke="#704b31" strokeWidth="2" opacity=".78"><path d="M40 77q8 3 16 0m-13 9q9 3 17 0m14 22q6-3 11 0M48 113q4-5 8 0"/><circle cx="78" cy="79" r="2" fill="#704b31"/></g>}
-    <rect x="41" y="85" width="38" height="22" rx="7" fill={wood ? '#f5dfb8' : '#fffaf0'} />
-    <path d="m54 96 4 4 8-9" stroke={accent} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M60 28V14" stroke={wood ? '#704b31' : '#365e4c'} strokeWidth="5" strokeLinecap="round" />
-    <circle cx="60" cy="10" r="7" fill={accent} />
-    <rect x="12" y="40" width="12" height="24" rx="6" fill={body} /><rect x="96" y="40" width="12" height="24" rx="6" fill={body} />
-    <rect x="20" y="26" width="80" height="53" rx="18" fill={body} stroke={wood ? '#68462f' : metal ? accent : 'none'} strokeWidth={wood || metal ? '2' : '0'} />
-    {wood && <g stroke="#704b31" strokeWidth="2" opacity=".82"><path d="M25 41q8-4 16 0m-13 8q6-4 12 0m53-5q-6 5-12 2M31 67q7-4 14 0"/><circle cx="87" cy="66" r="2" fill="#704b31"/></g>}
-    {skinData.material === 'gloss' && <path d="M28 39q9-10 25-8" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity=".45"/>}
-    {skinData.material === 'royal' && <path d="M25 61q35 12 70 0v8q-35 14-70 0z" fill="#4469a0" stroke="#f3d879" strokeWidth="2"/>}
-    {skinData.material === 'ninja' && <g><path d="M24 43q36 12 72 0v10q-36 15-72 0z" fill="#263246"/><path d="m82 48 28-8-3 8 4 8-29-5z" fill="#e65c65"/></g>}
-    {skinData.material === 'neon' && <g stroke="#70fff2" strokeWidth="3" fill="none" filter={`url(#bip-glow-${uid})`}><rect x="36" y="42" width="14" height="16" rx="5"/><rect x="70" y="42" width="14" height="16" rx="5"/><path d="M51 50h18"/></g>}
-    {skinData.material === 'cosmos' && <g fill="#fff0a7" stroke="#8162be" strokeWidth="2"><path d="m86 37 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/><circle cx="34" cy="61" r="2" fill="#fff" stroke="none"/></g>}
-    {skinData.material === 'ice' && <g stroke="#46aab8" strokeWidth="2"><path d="m60 39 7 8-7 8-7-8z" fill="#d9fbff"/><path d="m37 63 3-5 3 5m34 0 3-5 3 5" stroke="#8de8ef"/></g>}
-    {skinData.material === 'lava' && <g><path d="M24 61q13-9 25 0t25 0 22 0v8q-14 8-25 0t-25 0-22 0z" fill="#ffb347"/><circle cx="39" cy="65" r="3" fill="#fff09d"/><circle cx="78" cy="65" r="3" fill="#fff09d"/></g>}
-    {wood && <g><path d="M24 36q7-17 18-14l10 7-6 10-15-2m45-5q10-18 23-9l6 8-7 8-14-6" fill="#527447" stroke="#3f643d" strokeWidth="2"/><path d="m55 29 5-9 5 9" fill="#9ecb67"/><path d="M25 58q7-5 12 0m49 0q7-5 12 0" stroke="#8a5639" strokeWidth="3" strokeLinecap="round"/></g>}
-    {skinData.material === 'rainbow' && <g fill="none" strokeLinecap="round"><path d="M22 27a38 26 0 0 1 76 0" stroke="#f27c72" strokeWidth="5"/><path d="M27 26a33 22 0 0 1 66 0" stroke="#f4c94f" strokeWidth="4"/><path d="M32 25a28 18 0 0 1 56 0" stroke="#68c99c" strokeWidth="4"/></g>}
-    {skinData.material === 'dragon' && <g><path d="M21 47 5 32l5 25 13 4m71-14 16-15-5 25-13 4" fill="#db6557" stroke="#963f43" strokeWidth="3"/><path d="m45 27 8-17 8 17m5 0 10-17 5 19" fill="#ffd36a" stroke="#b8564d" strokeWidth="2.5"/><path d="M31 66q9 6 18 0m22 0q9 6 18 0" stroke="#e9694f" strokeWidth="4" strokeLinecap="round"/><path d="m55 111 5 11 5-11" fill="#f2bd54"/></g>}
-    {skinData.material === 'submarine' && <g><path d="M28 62q32 22 64 0v8q-32 19-64 0" fill="#f0bf59" stroke="#287889" strokeWidth="2"/><circle cx="60" cy="51" r="15" fill="#bfeef0" stroke="#367d8d" strokeWidth="4"/><circle cx="60" cy="51" r="8" fill="#efffff" opacity=".8"/><path d="m31 43-12-8v31l12-6m58-17 12-8v31l-12-6" fill="#e8b953" stroke="#367d8d" strokeWidth="2.5"/><path d="M39 83v-8m42 8v-8" stroke="#f5d378" strokeWidth="4" strokeLinecap="round"/><path d="m31 28-6-7m15 5-1-9m42 11 8-8" stroke="#bcecf0" strokeWidth="3" strokeLinecap="round"/></g>}
-    {skinData.material === 'spaceship' && <g><path d="M27 58 12 68l11 8 12-4m58-14 15 10-11 8-12-4" fill="#91e1dc" stroke="#48558f" strokeWidth="3"/><path d="M49 78 43 99l17-8 17 8-6-21" fill="#eb7186" stroke="#48558f" strokeWidth="2.5"/><path d="M60 6 65 18 78 21 65 25 60 38 55 25 42 21 55 18z" fill="#f5d56d" stroke="#5964a0" strokeWidth="2"/><path d="M43 113q17 10 34 0v9q-17 8-34 0" fill="#89e4de" opacity=".85"/></g>}
-    {skinData.material === 'mushroom' && <g><path d="M20 39q3-28 40-30 37 2 40 30-8 8-40 8t-40-8Z" fill="#d7775f" stroke="#8d4c49" strokeWidth="3"/><circle cx="43" cy="26" r="6" fill="#fff3d4"/><circle cx="72" cy="19" r="7" fill="#fff3d4"/><circle cx="83" cy="34" r="4" fill="#fff3d4"/><path d="M28 78q-17 7-16 20l14 3m66-23q17 7 16 20l-14 3" fill="#83a66e" stroke="#567d59" strokeWidth="3"/><path d="M44 112q16-10 32 0v12q-16 8-32 0" fill="#85a76f" stroke="#567d59" strokeWidth="2"/><path d="M32 66q10 7 20 0m16 0q10 7 20 0" stroke="#a85d54" strokeWidth="3" strokeLinecap="round"/><path d="m56 31 4 5 5-5" stroke="#a85d54" strokeWidth="2.5" strokeLinecap="round"/></g>}
-    {skinData.material === 'penguin' && <g><path d="M28 40 9 30l6 25 16 4m61-19 19-10-6 25-16 4" fill="#42586d" stroke="#34485a" strokeWidth="3"/><path d="M35 24q25-15 50 0l8 42q-4 21-33 23-29-2-33-23z" fill="#34485a" stroke="#293c4c" strokeWidth="3"/><ellipse cx="60" cy="58" rx="23" ry="26" fill="#fff7e8"/><path d="m52 57 8 8 8-8z" fill="#f4bd69"/><path d="m47 110-8 10 18-2m24-8 8 10-18-2" fill="#f4bd69" stroke="#ad7541" strokeWidth="2"/><path d="M46 43h4m20 0h4" stroke="#fff" strokeWidth="4" strokeLinecap="round"/></g>}
-    {skinData.material === 'crab' && <g><path d="M30 80Q8 80 12 54q2-13 13-18l6 11m58 33q22 0 18-26-2-13-13-18l-6 11" fill="#e78759" stroke="#a64f47" strokeWidth="4"/><path d="m22 52-9-8 12-3m73 11 9-8-12-3" stroke="#a64f47" strokeWidth="4" strokeLinecap="round"/><path d="M42 33V18m36 15V18" stroke="#a64f47" strokeWidth="4"/><circle cx="42" cy="16" r="7" fill="#fff4db" stroke="#a64f47" strokeWidth="3"/><circle cx="78" cy="16" r="7" fill="#fff4db" stroke="#a64f47" strokeWidth="3"/><path d="M31 91h58l-7 20H39z" fill="#e78759" stroke="#a64f47" strokeWidth="3"/><path d="M43 115v8m17-8v8m17-8v8" stroke="#a64f47" strokeWidth="5" strokeLinecap="round"/><path d="M48 65q12 9 24 0" stroke="#914640" strokeWidth="3" strokeLinecap="round"/></g>}
-    {skinData.material === 'bee' && <g><path d="M30 39Q6 24 12 56q7 13 24 3m52-20q24-15 18 17-7 13-24 3" fill="#dff7ee" fillOpacity=".85" stroke="#6f998e" strokeWidth="3"/><path d="M40 13 32 3m48 10 8-10" stroke="#614b3e" strokeWidth="4" strokeLinecap="round"/><circle cx="40" cy="12" r="5" fill="#edbd4d"/><circle cx="80" cy="12" r="5" fill="#edbd4d"/><path d="M25 40q35-14 70 0v33q-35 19-70 0z" fill="#edbd4d" stroke="#765340" strokeWidth="3"/><path d="M26 50q34-10 68 0v9q-34 12-68 0zm3 21q31 11 62 0v9q-31 13-62 0z" fill="#493d38"/><path d="M48 115v9m24-9v9" stroke="#493d38" strokeWidth="6" strokeLinecap="round"/><path d="M46 31h5m18 0h5" stroke="#fff9df" strokeWidth="4" strokeLinecap="round"/></g>}
-    {skinData.material === 'fairy' && <g><path d="M30 49Q4 17 17 13q19 1 34 34m39 2q26-32 13-36-19 1-34 34" fill="#e9d4f0" fillOpacity=".9" stroke="#9d7bb4" strokeWidth="3"/><path d="m60 1 4 10 11 3-11 4-4 11-4-11-11-4 11-3z" fill="#f2d980" stroke="#a782ad" strokeWidth="2"/><path d="M29 38q31-15 62 0v37q-31 16-62 0z" fill="#aa91c7" stroke="#705e93" strokeWidth="3"/><path d="M41 87 26 111l21-6 13 13 13-13 21 6-15-24" fill="#e6b8db" stroke="#8f73aa" strokeWidth="3"/><path d="M44 56q8 7 16 0m0 0q8 7 16 0" stroke="#65527d" strokeWidth="3" strokeLinecap="round"/><path d="m60 96 4 8-4 8-4-8z" fill="#f4d876"/></g>}
-    <rect x="28" y="35" width="64" height="35" rx="12" fill={`url(#bip-panel-${uid})`} stroke={wood ? '#9d7046' : 'none'} strokeWidth="1.5" />
-    {happy ? <g stroke="#284c41" strokeWidth="5" strokeLinecap="round"><path d="m39 50 4-4 4 4m26 0 4-4 4 4" /></g> : <g fill="#284c41"><rect x="39" y="44" width="8" height="12" rx="4" /><rect x="73" y="44" width="8" height="12" rx="4" /></g>}
-    <path d="M54 57q6 7 12 0" stroke="#284c41" strokeWidth="3" strokeLinecap="round" />
-    <circle cx="35" cy="59" r="3" fill="#e49f7b" opacity=".6" /><circle cx="85" cy="59" r="3" fill="#e49f7b" opacity=".6" />
-    {skinData.material === 'cosmos' && <g fill="#fff0a7" stroke="#8162be" strokeWidth="2"><path d="m86 27 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z"/><circle cx="32" cy="66" r="2" fill="#fff" stroke="none"/></g>}
-    {skinData.material === 'ice' && <g stroke="#46aab8" strokeWidth="2"><path d="m60 9 8 10-8 10-8-10z" fill="#d9fbff"/><path d="m34 65 3-6 4 6m42 0 4-6 3 6" stroke="#8de8ef"/></g>}
-    {skinData.material === 'lava' && <g><path d="M60 7c10 10 8 16 0 21-8-5-10-11 0-21Z" fill="#ffcd70" stroke="#d2573c" strokeWidth="2"/><path d="M29 64q10-6 18 0m26 0q10-6 18 0" stroke="#ffb347" strokeWidth="4" strokeLinecap="round"/></g>}
-    {wood && <g><path d="M22 38q4-18 17-22l14 9-8 12-14-4m47 0q8-20 23-14l8 9-8 10-14-8" fill="#527447" stroke="#3f643d" strokeWidth="2.5"/><path d="m53 29 7-14 7 14" fill="#9ecb67" stroke="#3f643d" strokeWidth="2"/><path d="M22 39q-8-8-12 1 7 8 12-1Zm76 0q8-8 12 1-7 8-12-1Z" fill="#b6d674" stroke="#527447" strokeWidth="2"/></g>}
-    {skinData.material === 'royal' && <g><path d="m39 29 5-15 10 10 6-17 7 17 10-10 5 15z" fill="#ffe995" stroke="#b58520" strokeWidth="2.5"/><path d="M39 30h42" stroke="#fff1a0" strokeWidth="4"/><circle cx="60" cy="20" r="3" fill="#dc5b70"/></g>}
-    {skinData.material === 'rainbow' && <g fill="none" strokeLinecap="round"><path d="M20 33a40 31 0 0 1 80 0" stroke="#f27c72" strokeWidth="5"/><path d="M26 31a34 25 0 0 1 68 0" stroke="#f4c94f" strokeWidth="4"/><path d="M32 29a28 19 0 0 1 56 0" stroke="#68c99c" strokeWidth="4"/></g>}
+    <ellipse cx="60" cy="131" rx="31" ry="6.5" fill="#24473c" opacity=".13"/>
+    <path d="M43 112v12m34-12v12" stroke={metal ? '#34465d' : '#294e43'} strokeWidth="12" strokeLinecap="round"/>
+    <path d="M40 121h7m26 0h7" stroke="#ffffff" strokeOpacity=".35" strokeWidth="2.5" strokeLinecap="round"/>
+    <path d={happy ? 'M27 83 13 68m80 15 14-15' : 'M28 84 17 96m75-12 11 12'} stroke={body} strokeWidth="13" strokeLinecap="round"/>
+    <circle cx="16" cy="68" r="4" fill={accent} opacity=".9"/><circle cx="104" cy="68" r="4" fill={accent} opacity=".9"/>
+    <rect x="28" y="70" width="64" height="48" rx="17" fill={body} stroke={wood ? '#68462f' : metal ? accent : '#ffffff'} strokeOpacity={wood || metal ? 1 : .22} strokeWidth={wood || metal ? 2 : 1}/>
+    <path d="M38 77q22 8 44 0" stroke="#ffffff" strokeOpacity=".3" strokeWidth="2.5" strokeLinecap="round"/>
+    <rect x="42" y="86" width="36" height="25" rx="8" fill={wood ? '#f5dfbe' : '#fffaf0'} stroke={accent} strokeOpacity=".45" strokeWidth="1.5"/>
+    {['cat', 'unicorn', 'fairy'].includes(material)
+      ? <g><path d="M60 91c-5-6-12 1-7 6l7 6 7-6c5-5-2-12-7-6Z" fill={accent}/><path d="M54 100l6 3 6-3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></g>
+      : ['cosmos', 'spaceship', 'royal'].includes(material)
+        ? <path d="m60 89 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" fill={accent} stroke="#fff7d1" strokeWidth="1"/>
+        : ['bee', 'axolotl'].includes(material)
+          ? <g><circle cx="51" cy="98" r="3" fill={accent}/><circle cx="60" cy="98" r="3" fill={robotColor}/><circle cx="69" cy="98" r="3" fill={accent}/></g>
+          : ['capybara', 'mushroom'].includes(material)
+            ? <g><circle cx="60" cy="99" r="5" fill={accent}/><circle cx="60" cy="99" r="2" fill="#fff7dc"/></g>
+            : material === 'submarine'
+              ? <g><circle cx="60" cy="99" r="7" stroke={accent} strokeWidth="2.5"/><circle cx="60" cy="99" r="2.5" fill={accent}/></g>
+              : <path d="m53 97 5 5 9-10" stroke={accent} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>}
+    <path d="M44 112h32" stroke="#ffffff" strokeOpacity=".32" strokeWidth="2" strokeLinecap="round"/>
+    {hasAntenna && <g><path d="M60 27V14" stroke={wood ? '#704b31' : '#365e4c'} strokeWidth="4.5" strokeLinecap="round"/><circle cx="60" cy="10" r="7" fill={accent} stroke="#fff" strokeOpacity=".65" strokeWidth="2"/><circle cx="58" cy="8" r="2" fill="#fff" opacity=".8"/></g>}
+    {material === 'cat' && <g stroke="#805e92" strokeWidth="2.5" strokeLinejoin="round"><path d="M25 39 27 11 49 29 53 40Z" fill={body}/><path d="M67 40 71 29 93 11 95 39Z" fill={body}/></g>}
+    {material === 'axolotl' && <g fill={accent} stroke="#a85e9b" strokeWidth="1.5"><ellipse cx="21" cy="34" rx="7" ry="13" transform="rotate(-25 21 34)"/><ellipse cx="15" cy="48" rx="6" ry="11" transform="rotate(-10 15 48)"/><ellipse cx="21" cy="61" rx="6" ry="10" transform="rotate(18 21 61)"/><ellipse cx="99" cy="34" rx="7" ry="13" transform="rotate(25 99 34)"/><ellipse cx="105" cy="48" rx="6" ry="11" transform="rotate(10 105 48)"/><ellipse cx="99" cy="61" rx="6" ry="10" transform="rotate(-18 99 61)"/></g>}
+    {material === 'capybara' && <g><ellipse cx="36" cy="29" rx="8" ry="7" fill={body} stroke="#91613f" strokeWidth="2"/><ellipse cx="84" cy="29" rx="8" ry="7" fill={body} stroke="#91613f" strokeWidth="2"/></g>}
+    {material === 'unicorn' && <g><path d="M52 31 60 3 68 31Z" fill="#ffe9a7" stroke="#b47eb1" strokeWidth="2"/><path d="m57 17 6-7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"/><path d="M23 45q-9-18 5-25 8 14 17 19m52 6q9-18-5-25-8 14-17 19" fill="#dc79bd" stroke="#a65b9c" strokeWidth="2.5"/></g>}
+    {material === 'dragon' && <g><path d="M24 46 5 29l6 29 14 6m71-18 19-17-6 29-14 6" fill="#dd7663" stroke="#99464a" strokeWidth="3" strokeLinejoin="round"/><path d="m42 28 10-18 10 18m6 0 10-18 10 18" fill="#ffd36a" stroke="#ad5b4f" strokeWidth="2.5" strokeLinejoin="round"/></g>}
+    {material === 'submarine' && <g><path d="M22 44 7 35v31l17-6m57-16 15-9v31l-17-6" fill="#f3c568" stroke="#377f90" strokeWidth="2.5" strokeLinejoin="round"/><circle cx="14" cy="70" r="3" fill="#8bdbe6"/><circle cx="106" cy="70" r="3" fill="#8bdbe6"/></g>}
+    {material === 'spaceship' && <g><path d="M29 60 12 69l14 13 12-7m45-15 17 9-14 13-12-7" fill="#91e1dc" stroke="#48558f" strokeWidth="3" strokeLinejoin="round"/><path d="M45 113q15 9 30 0v8q-15 8-30 0" fill="#ed7186"/></g>}
+    {material === 'mushroom' && <g><path d="M19 37q4-28 41-30 37 2 41 30-10 9-41 9T19 37Z" fill="#d7775f" stroke="#8d4c49" strokeWidth="3"/><circle cx="43" cy="23" r="6" fill="#fff3d4"/><circle cx="71" cy="17" r="7" fill="#fff3d4"/><circle cx="83" cy="32" r="4" fill="#fff3d4"/></g>}
+    {material === 'penguin' && <g><path d="M27 47 8 33l8 28 14 5m57-19 19-14-8 28-14 5" fill="#42586d" stroke="#34485a" strokeWidth="3" strokeLinejoin="round"/></g>}
+    {material === 'crab' && <g><path d="M29 69Q6 70 12 47q3-12 14-13l7 13m58 22q23 1 17-22-3-12-14-13l-7 13" fill="#e78759" stroke="#a64f47" strokeWidth="3.5" strokeLinejoin="round"/><path d="m20 40-8-9 13 1m75 8 8-9-13 1" stroke="#a64f47" strokeWidth="3.5" strokeLinecap="round"/></g>}
+    {material === 'bee' && <g><ellipse cx="30" cy="43" rx="15" ry="10" transform="rotate(-32 30 43)" fill="#dff7ee" fillOpacity=".9" stroke="#79a99a" strokeWidth="2.5"/><ellipse cx="90" cy="43" rx="15" ry="10" transform="rotate(32 90 43)" fill="#dff7ee" fillOpacity=".9" stroke="#79a99a" strokeWidth="2.5"/><path d="M42 27 34 12m44 15 8-15" stroke="#614b3e" strokeWidth="3.5" strokeLinecap="round"/><circle cx="34" cy="12" r="4.5" fill="#edbd4d"/><circle cx="86" cy="12" r="4.5" fill="#edbd4d"/></g>}
+    {material === 'fairy' && <g><path d="M29 47Q2 18 16 11q20 1 37 34m38 2q27-29 13-36-20 1-37 34" fill="#e9d4f0" fillOpacity=".82" stroke="#9d7bb4" strokeWidth="2.8"/><path d="m60 1 4 10 11 3-11 4-4 11-4-11-11-4 11-3z" fill="#f2d980" stroke="#a782ad" strokeWidth="1.7"/></g>}
+    <rect x="18" y="24" width="84" height="56" rx={material === 'capybara' ? 23 : 20} fill={body} stroke={wood ? '#68462f' : metal ? accent : '#ffffff'} strokeWidth={wood || metal ? 2 : 1.2} strokeOpacity={wood || metal ? 1 : .24}/>
+    <path d="M27 35q7-9 22-7" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity={material === 'gloss' || wood || material === 'capybara' ? .5 : .27}/>
+    <path d="M27 74q33 8 66 0" stroke="#263e42" strokeOpacity=".09" strokeWidth="2"/>
+    {wood && <g><path d="M22 39q4-18 17-22l14 9-8 12-14-4m47 0q8-20 23-14l8 9-8 10-14-8" fill="#527447" stroke="#3f643d" strokeWidth="2"/><path d="m53 29 7-14 7 14" fill="#9ecb67" stroke="#3f643d" strokeWidth="1.5"/></g>}
+    {material === 'cat' && <g><path d="M31 31 31 17 44 30m32 0 13-13v14" fill="#f7c7e4" stroke="#805e92" strokeWidth="1.5"/><path d="m26 33 6-7m62 7-6-7" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/></g>}
+    {material === 'axolotl' && <g fill="#fff" opacity=".78"><circle cx="22" cy="38" r="2"/><circle cx="18" cy="50" r="2"/><circle cx="22" cy="60" r="2"/><circle cx="98" cy="38" r="2"/><circle cx="102" cy="50" r="2"/><circle cx="98" cy="60" r="2"/></g>}
+    {material === 'unicorn' && <g><path d="M22 43q-4 12 6 22m70-22q4 12-6 22" stroke="#9b75ca" strokeWidth="5" strokeLinecap="round"/><circle cx="45" cy="33" r="3" fill="#fff0b5"/><circle cx="75" cy="33" r="3" fill="#fff0b5"/></g>}
+    {material === 'royal' && <g><path d="m37 28 6-15 11 10 6-17 7 17 10-10 6 15z" fill="#ffe995" stroke="#b58520" strokeWidth="2.2"/><path d="M39 29h42" stroke="#fff1a0" strokeWidth="3.5"/><circle cx="60" cy="20" r="3" fill="#dc5b70"/></g>}
+    {material === 'rainbow' && <g fill="none" strokeLinecap="round"><path d="M22 29a38 24 0 0 1 76 0" stroke="#f27c72" strokeWidth="4.5"/><path d="M28 28a32 19 0 0 1 64 0" stroke="#f4c94f" strokeWidth="4"/><path d="M34 27a26 14 0 0 1 52 0" stroke="#68c99c" strokeWidth="3.5"/></g>}
+    {material === 'ninja'
+      ? <g><rect x="28" y="38" width="64" height="24" rx="9" fill="#263246" stroke="#182236" strokeWidth="2"/><path d="M82 42 111 35l-7 11 6 9-29-5" fill="#e65c65" stroke="#ad414e" strokeWidth="2" strokeLinejoin="round"/><path d="M39 49h8m26 0h8" stroke="#fff" strokeWidth="5" strokeLinecap="round"/><path d="M48 56h24" stroke="#8390a8" strokeWidth="2" strokeLinecap="round"/></g>
+      : material === 'neon'
+        ? <g><rect x="28" y="36" width="64" height="35" rx="11" fill="#202543" stroke={accent} strokeWidth="2"/><g filter={'url(#robot-glow-' + uid + ')'} stroke={accent} strokeWidth="2.4" fill="none"><rect x="38" y="43" width="13" height="12" rx="4"/><rect x="69" y="43" width="13" height="12" rx="4"/><path d="M48 62q12 6 24 0" strokeLinecap="round"/></g></g>
+        : material === 'submarine'
+          ? <g><circle cx="60" cy="52" r="19" fill="#d5f9f7" stroke="#367d8d" strokeWidth="4"/><circle cx="60" cy="52" r="14.5" fill="#a7e6e7" stroke="#fff" strokeOpacity=".75" strokeWidth="1.5"/><ellipse cx="53" cy="45" rx="5" ry="3" fill="#fff" opacity=".7"/><circle cx="54" cy="51" r="2.4" fill="#2d5965"/><circle cx="66" cy="51" r="2.4" fill="#2d5965"/><path d="M53 58q7 6 14 0" stroke="#2d5965" strokeWidth="2.4" strokeLinecap="round"/></g>
+          : material === 'penguin'
+            ? <g><ellipse cx="60" cy="52" rx="22" ry="23" fill="#fff7e8" stroke="#c7d4d7" strokeWidth="1.5"/><circle cx="51" cy="46" r="3.2" fill="#293747"/><circle cx="69" cy="46" r="3.2" fill="#293747"/><path d="m52 53 8 8 8-8Z" fill="#f4bd69" stroke="#ad7541" strokeWidth="1.5" strokeLinejoin="round"/></g>
+            : <g><rect x="28" y="35" width="64" height="36" rx="12" fill={face} stroke={wood ? '#9d7046' : metal ? accent : '#ffffff'} strokeOpacity={wood || metal ? .8 : .52} strokeWidth="1.5"/>{happy ? <g stroke="#284c41" strokeWidth="4.5" strokeLinecap="round"><path d="m39 49 4-4 4 4m26 0 4-4 4 4"/></g> : <g fill="#284c41"><rect x="39" y="43" width="8" height="12" rx="4"/><rect x="73" y="43" width="8" height="12" rx="4"/></g>}<path d="M54 58q6 7 12 0" stroke="#284c41" strokeWidth="2.8" strokeLinecap="round"/><circle cx="35" cy="59" r="3.3" fill="#ef9fa1" opacity=".63"/><circle cx="85" cy="59" r="3.3" fill="#ef9fa1" opacity=".63"/></g>}
+    {['cat', 'capybara'].includes(material) && <g stroke="#714f66" strokeWidth="1.8" strokeLinecap="round"><path d="M30 56 18 53m12 8-12 2m72-7 12-3m-12 8 12 2"/><path d="m57 56 3 3 3-3" fill="#f3a4bb" strokeLinejoin="round"/></g>}
+    {material === 'capybara' && <g><ellipse cx="60" cy="59" rx="12" ry="7" fill="#e1b487"/><ellipse cx="60" cy="56" rx="5" ry="3.5" fill="#62463c"/><circle cx="58" cy="55" r="1.2" fill="#fff" opacity=".75"/><path d="M56 63q4 3 8 0" stroke="#62463c" strokeWidth="1.8" strokeLinecap="round"/></g>}
+    {material === 'cat' && <path d="M56 62q4 4 8 0" stroke="#714f66" strokeWidth="2.4" strokeLinecap="round"/>}
+    {material === 'axolotl' && <g fill="#fff" opacity=".82"><circle cx="43" cy="60" r="1.7"/><circle cx="77" cy="60" r="1.7"/><circle cx="47" cy="64" r="1.2"/><circle cx="73" cy="64" r="1.2"/></g>}
+    {material === 'dragon' && <g><path d="M54 59q6 5 12 0" stroke="#99464a" strokeWidth="2.5" strokeLinecap="round"/><circle cx="52" cy="61" r="1.6" fill="#99464a"/><circle cx="68" cy="61" r="1.6" fill="#99464a"/><path d="M32 70h5m46 0h5" stroke="#ffd36a" strokeWidth="2.5" strokeLinecap="round"/></g>}
+    {material === 'mushroom' && <g><path d="M24 37q-4-10-1-14m73 14q4-10 1-14" stroke="#9cc47c" strokeWidth="2.3" strokeLinecap="round"/><circle cx="40" cy="63" r="2" fill="#c77b72"/><circle cx="80" cy="63" r="2" fill="#c77b72"/></g>}
+    {material === 'crab' && <g><path d="M46 61q14 10 28 0" stroke="#914640" strokeWidth="2.8" strokeLinecap="round"/><circle cx="39" cy="60" r="3" fill="#ffb3a0" opacity=".8"/><circle cx="81" cy="60" r="3" fill="#ffb3a0" opacity=".8"/></g>}
+    {material === 'bee' && <g><path d="M34 77q26 11 52 0" stroke="#765340" strokeWidth="5" strokeLinecap="round"/><circle cx="50" cy="62" r="2" fill="#765340"/><circle cx="70" cy="62" r="2" fill="#765340"/><path d="M47 68q13 6 26 0" stroke="#765340" strokeWidth="2.3" strokeLinecap="round"/></g>}
+    {material === 'fairy' && <g><path d="m60 33 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" fill="#ffe99a" stroke="#a782ad" strokeWidth="1.5"/><circle cx="34" cy="63" r="2.5" fill="#efb4d8"/><circle cx="86" cy="63" r="2.5" fill="#efb4d8"/></g>}
+    {material === 'cosmos' && <g fill="#fff0a7" stroke="#8162be" strokeWidth="1.4"><path d="m86 29 2 5 6 1-4 4 1 6-5-3-5 3 1-6-4-4 6-1z"/><circle cx="34" cy="66" r="2" fill="#fff" stroke="none"/></g>}
+    {material === 'ice' && <g stroke="#46aab8" strokeWidth="1.8"><path d="m60 7 7 9-7 9-7-9z" fill="#d9fbff"/><path d="m36 65 3-5 3 5m35 0 3-5 3 5" stroke="#8de8ef"/></g>}
+    {material === 'lava' && <g><path d="M60 4c10 11 8 17 0 23-8-6-10-12 0-23Z" fill="#ffcd70" stroke="#d2573c" strokeWidth="1.8"/><path d="M29 65q10-6 18 0m26 0q10-6 18 0" stroke="#ffb347" strokeWidth="3.4" strokeLinecap="round"/></g>}
+    {material === 'royal' && <path d="M30 66q30 12 60 0" stroke="#f3d879" strokeWidth="5" strokeLinecap="round"/>}
+    {material === 'neon' && <g stroke={accent} strokeWidth="2" filter={'url(#robot-glow-' + uid + ')'}><path d="M32 76h10m36 0h10" strokeLinecap="round"/><circle cx="60" cy="76" r="2.5" fill={accent}/></g>}
+    {material === 'rainbow' && <g><circle cx="35" cy="59" r="2.8" fill="#f27c72"/><circle cx="85" cy="59" r="2.8" fill="#68c99c"/><path d="M48 64q12 8 24 0" stroke="#795fa7" strokeWidth="2.5" strokeLinecap="round"/></g>}
+    {material === 'spaceship' && <g><circle cx="60" cy="62" r="2.5" fill="#8debe4"/><path d="M48 66h24m-15 4h6" stroke="#52649c" strokeWidth="2" strokeLinecap="round"/></g>}
+    {material === 'unicorn' && <g><path d="m34 49 2 5 5 1-4 4 1 5-4-2-4 2 1-5-4-4 5-1zM84 49l2 5 5 1-4 4 1 5-4-2-4 2 1-5-4-4 5-1z" fill="#fff0b5"/><path d="M27 72q33 10 66 0" stroke="#bb74bd" strokeWidth="3" strokeLinecap="round"/></g>}
+    {material === 'cat' && <g fill="#fff1ad"><path d="m60 29 2 4 5 1-4 3 1 5-4-2-4 2 1-5-4-3 5-1z"/><circle cx="81" cy="31" r="1.8"/></g>}
+    {material === 'submarine' && <g fill="#8edee6"><circle cx="38" cy="30" r="3"/><circle cx="88" cy="72" r="2.4"/><circle cx="28" cy="77" r="2"/></g>}
+    {material === 'axolotl' && <path d="M38 31q6-5 12 0m20 0q6-5 12 0" stroke="#a85e9b" strokeWidth="2" strokeLinecap="round"/>}
+    {material === 'bee' && <path d="M46 31h5m18 0h5" stroke="#765340" strokeWidth="3" strokeLinecap="round"/>}
+    {material === 'fairy' && <path d="M60 79v5m-3-2 3-3 3 3" stroke="#e5b75e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>}
+    <path d="M33 36q6-6 13-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity=".35"/>
   </svg>;
 }
 

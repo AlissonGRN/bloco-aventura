@@ -21,7 +21,7 @@ test('classroom stickers include positive behavior, respect, care, participation
   assert.equal(data.teams[0].stickers.length,additions.length);
 });
 test('Bip skins unlock from completed challenges or teacher stickers and saved teams cannot select locked skins',()=>{
-  assert.equal(ROBOT_SKINS.length,21);
+  assert.equal(ROBOT_SKINS.length,25);
   assert.equal(unlockedRobotSkins({}),5);
   assert.equal(unlockedRobotSkins(Object.fromEntries(Array.from({length:15},(_,i)=>[`1-${i+1}`,{stars:2}]))),7);
   const progress=Object.fromEntries(Array.from({length:4},(_,i)=>[`1-${i+1}`,{stars:2}]));
@@ -33,13 +33,32 @@ test('Bip skins unlock from completed challenges or teacher stickers and saved t
   assert.equal(skinUnlocked(19,{},earned),false);
   const awarded=validateSave({version:2,teams:[{...original,stickers:earned,avatar:13}]}).teams[0];
   assert.equal(awarded.avatar,13,'the cloud/local saved team can equip a skin earned from stickers');
-  const teacherGift=validateSave({version:2,teams:[{...original,avatar:20,bonusSkins:[20,20,-1,22]}]}).teams[0];
+  const teacherGift=validateSave({version:2,teams:[{...original,avatar:20,bonusSkins:[20,20,-1,26]}]}).teams[0];
   assert.deepEqual(teacherGift.bonusSkins,[20],'specific teacher unlocks are kept and invalid indices are discarded');
   assert.equal(teacherGift.avatar,20,'a teacher-granted skin can be equipped without earning its sticker threshold');
   assert.equal(unlockedRobotSkins({},[],[20]),6,'a manual unlock counts once even if it is not adjacent to other skins');
   assert.equal(skinUnlocked(20,{},[],[20]),true);
   const locked=validateSave({version:2,teams:[{...original,stickers:earned.slice(0,2),avatar:13}]}).teams[0];
   assert.equal(locked.avatar,4,'skin unlocked by stickers cannot be selected early');
+});
+test('four special skins require an explicit teacher grant and can be saved after granting', () => {
+  const exclusive = ROBOT_SKINS.map((skin, index) => ({ skin, index })).filter(item => item.skin.teacherOnly);
+  assert.deepEqual(exclusive.map(item => item.skin.name), [
+    'Gatinho Lunar', 'Axolote Mágico', 'Capivara Aventureira', 'Unicórnio Algodão Doce',
+  ]);
+  assert.deepEqual(exclusive.map(item => item.index), [21, 22, 23, 24], 'new skins are appended so existing saved avatar indexes stay stable');
+  const progress = Object.fromEntries(Array.from({ length: 300 }, (_, i) => ['challenge-' + (i + 1), { stars: 3 }]));
+  const stickers = Array.from({ length: 100 }, (_, i) => ({ id: 'sticker-' + i, type: 'logic' }));
+  for (const { index } of exclusive) {
+    assert.equal(skinUnlocked(index, progress, stickers), false, 'progress and stickers alone must not unlock a teacher-only skin');
+    assert.equal(skinUnlocked(index, progress, stickers, [index]), true, 'an explicit teacher grant unlocks the skin');
+  }
+  assert.equal(unlockedRobotSkins(progress, stickers), 21, 'all regular skins can unlock, while the four teacher-only skins remain locked');
+  const saved = validateSave({ version: 2, teams: [{ ...original, avatar: 24, bonusSkins: [24] }] }).teams[0];
+  assert.equal(saved.avatar, 24);
+  assert.deepEqual(saved.bonusSkins, [24]);
+  const denied = validateSave({ version: 2, teams: [{ ...original, avatar: 24 }] }).teams[0];
+  assert.notEqual(denied.avatar, 24, 'importing an ungranted teacher-only avatar must not bypass the lock');
 });
 test('Backup merge preserves best stars and unions history without duplicating teams',()=>{
   const first=validateSave({version:1,teams:[original]});
