@@ -44,18 +44,20 @@ export const ROBOT_SKINS = [
   { name: 'Caranguejo Inventor', color: '#d97854', accent: '#f1d46f', material: 'crab', unlockAt: 0, stickerUnlockAt: 25 },
   { name: 'Abelha Mensageira', color: '#edbd4d', accent: '#754f3f', material: 'bee', unlockAt: 0, stickerUnlockAt: 30 },
   { name: 'Fada das Engrenagens', color: '#9278bb', accent: '#e9b8d8', material: 'fairy', unlockAt: 0, stickerUnlockAt: 40 },
+  { name: 'Gatinho Lunar', color: '#b7a3ed', accent: '#ffc9e5', material: 'cat', unlockAt: 0, teacherOnly: true },
+  { name: 'Axolote Mágico', color: '#f2a2c4', accent: '#7de0d0', material: 'axolotl', unlockAt: 0, teacherOnly: true },
+  { name: 'Capivara Aventureira', color: '#bd895c', accent: '#f4d28d', material: 'capybara', unlockAt: 0, teacherOnly: true },
+  { name: 'Unicórnio Algodão Doce', color: '#e7a6dc', accent: '#9db5ff', material: 'unicorn', unlockAt: 0, teacherOnly: true },
 ];
-export const unlockedRobotSkins = (progress, stickers = [], bonusSkins = []) => {
-  const completed = Object.keys(progress || {}).length;
-  const received = Array.isArray(stickers) ? stickers.length : nonNegative(stickers);
-  const progressUnlocked = ROBOT_SKINS.filter(skin => !skin.stickerUnlockAt && skin.unlockAt <= completed).length;
-  const stickerUnlocked = ROBOT_SKINS.filter(skin => skin.stickerUnlockAt && received >= skin.stickerUnlockAt).length;
-  return progressUnlocked + stickerUnlocked + (Array.isArray(bonusSkins) ? bonusSkins.filter(index => Number.isInteger(index) && index >= 0 && index < ROBOT_SKINS.length && !skinUnlocked(index, progress, stickers)).length : 0);
-};
+export const unlockedRobotSkins = (progress, stickers = [], bonusSkins = []) => (
+  ROBOT_SKINS.filter((_, index) => skinUnlocked(index, progress, stickers, bonusSkins)).length
+);
 export const skinUnlocked = (index, progress = {}, stickers = [], bonusSkins = []) => {
   const skin = ROBOT_SKINS[index];
   if (!skin) return false;
   if (Array.isArray(bonusSkins) && bonusSkins.includes(index)) return true;
+  // These character skins are rewards selected only by the teacher.
+  if (skin.teacherOnly) return false;
   // Count archived progress too: pruning a mission must not revoke an already-earned skin.
   return skin.stickerUnlockAt ? (stickers?.length || 0) >= skin.stickerUnlockAt : Object.keys(progress || {}).length >= skin.unlockAt;
 };
