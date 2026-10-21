@@ -41,13 +41,15 @@ export const ROBOT_SKINS = [
   { name: 'Nave Estelar', color: '#6473b7', accent: '#a7f3e8', material: 'spaceship', unlockAt: 0, stickerUnlockAt: 10 },
   { name: 'Guardião Cogumelo', color: '#b96954', accent: '#d9e895', material: 'mushroom', unlockAt: 0, stickerUnlockAt: 15 },
   { name: 'Foguete Pinguim', color: '#657f9d', accent: '#f4bd69', material: 'penguin', unlockAt: 0, stickerUnlockAt: 20 },
-  { name: 'Caranguejo Inventor', color: '#d97854', accent: '#f1d46f', material: 'crab', unlockAt: 0, stickerUnlockAt: 25 },
+  { name: 'Leão Guardião', color: '#e6ad4c', accent: '#8b522c', material: 'lion', unlockAt: 0, stickerUnlockAt: 25 },
   { name: 'Abelha Mensageira', color: '#edbd4d', accent: '#754f3f', material: 'bee', unlockAt: 0, stickerUnlockAt: 30 },
   { name: 'Fada das Engrenagens', color: '#9278bb', accent: '#e9b8d8', material: 'fairy', unlockAt: 0, stickerUnlockAt: 40 },
   { name: 'Gatinho Lunar', color: '#b7a3ed', accent: '#ffc9e5', material: 'cat', unlockAt: 0, teacherOnly: true },
   { name: 'Axolote Mágico', color: '#f2a2c4', accent: '#7de0d0', material: 'axolotl', unlockAt: 0, teacherOnly: true },
   { name: 'Capivara Aventureira', color: '#bd895c', accent: '#f4d28d', material: 'capybara', unlockAt: 0, teacherOnly: true },
   { name: 'Unicórnio Algodão Doce', color: '#e7a6dc', accent: '#9db5ff', material: 'unicorn', unlockAt: 0, teacherOnly: true },
+  { name: 'Fantasma Fofinho', color: '#dfe6ff', accent: '#8e91d9', material: 'ghost', unlockAt: 0, stickerUnlockAt: 45 },
+  { name: 'Alien Gelatinoso', color: '#a4df86', accent: '#4b9f70', material: 'alien', unlockAt: 0, stickerUnlockAt: 50 },
 ];
 export const unlockedRobotSkins = (progress, stickers = [], bonusSkins = []) => (
   ROBOT_SKINS.filter((_, index) => skinUnlocked(index, progress, stickers, bonusSkins)).length
