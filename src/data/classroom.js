@@ -70,7 +70,7 @@ const known = new Set(LEVELS.map(level => level.id));
 // Keep retired level IDs in saved history/progress so a curriculum revision never
 // erases students' earlier work. Retired challenges do not count toward current stats.
 const isKnownOrHistoricalLevel = id => known.has(id)
-  || (typeof id === 'string' && /^(?:[1-9]|1[0-3])-(?:[1-9]|[12]\\d|3\\d|40)$/.test(id));
+  || (typeof id === 'string' && /^(?:[1-9]|1[0-3])-(?:[1-9]|[12]\d|3\d|40)$/.test(id));
 const cleanIds = value => Array.isArray(value) ? [...new Set(value.filter(isKnownOrHistoricalLevel))] : [];
 const date = value => typeof value === 'string' && Number.isFinite(Date.parse(value)) ? value : null;
 const nonNegative = value => Math.min(100000, Math.max(0, Math.floor(Number(value) || 0)));
