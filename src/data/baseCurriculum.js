@@ -57,7 +57,7 @@ const firstPaths = ['R', 'RR', 'RRR', 'RU', 'RRU', 'RUU', 'RRUU', 'UURR', 'RRULL
 const firstNames = ['Olá, Bip!', 'Mais um passo', 'Siga as setas', 'Uma nova direção', 'Ache o cristal', 'Vamos subir?', 'A curva do jardim', 'Primeiro, para cima', 'De volta pelo jardim', 'Explorador do jardim'];
 const track1 = firstPaths.map((p, i) => level(1, i + 1, firstNames[i], p, seq(p)));
 
-const secondPaths = ['RRUU', 'UURR', 'RRDDRR', 'URRUL', 'RRUUR', 'UURRDD', 'RRUUULL', 'UURRUUR', 'RRUULLUURR', 'RUURRDDRUU'];
+const secondPaths = ['RRDURU', 'URURDD', 'RRDDRR', 'URRUL', 'RRUUR', 'UURRDD', 'RRUUULL', 'UURRUUR', 'RRUULLUURR', 'RUURRDDRUU'];
 const secondNames = ['Uma ilha para explorar', 'Pense antes de andar', 'Contorne a praia', 'Algo fora do lugar', 'O caminho dos cristais', 'Uma grande volta', 'Encontre o erro', 'Plano de explorador', 'O tesouro da ilha', 'Conserte a expedição'];
 const track2 = secondPaths.map((p, i) => level(2, i + 1, secondNames[i], p, seq(p), [3, 6, 9].includes(i) ? {
   concept: 'Encontrar e corrigir erros',
