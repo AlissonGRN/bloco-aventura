@@ -61,3 +61,32 @@ test('Teacher password is salted, wrong passwords fail and corrupt locks fail cl
   assert.throws(()=>validateSave({version:2,teams:[{...original,members:[]}] }));
 });
 
+
+test('retired challenge progress and previously earned skins survive curriculum pruning', () => {
+  const legacyProgress = Object.fromEntries(Array.from({ length: 5 }, (_, index) => [
+    `12-${index + 1}`,
+    { stars: 3, completedAt: '2026-10-05T10:00:00Z' },
+  ]));
+  const save = validateSave({
+    version: 2,
+    teams: [{
+      ...original,
+      progress: legacyProgress,
+      attempts: { '7-3': { count: 4, lastAt: '2026-10-05T10:00:00Z' } },
+      lastLevel: '12-5',
+      avatar: 5,
+      sessions: [{
+        id: 'legacy-session', startedAt: '2026-10-05T09:00:00Z',
+        endedAt: '2026-10-05T09:50:00Z', played: ['12-1'], completed: ['12-1'],
+        attempts: 2, feeling: 'okay', difficulty: 'right',
+      }],
+    }],
+  });
+  const team = save.teams[0];
+  assert.deepEqual(Object.keys(team.progress).sort(), Object.keys(legacyProgress).sort());
+  assert.equal(team.attempts['7-3'].count, 4);
+  assert.equal(team.lastLevel, '12-5');
+  assert.equal(team.avatar, 5, 'a skin earned before curriculum pruning remains usable');
+  assert.deepEqual(team.sessions[0].completed, ['12-1']);
+  assert.equal(ROBOT_SKINS[team.avatar].name, 'Cosmos');
+});

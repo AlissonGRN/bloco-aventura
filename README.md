@@ -4,7 +4,7 @@ Aplicação em **React 19 + Vite + Tailwind CSS 4**, em português, para aulas d
 
 ## O que já funciona
 
-- **5 níveis de dificuldade livres, 200 desafios**: 40 por nível, em quatro trilhas de dez.
+- **10 mundos de aprendizagem e 170 desafios ativos**, distribuídos por trilhas de dez. Cada mundo tem apenas a quantidade necessária para ensinar e consolidar seu objetivo.
 - Sequências, orientação espacial, reconhecimento de padrões, repetição, condições, funções, depuração, otimização e decomposição introduzidos progressivamente.
 - Equipes individuais, duplas, trios e quartetos; primeiro nome dos alunos, avatar e escolha de turma.
 - Troca de equipes no mesmo computador, com progresso independente e migração dos dados da versão anterior.
@@ -12,7 +12,7 @@ Aplicação em **React 19 + Vite + Tailwind CSS 4**, em português, para aulas d
 - Todos os desafios ficam abertos, sem perder vidas. As soluções são avaliadas por um interpretador próprio, sem `eval`.
 - Feedback ao encerrar uma sessão: carinhas, dificuldade percebida e comentário opcional. Também é possível encerrar sem responder.
 - Painel do professor com senha, filtro por turma, busca por nomes, progresso por desafio, contagem de tentativas e histórico de sessões.
-- Oito stickers que o professor pode entregar com um recado. As equipes os encontram em Conquistas.
+- 18 stickers que o professor pode entregar com um recado. As equipes os encontram em Conquistas.
 - Turmas fixas: 1º A/B/C, 2º A/B, 3º A/B/C, 4º A/B/C e 5º A/B/C.
 - Alunos não editam cadastros de equipe; alterações ficam no painel do professor. O banco separa os dados de cada equipe.
 - Backup JSON e importação combinando equipes e melhores resultados, sem incluir a senha.
@@ -46,17 +46,24 @@ npm run preview
 5. Reserve o final da aula para **Encerrar sessão**. O feedback e os resultados aparecem no painel do professor.
 6. Entregue stickers abrindo os detalhes da equipe no painel.
 
-### Organização sugerida
+### Progressão dos mundos
 
-| Nível | Conteúdos combinados | Quatro trilhas de dez desafios |
+| Mundo | Objetivo novo | Desafios / trilhas |
 | --- | --- | --- |
-| 1 | Sequências, direções, padrões visuais e correção | Primeiros passos; Caminhos e padrões; Detetives das setas; Expedição do jardim |
-| 2 | Planejamento, sequências, repetição e economia de blocos | Planejar e conferir; Rotas e tesouros; Descobrindo repetições; Planos mais inteligentes |
-| 3 | Repetição, depuração, condições e otimização | O poder dos padrões; Repetir e corrigir; Primeiras decisões; Juntar as peças |
-| 4 | Condições, múltiplos cenários, funções e repetições | Decidir pelo caminho; Um plano, muitos cenários; Oficina de correções; Inventar e reutilizar |
-| 5 | Decomposição, integração, testes e escolha de estratégias | Peças de uma invenção; Decompor e combinar; Laboratório de testes; Grandes expedições |
+| 1. Jardim dos primeiros passos | Entender setas, sequência e execução visual | 10 / 1 |
+| 2. Algoritmos do dia a dia | Ordenar instruções e perceber dependências entre etapas | 10 / 1 |
+| 3. Ilha dos caminhos | Planejar rotas maiores, prever resultados e depurar sequências | 20 / 2 |
+| 4. Vale dos padrões | Introduzir `repetir` e reconhecer padrões em movimentos | 10 / 1 |
+| 5. Floresta das escolhas | Usar `se/senão` em dois ou três cenários | 20 / 2 |
+| 6. Estação das invenções | Criar uma função, chamá-la e reutilizá-la | 10 / 1 |
+| 7. Labirinto com obstáculos | Transferir `repetir` para mapas com paredes e verificar rotas curtas | 10 / 1 |
+| 8. Expedição das ações | Combinar deslocamento com pegar, pular, atacar e abrir | 30 / 3 |
+| 9. Oficina das ações | Ativar botões, organizar movimentos e planejar duas passagens | 30 / 3 |
+| 10. Trilha dos imprevistos | Resolver mapas mutáveis com condições e, depois, com repetição | 20 / 2 |
 
-Planeje uma trilha por encontro: 5 min de aquecimento, 30 min de desafios, 10 min de conversa e 5 min de feedback. São **quatro aulas de 50 minutos por nível como proposta**, ajustáveis a três aulas conforme a turma. A duração depende da autonomia dos alunos; o número de desafios não garante sozinho esse tempo. Alternem quem planeja, quem monta os blocos e quem confere. O painel contém perguntas para cada encontro.
+A progressão não exige que as equipes repitam um tutorial já concluído: um mundo curto introduz ou consolida uma ideia; mundos posteriores a aplicam em outro contexto. Os desafios continuam abertos para que o professor adapte a sequência à turma. Planeje cada encontro com 5 min de aquecimento, 30 min de desafios, 10 min de conversa e 5 min de feedback. Alternem quem planeja, quem monta os blocos e quem confere.
+
+A matemática foi retirada do percurso de programação; o foco atual é pensamento computacional, algoritmos e construção de programas.
 
 ## Onde os dados ficam
 
@@ -80,7 +87,7 @@ A presença desses arquivos não significa que exista um banco remoto configurad
 
 ## Estrutura
 
-- `src/data/curriculum.js`: 200 desafios e progressão pedagógica; IDs antigos preservados.
+- `src/data/curriculum.js`: catálogo ativo de 170 desafios, ordem pedagógica e compatibilidade com IDs anteriores.
 - `src/data/baseCurriculum.js`: as 50 missões originais e construtores de tabuleiro.
 - `src/game/engine.js`: interpretação segura e avaliação de todos os cenários.
 - `src/components/BlockEditor.jsx`: blocos aninhados, arraste/toque, reordenação e desfazer.
@@ -91,9 +98,9 @@ A presença desses arquivos não significa que exista um banco remoto configurad
 
 ## Verificação desta versão
 
-**223 testes automatizados**: soluções dos 200 desafios (319 cenários), limites de blocos, depuração, editor, cadastro e troca de equipes, migração, senha, filtros, stickers, feedback e retomada após falha de sincronização.
+Testes automatizados cobrem as soluções de todos os desafios ativos, cenários alternativos, limites de blocos, depuração, editor, cadastro e troca de equipes, migração, senha, filtros, stickers, feedback e retomada após falha de sincronização.
 
 O SQL foi executado em PostgreSQL via PGlite, com testes de RLS para dois professores e dois computadores: isolamento de equipes, bloqueio de elevação a professor, proteção dos códigos da sala e entrega/remoção de stickers. Isso valida a migração e as políticas localmente; não substitui a verificação de uma instância Supabase real após a configuração.
 
-Build de produção validado. Interações verificadas em DOM simulado; revisão visual em navegador não esteve disponível nesta sessão.
+A redução do currículo está sendo validada em uma branch de desenvolvimento. Desafios retirados deixam de entrar nos totais ativos, mas os registros históricos correspondentes são preservados para não apagar o progresso anterior. A branch não foi mesclada em `main` nem publicada em produção.
 

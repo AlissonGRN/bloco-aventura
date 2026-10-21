@@ -56,6 +56,7 @@ export const skinUnlocked = (index, progress = {}, stickers = [], bonusSkins = [
   const skin = ROBOT_SKINS[index];
   if (!skin) return false;
   if (Array.isArray(bonusSkins) && bonusSkins.includes(index)) return true;
+  // Count archived progress too: pruning a mission must not revoke an already-earned skin.
   return skin.stickerUnlockAt ? (stickers?.length || 0) >= skin.stickerUnlockAt : Object.keys(progress || {}).length >= skin.unlockAt;
 };
 export function uid() {
@@ -66,8 +67,12 @@ export function uid() {
 }
 export const defaultClasses = localClasses;
 export const emptySave = () => ({ version: 2, teams: [], classes: defaultClasses(), activeId: null });
-const known = new Set(LEVELS.map(l => l.id));
-const cleanIds = value => Array.isArray(value) ? [...new Set(value.filter(id => known.has(id)))] : [];
+const known = new Set(LEVELS.map(level => level.id));
+// Keep retired level IDs in saved history/progress so a curriculum revision never
+// erases students' earlier work. Retired challenges do not count toward current stats.
+const isKnownOrHistoricalLevel = id => known.has(id)
+  || (typeof id === 'string' && /^(?:[1-9]|1[0-3])-(?:[1-9]|[12]\d|3\d|40)$/.test(id));
+const cleanIds = value => Array.isArray(value) ? [...new Set(value.filter(isKnownOrHistoricalLevel))] : [];
 const date = value => typeof value === 'string' && Number.isFinite(Date.parse(value)) ? value : null;
 const nonNegative = value => Math.min(100000, Math.max(0, Math.floor(Number(value) || 0)));
 export const newSession = () => ({ id: uid(), startedAt: new Date().toISOString(), played: [], completed: [], attempts: 0 });
@@ -85,11 +90,15 @@ export function validateSave(value) {
     if (!t || typeof t.id !== 'string' || seen.has(t.id) || !Array.isArray(t.members) || t.members.length < 1 || t.members.length > 4 || t.members.some(n => typeof n !== 'string' || !n.trim() || n.length > 40)) throw new Error('Há uma equipe inválida no backup.');
     seen.add(t.id);
     const progress = {}, attempts = {};
-    for (const l of LEVELS) {
-      const p = t.progress?.[l.id];
-      if (p && [2, 3].includes(p.stars)) progress[l.id] = { stars: p.stars, completedAt: date(p.completedAt) };
-      const a = t.attempts?.[l.id];
-      if (a) attempts[l.id] = { count: nonNegative(a.count), lastAt: date(a.lastAt) };
+    for (const [id, result] of Object.entries(t.progress || {}).slice(0, 520)) {
+      if (isKnownOrHistoricalLevel(id) && result && [2, 3].includes(result.stars)) {
+        progress[id] = { stars: result.stars, completedAt: date(result.completedAt) };
+      }
+    }
+    for (const [id, attempt] of Object.entries(t.attempts || {}).slice(0, 520)) {
+      if (isKnownOrHistoricalLevel(id) && attempt) {
+        attempts[id] = { count: nonNegative(attempt.count), lastAt: date(attempt.lastAt) };
+      }
     }
     const sessions = (Array.isArray(t.sessions) ? t.sessions : []).slice(-100).map(s => cleanSession(s)).filter(Boolean);
     const stickers = (Array.isArray(t.stickers) ? t.stickers : []).filter(s => s && typeof s.id === 'string' && STICKERS.some(b => b.id === s.type)).slice(-100).map(s => ({ id: s.id, type: s.type, awardedAt: date(s.awardedAt), note: typeof s.note === 'string' ? s.note.slice(0, 160) : '' }));
@@ -97,7 +106,7 @@ export function validateSave(value) {
     const requestedAvatar = Math.floor(Number(t.avatar) || 0);
     const fallbackAvatar = ROBOT_SKINS.reduce((last, skin, index) => skinUnlocked(index, progress, stickers, bonusSkins) ? index : last, 0);
     const avatar = skinUnlocked(requestedAvatar, progress, stickers, bonusSkins) ? requestedAvatar : fallbackAvatar;
-    return { id: t.id, name: typeof t.name === 'string' && t.name.trim() ? t.name.trim().slice(0, 40) : t.members.join(' e '), members: t.members.map(n => n.trim()), classId: classes.some(c => c.id === t.classId) ? t.classId : null, avatar, progress, attempts, sessions, stickers, bonusSkins, currentSession: cleanSession(t.currentSession, false), lastLevel: known.has(t.lastLevel) ? t.lastLevel : '1-1', updatedAt: date(t.updatedAt), ...(typeof t.cloudOwner === 'string' ? { cloudOwner: t.cloudOwner } : {}), ...(t.sharedAccess === true ? { sharedAccess: true } : {}) };
+    return { id: t.id, name: typeof t.name === 'string' && t.name.trim() ? t.name.trim().slice(0, 40) : t.members.join(' e '), members: t.members.map(n => n.trim()), classId: classes.some(c => c.id === t.classId) ? t.classId : null, avatar, progress, attempts, sessions, stickers, bonusSkins, currentSession: cleanSession(t.currentSession, false), lastLevel: isKnownOrHistoricalLevel(t.lastLevel) ? t.lastLevel : '1-1', updatedAt: date(t.updatedAt), ...(typeof t.cloudOwner === 'string' ? { cloudOwner: t.cloudOwner } : {}), ...(t.sharedAccess === true ? { sharedAccess: true } : {}) };
   });
   return { version: 2, teams, classes, activeId: teams.some(t => t.id === value.activeId) ? value.activeId : null };
 }
