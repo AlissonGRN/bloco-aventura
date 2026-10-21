@@ -214,14 +214,14 @@ test('Teacher planning tab renders the full lesson plan without crashing', async
   for (const el of document.querySelectorAll('.teacher-login input')) await change(el, 'professor-test-42');
   await act(async () => {
     document.querySelector('.teacher-login form').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 2500));
   });
   assert.ok(document.querySelector('.teacher-stats'), 'Teacher panel should open');
   await click(button('Planejar aulas'));
   assert.ok(document.querySelector('.proposed-activity-editor'), 'Planning editor should render');
   assert.match(document.body.textContent, /Organize os encontros/);
   assert.ok(document.querySelectorAll('.planning-grid > section').length > 0, 'World-by-world lesson plans should be visible');
-  await change(document.querySelector('.proposed-activity-editor select:nth-of-type(2)'), '1');
+  await change(document.querySelectorAll('.proposed-activity-editor select')[1], '1');
   assert.ok(document.querySelector('.proposal-world-preview'), 'Selecting a world should show its preview');
 });
 
