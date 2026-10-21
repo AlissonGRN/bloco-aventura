@@ -125,7 +125,7 @@ test('Progression introduces loops, conditions and functions in distinct worlds'
   assert.ok(getLevel('5-1').required.includes('call'));
   assert.equal(getLevel('5-11'), undefined);
   assert.equal(getLevel('5-21'), undefined);
-  const trails = { 1:1, 2:2, 3:1, 4:2, 5:3 };
+  const trails = { 1:1, 2:2, 3:1, 4:2, 5:1 };
   for (let grade=1; grade<=5; grade++) {
     const missions=LEVELS.filter(level=>level.grade===grade);
     for (let trail=1; trail<=trails[grade]; trail++) assert.equal(missions.filter(level=>level.trail===trail).length,10);
