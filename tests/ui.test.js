@@ -79,15 +79,15 @@ test('Switch teams without sharing progress; create quartet and edit its members
   assert.deepEqual(readSave().teams[2].members, ['Bia', 'Caio', 'Duda', 'Eva']); assert.equal(readSave().teams[0].progress['1-1'].stars, 3);
 });
 
-test('All missions are open, with four independent trails per level', async () => {
+test('Missions remain open and each world shows only the trails it uses', async () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, teams: [team('a', 'Ana')], activeId: 'a' }));
   await mount(createElement(App));
-  await click(document.querySelector('.world-card'));
+  await click(document.querySelectorAll('.world-card')[2]);
   assert.equal(document.querySelectorAll('.level-node:disabled').length, 0);
-  assert.equal(document.querySelectorAll('.trail-tabs button').length, 4);
-  await click(document.querySelectorAll('.trail-tabs button')[3]);
+  assert.equal(document.querySelectorAll('.trail-tabs button').length, 2);
+  await click(document.querySelectorAll('.trail-tabs button')[1]);
   assert.equal(document.querySelectorAll('.level-node').length, 10);
-  assert.match(document.querySelector('.level-node').getAttribute('aria-label'), /Desafio 31/);
+  assert.match(document.querySelector('.level-node').getAttribute('aria-label'), /Desafio 11/);
   assert.doesNotMatch(document.body.textContent, /º ano|º ANO/);
 });
 
