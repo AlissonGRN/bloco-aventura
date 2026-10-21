@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Apple, Armchair, Backpack, Bandage, Bed, Blocks, BookOpen, Bookmark, Brain, Brush, Check, Circle, CircleDot, CircleHelp, CloudSun, Construction, Contact, CookingPot, CupSoda, DoorOpen, Droplets, Ear, Eye, File, Flag, Flame, FlaskConical, FoldHorizontal, FoldVertical, FolderOpen, Footprints, Hand, Heart, House, Layers, Library, Lightbulb, ListChecks, Mail, Map, MessageCircle, NotebookPen, Origami, Package, Paintbrush, Palette, Pencil, Phone, PhoneCall, PhoneOff, Plane, Play, Popcorn, Puzzle, Recycle, RefreshCw, Ruler, Sandwich, Scale, Scissors, Send, Shapes, Shirt, ShoppingBag, Shovel, Sparkles, Sun, Trash2, Users, Utensils, VolumeX, Waves, Wind, ArrowLeft, ArrowRight, ChevronDown, ChevronUp, RotateCcw } from 'lucide-react';
-import { WORLDS, nextLevel } from '../data/curriculum';
+import { WORLDS, nextLevel, levelsFor } from '../data/curriculum';
 import { Modal, Stars } from './UI';
 import { Robot } from './Art';
 
@@ -14,6 +14,7 @@ export default function SequenceGame({ level, team, onBack, onNext, onWorld, onC
   const task = level.steps;
   const world = WORLDS[level.grade - 1];
   const followingLevel = nextLevel(level);
+  const challengeCount = levelsFor(level.grade).length;
   const [order, setOrder] = useState(() => task.map((_, i) => i).sort(() => Math.random() - .5));
   const [message, setMessage] = useState('');
   const [win, setWin] = useState(null);
@@ -44,7 +45,7 @@ export default function SequenceGame({ level, team, onBack, onNext, onWorld, onC
   const next = () => followingLevel ? onNext(followingLevel) : onWorld(level.grade);
 
   return <div className="sequence-game" style={{ '--world': world.color, '--world-soft': world.soft }}>
-    <div className="game-breadcrumb"><button className="text-back" onClick={onBack}><ArrowLeft size={18}/><span>{world.short}</span></button><span>Desafio {level.number} de 40</span><span className="game-grade-badge">Nível {world.displayNumber}</span><Stars count={team.progress[level.id]?.stars || 0}/></div>
+    <div className="game-breadcrumb"><button className="text-back" onClick={onBack}><ArrowLeft size={18}/><span>{world.short}</span></button><span>Desafio {level.number} de {challengeCount}</span><span className="game-grade-badge">Nível {world.displayNumber}</span><Stars count={team.progress[level.id]?.stars || 0}/></div>
     <header className="sequence-heading"><div><span className="eyebrow">ALGORITMOS DO COTIDIANO</span><h1>Coloque na ordem</h1><p>{level.instruction}</p></div><div className="sequence-scene" aria-hidden="true">{icon(task[0].icon, 30)}<span>{task[0].title}</span></div></header>
     <section className="sequence-board word-mode" aria-label={`Etapas de ${task[0].title}`}>
       <div className="sequence-board-title"><strong>O que acontece primeiro?</strong><span>{order.length} etapas</span></div>
